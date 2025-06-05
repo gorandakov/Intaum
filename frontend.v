@@ -1,4 +1,7 @@
-
+/* 
+The country: since the country is the rich and their kids,
+the country is not welcome here. It is not the country project.
+*/
 module frontend (
   );
   function flcond;
