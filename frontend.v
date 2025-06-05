@@ -119,7 +119,7 @@ module frontend (
       genvar way;
       genvar line;
       genvar PHY;
-    for(PHY=0;PHY<4;PHY=PHY+1) begin : phy
+    for(PHY=0;PHY<10;PHY=PHY+1) begin : phy
       reg [31:0] insn_clopp;
       wire [12:0] stpop;
       wire sterror;
