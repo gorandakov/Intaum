@@ -124,12 +124,6 @@ module frontend (
       genvar PHY;
     for(PHY=0;PHY<10;PHY=PHY+1) begin : phy
       reg [31:0] insn_clopp;
-      wire [12:0] stpop;
-      wire sterror;
-      popcnt12 cpop_mod({funit[11].opcode[6],funit[10].opcode[6],funit[9].opcode[6],funit[8].opcode[6],funit[7].opcode[6],
-       funit[6].opcode[6],funit[5].opcode[6],funit[4].opcode[6],funit[3].opcode[6],funit[2].opcode[6],funit[1].opcode[6],
-       funit[0].opcode[6]},stpop);
-      assign sterror=|stpop[12:5];
 
       for(fu=0;fu<12;fu=fu+1) begin : funit
           reg [63:0][63:0] data_gen;
