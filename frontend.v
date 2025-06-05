@@ -1,6 +1,7 @@
 /* 
 The country: since the country is the rich and their kids,
 the country is not welcome here. It is not the country project.
+also not donation of puppies to us corporations.
 */
 module frontend (
   );
@@ -296,12 +297,13 @@ module frontend (
               instr<=poo_c_reg2;
               instr_clopp<=poo_c2_reg2;
               if (rT_en_reg) data_gen[rT_reg[5:0]][31:0]<=res[31:0];
-            if (rT_en0_reg4 && opcode[7]|(opcode[7:6]=0 && opcode[5:0]==2) data_gen[rTMem_reg[5:0]][31:0]<=instr[5]==0 && instr[7:6]==0 ? dataAF : pppoe_reg2[31:0];
+              if (rT_en0_reg4 && opcode[7]) data_gen[rTMem_reg[5:0]][31:0]<=pppoe_reg[31:0];
               if (rT_en_reg2) data_gen[rT_reg2[5:0]][65:32]<={c64,s64,res[63:32]};
-              if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<={c64,s64,res[63],~|resX[63:0]]};
-              if (rT_en_reg2) data_retFL[LQ_reg][3:0]<={c64,s64,res[63],~|resX[63:0]],1'b0};
+              if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<=opcode_reg2[7:5]==0 ? {dataAF[65:63],~|dataAF[62:53]} : {c64,s64,res[63],~|resX[63:0]]};
+              if (rT_en_reg2) data_retFL[LQ_reg][3:0]<=opcode_reg2[7:5]==0 ? {dataAF[65:63],~|dataAF[62:53]} : {c64,s64,res[63],~|resX[63:0]],1'b0};
+              if (rT_en_reg5 &&(opcode[7:6]=0 && opcode[5:0]==1)) data_fpu[rT_reg[5:0]]<=xaddres;
               if (rT_en0_reg2 && opcode_reg[7]) data_gen[rTMem_reg[5:0]][65:32]<=pppoe_reg2[63:32];
-                if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
+              if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
                     (fu>=insn_cloop[13:10] && IP[4:0]==insn_cloop[19:15])|
                     (fu>=insn_cloop[23:10] && IP[4:0]==insn_cloop[29:25])  ) begin
                   data_op[alloc][7:6]=instr[39:38];
