@@ -368,6 +368,7 @@ module frontend (
                 if (line==3) assign anyhitW[fuB][way]==tag[52]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
               //  if (line==4) assign tlbhit=tr_reg[phy[PHY].funit[fuB].resX[31:22]][37:6]==phy[PHY].funit[fuB].resX[63:37] && tr_reg[phy[PHY].funit[fuB].resX[31:22]][38];
                 always @(posedge clk) begin
+                  if (fuB==3 || fuB==7 || fuB==5 || fuB==11)
                     for (byte=0;byte<8;byte=byte+1)
                         if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte<phy[PHY].funit[fuB].is_write_size_reg); 
                             line_data[line][phy[PHY].funit[fuB].resW[6:3]]<=phy[PHY].funit[fuB].resW[8*phy[PHY].funit[fuB].resW[2:0]+:8];
