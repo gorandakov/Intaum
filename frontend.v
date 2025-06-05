@@ -301,7 +301,9 @@ module frontend (
               if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<={c64,s64,res[63],~|resX[63:0]]};
               if (rT_en_reg2) data_retFL[LQ_reg][3:0]<={c64,s64,res[63],~|resX[63:0]],1'b0};
               if (rT_en0_reg2 && opcode_reg[7]) data_gen[rTMem_reg[5:0]][65:32]<=pppoe_reg2[63:32];
-              if (insert_en) begin
+                if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
+                    (fu>=insn_cloop[13:10] && IP[4:0]==insn_cloop[19:15])|
+                    (fu>=insn_cloop[23:10] && IP[4:0]==insn_cloop[29:25])  ) begin
                   data_op[alloc][7:6]=instr[39:38];
                   if (&instr[39:38]) data_op[alloc][7:6]=2'b0;
                   if (^instr[39:38]) begin
