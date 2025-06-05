@@ -174,6 +174,8 @@ module frontend (
           assign dataBX[31:0]=phy[PHY].funit[rBX[9:6]].data_gen[rBX[5:0]][31:0];
           assign dataA[63:32]=phy[PHY].funit[rA_reg[9:6]].data_gen[rA_reg[5:0]][63:32];
           assign dataB[63:32]=phy[PHY].funit[rB_reg[9:6]].data_gen[rB_reg[5:0]][63:32];
+          assign dataAF[63:0]=phy[PHY].funit[rA_reg3[9:6]].data_gen[rA_reg3[5:0]][63:0];
+          assign dataBF[63:0]=phy[PHY].funit[rB_reg3[9:6]].data_gen[rB_reg3[5:0]][63:0];
           assign dataBI[63:32]=phy[PHY].funit[rT_reg[9:6]].data_imm[rT_reg[5:0]][63:0]*(data_phy+1)>>32;
           assign dataBX[63:32]=phy[PHY].funit[rBX_reg[9:6]].data_gen[rBX_reg[5:0]][63:32];
           assign dataFL=phy[PHY].funit[rFL[9:6]].data_fl[rFL[5:0]][3:0];
