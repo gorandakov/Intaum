@@ -305,30 +305,39 @@ module frontend (
                   if (^instr[39:38]) begin
                       data_op[alloc][10:8]=instr[37:35];
                       data_op[alloc][5]=instr[34];
-                      data_op[alloc][4:0]={4'b0,instr[33]};
+                      data_op[alloc][4:0]=5'b1;
+                      data_op[alloc][11]=instr[34]&vec;
                       data_imm[alloc]={{44{instr[32]}},instr[32:13]};
-                      if (instr[12]) data_phy[alloc]=PHY;
-                      else data_phy[alloc]=2'b0;
+                      if (instr[12]) data_phy[alloc]=vec ? PHYCNT-1 : PHY;
+                      else data_phy[alloc]=1;
                   end
                   if (&instr[39:38]) begin
-                      data_op[alloc][4:0]=instr[37:33];
+                    data_op[alloc][4:0]={instr[37:34],instr[14]};
                       data_op[alloc][5]=1'b1;
-                      data_cond[alloc][3:0]=instr[32:27];
-                      data_imm[alloc]={{44{instr[32]}},instr[28:9]};
+                    data_cond[alloc][3:0]=instr[12:9];
+                    data_imm[alloc]={{46{instr[32]}},instr[32:15]};
                   end
                   if (!|instr[39:38]) begin
-                      data_op[alloc][4:0]=instr[37:33];
+                    data_op[alloc][4:0]={instr[37:32],instr[12]};
                       data_op[alloc][5]=1'b1;
                       data_cond[alloc][3:0]=instr[32:27];
-                      data_imm[alloc]={{20{instr[32]}},instr[28:12],19'b0};
+                    data_imm[alloc]={{21{instr[26]}},instr[26:14],19'b0};
                   end
                   rTT[instr[3:0]]<=alloc;
+                  if (instr[39:38]==2) begin
+                    rTTm[instr[3:0]]<=alloc;
+                    rTTOldm[INSI]<=rTT[instr[3:0]];
+                    rTTNewm[INSI]<=alloc;
+                    rTTem[alloc][0]<=1'b1;
+                  end
                   rTTOld[INSI]<=rTT[instr[3:0]];
                   rTTNew[INSI]<=alloc;
                   rTTe[alloc][0]<=1'b1;
                   rdyA[alloc]<=rTT[instr[7:4]];
                   rdyB[alloc]<=rTT[instr[11:8]];
-                  rdy[alloc]<={1'b1,instr[39],1'b1,instr[32:27]==3,instr[39]};                     
+                  rdyFL[alloc]<=rTT[instr[33]];
+                  rdy[alloc]<={1'b1,instr[39],1'b1,instr[32:27]==3,instr[39]};  
+                  data_op[alloc][12:11]=instr[13:12]
               end
           end
           always @* begin
