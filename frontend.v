@@ -161,6 +161,8 @@ module frontend (
           bit_find_index indexLDU(rdy[63:0][0],indexLDU,indexLDU_has);
           bit_find_index indexAlloc(free,rT[5:0],rT_en0);
           bit_find_index indexST(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] && {64{sten[fu]}},indexST,indexST_has);
+          fpuadd64 Xadd(clk,rst,dataAF,dataBF,rnd,xaddres);
+          fpuprod64 Xmul(clk,rst,dataAF,dataBF,rnd,xmulres);
           assign rT[9:6]=fu;
           assign rT_en=opcode[5] && rT_en0;
           assign ldsize=1<<opcode[9:8]-1;
@@ -297,7 +299,7 @@ module frontend (
               instr<=poo_c_reg2;
               instr_clopp<=poo_c2_reg2;
               if (rT_en_reg) data_gen[rT_reg[5:0]][31:0]<=res[31:0];
-              if (rT_en0_reg && opcode[7]) data_gen[rTMem_reg[5:0]][31:0]<=pppoe_reg2[31:0];
+            if (rT_en0_reg4 && opcode[7]|(opcode[7:6]=0 && opcode[5:0]==2) data_gen[rTMem_reg[5:0]][31:0]<=instr[5]==0 && instr[7:6]==0 ? dataAF : pppoe_reg2[31:0];
               if (rT_en_reg2) data_gen[rT_reg2[5:0]][65:32]<={c64,s64,res[63:32]};
               if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<={c64,s64,res[63],~|resX[63:0]]};
               if (rT_en_reg2) data_retFL[LQ_reg][3:0]<={c64,s64,res[63],~|resX[63:0]],1'b0};
