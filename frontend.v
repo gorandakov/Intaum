@@ -331,10 +331,10 @@ module frontend (
                   end
                   rTT[instr[3:0]]<=alloc;
                   if (instr[39:38]==2) begin
-                    rTTm[instr[3:0]]<=alloc;
-                    rTTOldm[INSI]<=rTT[instr[3:0]];
-                    rTTNewm[INSI]<=alloc;
-                    rTTem[alloc][0]<=1'b1;
+                    rTT[instr[7:4]]<=alloc2;
+                    rTTOldm[INSI]<=rTT[instr[7:4]];
+                    rTTNewm[INSI]<=alloc2;
+                    rTTe[alloc2][0]<=1'b1;
                   end
                   rTTOld[INSI]<=rTT[instr[3:0]];
                   rTTNew[INSI]<=alloc;
