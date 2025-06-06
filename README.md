@@ -1,0 +1,1 @@
+currently the cpu can be implemented on 7 phase dynamic depleting cmos, but if you change the fpu to ieee std accurate it will not fit in 7 phases so the 54 bit precision and 10 bit exponent is not an error.
