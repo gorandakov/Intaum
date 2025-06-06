@@ -324,8 +324,8 @@ module frontend (
                     (fu>=insn_cloop[23:10] && IP[4:0]==insn_cloop[29:25])  ) begin
                   data_op[alloc][7:6]=instr[39:38];
                   if (&instr[39:38]) data_op[alloc][7:6]=2'b0;
-                  if (instr[39:38]==2'b10 && ^instr[13:12]) begin
-                      data_imm[alloc]={instr[37:14],instr[11:0]};
+                 if (instr[39:38]==2'b10 && |instr[13:12]) begin
+                   data_imm[alloc]=&instr[13:12] ? ret_cookie : {instr[37:14],instr[11:0]};
                       data_op[alloc][11]<=instr[12]; //1=call 0=jump
                       data_cond[alloc]=instr[37:34];
                       data_op[10:8]=instr[32:30];
