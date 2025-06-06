@@ -105,16 +105,16 @@ module frontend (
           tbuf[0][IP[12]]={retSRCIP[63:13],retIP[0][63:13]};
           if (jmispred) begin
               if ($random()&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b1;
-              if ($random()&0x3f==0x3f) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b1;
-              if ($random()&0xfff==0xfff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b1;
+              if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b1;
+              if ($random()&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b1;
               GHT<=retGHT;
           end
       end else if (jretire[1] && except) begin
           tbuf[1][IP[12]]={retSRCIP[63:13],retIP[1][63:13]};
           if (jmispred) begin
               if ($random()&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b10;
-              if ($random()&0x3f==0x3f) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b10;
-              if ($random()&0xfff==0xfff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b10;
+              if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b10;
+              if ($random()&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b10;
               GHT<=retGHT;
           end
       end
