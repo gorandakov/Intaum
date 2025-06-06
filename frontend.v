@@ -158,6 +158,7 @@ module frontend (
           bit_find_index indexLSU_ALU(rdy[63:0][2]&rdy[63:0][1]&{64{~phy[PHY].funit[(fu+1)%12].is_mul_reg3}},indexFU,indexFU_has);
           bit_find_index indexLDU(rdy[63:0][0],indexLDU,indexLDU_has);
           bit_find_index indexAlloc(free,rT[5:0],rT_en0);
+          bit_find_indexR indexAlloc2(free,rT[5:0],rT_en0);
           bit_find_index indexST(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] && {64{sten[fu]}},indexST,indexST_has);
           fpuadd64 Xadd(clk,rst,dataAF,dataBF,rnd,xaddres);
           fpuprod64 Xmul(clk,rst,dataAF,dataBF,rnd,xmulres);
