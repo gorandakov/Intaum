@@ -181,9 +181,9 @@ module frontend (
           assign dataBX[63:32]=phy[PHY].funit[rBX_reg[9:6]].data_gen[rBX_reg[5:0]][63:32];
           assign dataFL=phy[PHY].funit[rFL[9:6]].data_fl[rFL[5:0]][3:0];
           assign cond_tru=flcond(cond[3:0],dataFL);
-          assign {c32,res[31:0]}=opcode[7:1]==0 && cond_tru ?
-            dataA[31:0]+dataB[31:0]^{32{opcode[0]}}+opcode[0] : 'z;
-          assign {c64,s64,res[63:32]}=opcode_reg[7:1]==0 && cond_tru_reg ?
+          assign {c32,res[31:0]}=opcode[7:0]==0 && cond_tru ?
+            dataA[31:0]+dataB[31:0]^{32{dataBI[20]}}+dataBI[21] : 'z;
+          assign {c64,s64,res[63:32]}=opcode_reg[7:0]==0 && cond_tru_reg ?
             {dataA[63]&chk,dataA[63:32]}+{dataB[63],dataB[63:32]}^
             {32{c32_reg}}+c32_reg : 'z;
           assign {c32,res[31:0]}=(opcode[7:2]==1 || opcode[7:3]==1) 
@@ -196,10 +196,10 @@ module frontend (
              {1'b0,res_logic[31:0]} : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:3]==2 && cond_tru_reg ?
              {dataA_reg[65:64],res_logic[64:32]} : 'z;
-          assign {c32,res[31:0]}=phy[PHY].funit[(fu+1)%12].opcode_reg3[7:3]==3 ?
-             {1'b0,res_mul[31:0]} : 'z;
-          assign {s64,c64,res[63:32]}=phy[PHY].funit[(fu+1)%12].opcode_reg4[7:3]==3 ?
-             {res_mul[63],res_mul[64:32]} : 'z;
+          assign {c32,res[31:0]}=opcode[7:0]==1 && cond_tru ?
+            {1'b0,res_sxt[31:0]} : 'z;
+        assign {s64,c64,res[63:32]}=opcode_reg[7:0]==1 && cond_tru_reg ?
+            {res_sxt[63],res_sxt[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==2 && cond_tru_reg ?
@@ -225,13 +225,13 @@ module frontend (
           assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? {opcode_reg[2:1],dataBI_reg[18:0],dataA[42:32]};
           assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? dataA[63:32];
 
-          assign res_mul[31:0]=opcode_reg4[7:3]==3 && opcode_reg4[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
-          assign res_mul[31:0]=opcode_reg4[7:3]==3 && opcode_reg4[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
-          assign res_mul[31:0]=opcode_reg4[7:3]==3 && opcode_reg4[2:1]==2'b11 ? dataAS_reg3[63:0]*dataBIXS_reg3[63:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg5[7:3]==3 && opcode_reg5[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg5[7:3]==3 && opcode_reg5[2:1]==1 ? {32{res_mul_reg[31]}} : 'z;
-          assign res_mul[63:32]=opcode_reg5[7:3]==3 && opcode_reg5[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg5[7:3]==3 && opcode_reg5[2:1]==2'b11 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>64 : 'z;
+          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
+          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
+          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b11 ? dataAS_reg3[63:0]*dataBIXS_reg3[63:0]>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==1 ? {32{res_mul_reg[31]}} : 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>64 : 'z;
           always @(posedge clk) begin
               if (rst) sten<=12'hf; else sten<={sten[7:0],sten[12:8]};
               dataA_reg[63:32]<=dataA[63:32];
@@ -298,13 +298,15 @@ module frontend (
               instr<=poo_c_reg2;
               instr_clopp<=poo_c2_reg2;
               if (rT_en_reg) data_gen[rT_reg[5:0]][31:0]<=res[31:0];
-              if (rT_en0_reg4 && opcode[7]) data_gen[rTMem_reg[5:0]][31:0]<=pppoe_reg[31:0];
+              if (rT_en0_reg3 && opcode[7]) data_gen[rTMem_reg2[5:0]][31:0]<=pppoe_reg[31:0];
+              if (rT_en0_reg3 && opcode[7:3]==3) data_gen[rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
               if (rT_en_reg2) data_gen[rT_reg2[5:0]][65:32]<={c64,s64,res[63:32]};
               if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<=opcode_reg2[7:5]==0 ? {dataAF[65:63],~|dataAF[62:53]} : {c64,s64,res[63],~|resX[63:0]]};
               if (rT_en_reg2) data_retFL[LQ_reg][3:0]<=opcode_reg2[7:5]==0 ? {dataAF[65:63],~|dataAF[62:53]} : {c64,s64,res[63],~|resX[63:0]],1'b0};
               if (rT_en_reg5 &&(opcode[7:6]=0 && opcode[5:0]==1)) data_fpu[rT_reg[5:0]]<=xaddres;
-              if (rT_en0_reg2 && opcode_reg[7]) data_gen[rTMem_reg[5:0]][65:32]<=pppoe_reg2[63:32];
-              if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
+              if (rT_en0_reg4 && opcode_reg3[7]) data_gen[rTMem_reg3[5:0]][65:32]<=pppoe_reg2[63:32];
+              if (rT_en0_reg4 && opcode_reg3[7:3]==3) data_gen[rTMem_reg3[5:0]][65:32]<=res_mul[63:32];
+               if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
                     (fu>=insn_cloop[13:10] && IP[4:0]==insn_cloop[19:15])|
                     (fu>=insn_cloop[23:10] && IP[4:0]==insn_cloop[29:25])  ) begin
                   data_op[alloc][7:6]=instr[39:38];
