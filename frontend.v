@@ -171,13 +171,14 @@ module frontend (
           assign ldsizes=ldsize & {3{opcode[10]}};
           assign LQ=opcode[16:11];
           assign LQX=opcodex[16:11];
-          assign opand=opcode[7:5]==0 && fu!=10;
+          assign op_anx=opcode[7:5]==0 && |opcode[10:9];
+          assign opand=opcode[7:5]!=0;
           assign dataA[31:0]=phy[PHY].funit[rA[9:6]].data_gen[rA[5:0]][31:0] & {32{opand}};
           assign dataB[31:0]=phy[PHY].funit[rB[9:6]].data_gen[rB[5:0]][31:0];
           assign dataBI[31:0]=phy[PHY].funit[rT[9:6]].data_imm[rT[5:0]][31:0]*(data_phy+1);
           assign data_phy[31:0]=phy[PHY].funit[rT[9:6]].data_imm_phy[rT[5:0]][31:0];
           assign dataBX[31:0]=phy[PHY].funit[rBX[9:6]].data_gen[rBX[5:0]][31:0];
-        assign dataA[63:32]=phy[PHY].funit[rA_reg[9:6]].data_gen[rA_reg[5:0]][63:32] & {34{opand_reg}};
+          assign dataA[63:32]=phy[PHY].funit[rA_reg[9:6]].data_gen[rA_reg[5:0]][63:32] & {34{opand_reg}};
           assign dataB[63:32]=phy[PHY].funit[rB_reg[9:6]].data_gen[rB_reg[5:0]][63:32];
           assign dataAF[63:0]=phy[PHY].funit[rA_reg3[9:6]].data_gen[rA_reg3[5:0]][63:0];
           assign dataBF[63:0]=phy[PHY].funit[rB_reg3[9:6]].data_gen[rB_reg3[5:0]][63:0];
@@ -207,9 +208,9 @@ module frontend (
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==2 && cond_tru_reg ?
-            {dataA[63]&chk,dataA[63:32]}+{dataBI[63],dataBI[63:32]} : 'z;
+          {dataA[63]&chk,dataA[63:32]}+op_anx_reg ? 0 : {dataBI[63],dataBI[63:32]} + c32: 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && cond_tru ?
-            dataBI[31:0] : 'z;
+            op_anx ? 1 : dataBI[31:0] : 'z;
           assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]})
              || ~dataA_reg[65] || ^dataA_reg[64:63];
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && cond_tru_reg ?
