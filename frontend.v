@@ -227,11 +227,11 @@ module frontend (
 
           assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
           assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
-          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b11 ? dataAS_reg3[63:0]*dataBIXS_reg3[63:0]>>32 : 'z;
+          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b11 ? dataAS_reg3[63:0]*dataBIXS_reg3[63:0]>>22 : 'z;
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==1 ? {32{res_mul_reg[31]}} : 'z;
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>64 : 'z;
+        assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>54 : 'z;
           always @(posedge clk) begin
               if (rst) sten<=12'hf; else sten<={sten[7:0],sten[12:8]};
               dataA_reg[63:32]<=dataA[63:32];
