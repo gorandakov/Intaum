@@ -5,6 +5,7 @@ also not donation of puppies to us corporations.
 also is not an os roulette.
 not an open source clicksword.
 not a Microsoft shill.
+not a Google praendtl.
 */
 module frontend (
   );
@@ -173,6 +174,7 @@ module frontend (
           assign LQX=opcodex[16:11];
           assign op_anx=opcode[7:5]==0 && |opcode[10:9];
           assign opand=opcode[7:5]!=0;
+          assign jindir=fu!=10 && !opcode[10];
           assign dataA[31:0]=phy[PHY].funit[rA[9:6]].data_gen[rA[5:0]][31:0] & {32{opand}};
           assign dataB[31:0]=phy[PHY].funit[rB[9:6]].data_gen[rB[5:0]][31:0];
           assign dataBI[31:0]=phy[PHY].funit[rT[9:6]].data_imm[rT[5:0]][31:0]*(data_phy+1);
