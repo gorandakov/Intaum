@@ -4,6 +4,7 @@ the country is not welcome here. It is not the country project.
 also not donation of puppies to us corporations.
 also is not an os roulette.
 not an open source clicksword.
+not a Microsoft shill.
 */
 module frontend (
   );
