@@ -360,9 +360,9 @@ module frontend (
       reg [9:0][38:0] tr;
       for(way=0;way<8;way=way+1) begin : cache_way
           wire [11:0][65:0] poo_e;
-          for(line=0;line<66;line=line+1) begin : cache_line
-             reg [65:0][15:0] line_data;
-             reg [52:0][1:0] tag;
+        for(line=0;line<64;line=line+1) begin : cache_line
+          reg [15:0][65:0] line_data;
+          reg [1:0][52:0] tag;
              assign poo_c2[fuB]=cache_line[IP[12:7]][line][IP[6:3]][40*12+:32];
              for(fuB=0;fuB<12;fuB=fuB+1) begin : funit2
                 wire [65:-64] poo_mask;
@@ -377,7 +377,7 @@ module frontend (
                   if (fuB==3 || fuB==7 || fuB==5 || fuB==11)
                     for (byte=0;byte<8;byte=byte+1)
                         if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte<phy[PHY].funit[fuB].is_write_size_reg); 
-                            line_data[line][phy[PHY].funit[fuB].resW[6:3]]<=phy[PHY].funit[fuB].resW[8*phy[PHY].funit[fuB].resW[2:0]+:8];
+                            line_data[phy[PHY].funit[fuB].resW[6:3]]<=phy[PHY].funit[fuB].resW[8*phy[PHY].funit[fuB].resW[2:0]+:8];
                 //        if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte<phy[PHY].funit[fuB].is_write_size_reg &&
                 //            phy[PHY].funit[fuB].resX[63:9]=='1); 
                 //            line_data[line][phy[PHY].funit[fuB].resW[6:3]]<=phy[PHY].funit[fuB].resW[8*phy[PHY].funit[fuB].resW[2:0]+:8];
