@@ -231,7 +231,17 @@ module frontend (
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==1 ? {32{res_mul_reg[31]}} : 'z;
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
-        assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>54 : 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>54 : 'z;
+          assign val_else[31:0]=opcode[12:11]==0 ? dataA[31:0] : 'z;
+          assign val_else[31:0]=opcode[12:11]==1 ? 1 : 'z;
+          assign val_else[31:0]=opcode[12:11]==2 ? 0: 'z;
+          assign val_else[31:0]=opcode[12:11]==3 ? '1 : 'z;
+          assign val_else[65:32]=opcode[12:11]==0 ? dataA[65:32] : 'z;
+          assign val_else[65:32]=opcode[12:11]==1 ? 1<<33+1 : 'z;
+          assign val_else[65:32]=opcode[12:11]==2 ? 1<<33 : 'z;
+          assign val_else[65:32]=opcode[12:11]==3 ? 34'h1_ffff_ffff : 'z;
+        assign val_sxt[31:0]=dataBI[25:24]!=3 ? dataA[31:0]<<(8<<dataBI0[25:24])>>>(8<<dataBI0[25:24]) : {dataA[7:0],dataA[15:8],dataA[23:16],dataA[31:24]};
+        assign val_sxt[63:0]=dataBI_reg[25:24]!=3 ? dataA_reg[31:0]<<(8<<dataBI[25:24])>>>(8<<dataBI[25:24])>>>32 : {32{dataA_reg}};
           always @(posedge clk) begin
               if (rst) sten<=12'hf; else sten<={sten[7:0],sten[12:8]};
               dataA_reg[63:32]<=dataA[63:32];
