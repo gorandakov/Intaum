@@ -70,20 +70,28 @@ module frontend (
       input [42:0] val0;
       input [42:0] addend;
       input protect_cookie;
+      input isand;
       reg [42:0] boogie;
       reg on_low;
       begin
           boogie=addend>>cookie[5:0];
-          val1=val1>>cookie[5:0];
+          val1=val0>>cookie[5:0];
           on_low=boogie[8]==cookie[20];
+          byone=(val1>>7)==1;
+          byminus=(val1>>7)=='1;
+          byzero=(val1>>7)=='0;
           if (on_low) begin
             addition_check=(boogie[6:0]+val1[6:0])>=cookie[19:13]-!protect_cookie;
               if (cookie[12:6]>cookie[19:13] && (boogie[6:0]+val1[6:0])>cookie[12:6])
                   addition_check=0;
+            if (!byone && !byzero || isand & byminus)
+                addition_check=0;
           end else begin
             addition_check=(boogie[7:0]+val1[7:0])>=cookie[20:13]-!protect_cookie;
               if (cookie[12:6]>cookie[19:13] && (boogie[6:0]+val1[6:0])>cookie[12:6])
                   addition_check=0;
+            if (!byminus && !byzero&!isand)
+                addition_check=0;
           end
       end
   end
