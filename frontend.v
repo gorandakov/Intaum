@@ -7,6 +7,7 @@ not an open source clicksword.
 not a Microsoft shill.
 not a Google praendtl.
 I don't hold patents on this and don't intend to.
+not a linux peacock.
 */
 module frontend (
   );
