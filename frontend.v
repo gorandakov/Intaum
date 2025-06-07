@@ -90,7 +90,7 @@ module frontend (
   reg [65535:0][1:0] predC;
 
   assign pred_en=predA[IP[13:0],GHT[1:0]]^predB[IP[7:0],GHT[7:0]]^predC[IP[1:0],GHT[13:0]];
-
+    
   always @(posedge clk) begin
       if (rst) begin
           IP<=init_IP;
@@ -106,7 +106,7 @@ module frontend (
           IP=IP+16;
       end
       if (jretire[0] && except) begin
-          tbuf[0][IP[12]]={retSRCIP[63:13],retIP[0][63:13]};
+        tbuf[0][IP[12:4]]={retSRCIP[63:13],retIP[0][63:13]};
           if (jmispred) begin
               if ($random()&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b1;
               if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b1;
@@ -114,7 +114,7 @@ module frontend (
               GHT<=retGHT;
           end
       end else if (jretire[1] && except) begin
-          tbuf[1][IP[12]]={retSRCIP[63:13],retIP[1][63:13]};
+        tbuf[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
           if (jmispred) begin
               if ($random()&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b10;
               if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b10;
