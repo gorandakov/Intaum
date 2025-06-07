@@ -206,7 +206,7 @@ module frontend (
           assign {c32,res[31:0]}=opcode[7:0]==0 && cond_tru ?
             dataA[31:0]+dataB[31:0]^{32{dataBI[20]}}+dataBI[21] : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==0 && cond_tru_reg ?
-            {dataA[63]&chk,dataA[63:32]}+{dataB[63],dataB[63:32]}^
+           {dataA[63]~!chk,dataA[63:32]}+{dataB[63],dataB[63:32]}^
             {32{c32_reg}}+c32_reg : 'z;
           assign {c32,res[31:0]}=(opcode[7:2]==1 || opcode[7:3]==1) 
                && cond_tru  ?
@@ -225,10 +225,10 @@ module frontend (
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==2 && cond_tru_reg ?
-          {dataA[63]&chk,dataA[63:32]}+op_anx_reg ? 0 : {dataBI[63],dataBI[63:32]} + c32: 'z;
+            {dataA[63]|~chk,dataA[63:32]}+op_anx_reg ? 0 : {dataBI[63],dataBI[63:32]} + c32: 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && cond_tru ?
             op_anx ? 1 : dataBI[31:0] : 'z;
-          assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]})
+        assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11])
              || ~dataA_reg[65] || ^dataA_reg[64:63];
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && cond_tru_reg ?
             {1'b0,dataBI[63],dataBI[63:32]} : 'z;
@@ -353,7 +353,7 @@ module frontend (
                       data_op[alloc][10:8]=instr[37:35];
                       data_op[alloc][5]=instr[34];
                       data_op[alloc][4:0]=5'b1;
-                      data_op[alloc][11]=instr[34]&vec;
+                      data_op[alloc][11]=instr[34];
                       data_imm[alloc]={{44{instr[32]}},instr[32:13]};
                       if (instr[12]) data_phy[alloc]=vec ? PHYCNT-1 : PHY;
                       else data_phy[alloc]=1;
