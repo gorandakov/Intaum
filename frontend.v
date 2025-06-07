@@ -89,7 +89,16 @@ module frontend (
   reg [65535:0][1:0] predA;
   reg [65535:0][1:0] predB;
   reg [65535:0][1:0] predC;
-
+  reg [(1<<24)+(1<<9)-1:0][65:0] htlb;
+  always @(posedge clk) begin
+      if (!ins_addr[0][42:37]) ins_addr[1]<=htlb[{ci,ins_addr[0][36:15]}];
+      if (isret) glptr<=htlb[1<<24+sttop];
+      if (iscall) begin
+          htlb[1<<24+sttop+1]<=glptr;
+          htlb[1<<24+sttop+257]<=lastIP+5;
+      end
+  end
+    
   assign pred_en=predA[IP[13:0],GHT[1:0]]^predB[IP[7:0],GHT[7:0]]^predC[IP[1:0],GHT[13:0]];
   assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
   assign jen[1]=tbuf[1][43] && IP[42:4]==tbuf[1][82:44];
