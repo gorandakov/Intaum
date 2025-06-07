@@ -90,17 +90,18 @@ module frontend (
   reg [65535:0][1:0] predC;
 
   assign pred_en=predA[IP[13:0],GHT[1:0]]^predB[IP[7:0],GHT[7:0]]^predC[IP[1:0],GHT[13:0]];
-    
+  assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
+  assign jen[1]=tbuf[1][43] && IP[42:4]==tbuf[1][82:44];
   always @(posedge clk) begin
       if (rst) begin
           IP<=init_IP;
-      end else if (jcnt[2]) begin
-          if (pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=tbuf[0][IP[12:0]]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
-          else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:0]]; if (tbuf[1][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
+      end else if (&jen[1:0]) begin
+        if (pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
+        else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; if (tbuf[1][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+16; end
-      end else if (jcnt[1]) begin
-          if (pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=tbuf[0][IP[12:0]]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
-          //else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:0]]; end
+      end else if (^jen[1:0]) begin
+        if (pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
+        //else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+16; end
       end else begin
           IP=IP+16;
