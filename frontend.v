@@ -225,7 +225,7 @@ module frontend (
           assign {c32,res[31:0]}=opcode[7:3]==2 && cond_tru ?
              {1'b0,res_logic[31:0]} : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:3]==2 && cond_tru_reg ?
-             {dataA_reg[65:64],res_logic[64:32]} : 'z;
+          {dataA_reg[65:64]|{!isand_reg|!chk,1'b0},res_logic[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==1 && cond_tru ?
             {1'b0,res_sxt[31:0]} : 'z;
           assign {s64,c64,res[63:32]}=opcode_reg[7:0]==1 && cond_tru_reg ?
@@ -236,7 +236,7 @@ module frontend (
             {dataA[63]|~chk,dataA[63:32]}+op_anx_reg ? 0 : {dataBI[63],dataBI[63:32]} + c32: 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && cond_tru ?
             op_anx ? 1 : dataBI[31:0] : 'z;
-        assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11])
+          assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand)
              || ~dataA_reg[65] || ^dataA_reg[64:63];
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && cond_tru_reg ?
             {1'b0,dataBI[63],dataBI[63:32]} : 'z;
