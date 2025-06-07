@@ -6,7 +6,7 @@ also is not an os roulette.
 not an open source clicksword.
 not a Microsoft shill.
 not a Google praendtl.
-I don't hold patents on this.
+I don't hold patents on this and don't intend to.
 */
 module frontend (
   );
