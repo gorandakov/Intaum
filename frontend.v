@@ -328,7 +328,7 @@ module frontend (
               if (rT_en_reg6 &&(opcode_reg5[7:6]=0 && opcode_reg5[4:0]==1 && dataBI_reg5[21])) data_fpu[rTMem_reg6[5:0]]<=xmulres;
               if (rT_en_reg6 &&(opcode_reg5[7] && dataBI_reg5[21])) data_fpu[rTMem_reg6[5:0]]<=pppoe_reg4;
               if (rT_en0_reg4 && opcode_reg3[7:3]==3) data_gen[rTMem_reg3[5:0]][65:32]<=res_mul[63:32];
-               if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
+              if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
                     (fu>=insn_cloop[13:10] && IP[4:0]==insn_cloop[19:15])|
                     (fu>=insn_cloop[23:10] && IP[4:0]==insn_cloop[29:25])  ) begin
                   data_op[alloc][7:6]=instr[39:38];
@@ -368,6 +368,7 @@ module frontend (
                   end
                   rTTOld[INSI]<=rTT[instr[3:0]];
                   rTTNew[INSI]<=alloc;
+                  data_retFL[INSI]<=1;
                   rTTe[alloc][0]<=1'b1;
                   rdyA[alloc]<=rTT[instr[7:4]];
                   rdyB[alloc]<=rTT[instr[11:8]];
