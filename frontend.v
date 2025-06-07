@@ -169,6 +169,7 @@ module frontend (
           bit_find_index indexST(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] && {64{sten[fu]}},indexST,indexST_has);
           fpuadd64 Xadd(clk,rst,dataAF,dataBF,rnd,xaddres);
           fpuprod64 Xmul(clk,rst,dataAF,dataBF,rnd,xmulres);
+          assign ret0[phy][fu]=!data_retFL[RETI][0];
           assign rT[9:6]=fu;
           assign rT_en=opcode[5] && rT_en0;
           assign ldsize=1<<opcode[9:8]-1;
@@ -208,7 +209,7 @@ module frontend (
              {dataA_reg[65:64],res_logic[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==1 && cond_tru ?
             {1'b0,res_sxt[31:0]} : 'z;
-        assign {s64,c64,res[63:32]}=opcode_reg[7:0]==1 && cond_tru_reg ?
+          assign {s64,c64,res[63:32]}=opcode_reg[7:0]==1 && cond_tru_reg ?
             {res_sxt[63],res_sxt[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
