@@ -199,7 +199,8 @@ module frontend (
           bit_find_index indexST(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] && {64{sten[fu]}},indexST,indexST_has);
           fpuadd64 Xadd(clk,rst,dataAF,dataBF,rnd,xaddres);
           fpuprod64 Xmul(clk,rst,dataAF,dataBF,rnd,xmulres);
-          assign ret0[phy][fu]=!data_retFL[RETI][0];
+          assign ret0[fu][PHY]=!data_retFL[RETI][0];
+          assign ret1[fu]=&ret0[fu];
           assign rT[9:6]=fu;
           assign rT_en=opcode[5] && rT_en0;
           assign ldsize=1<<opcode[9:8]-1;
@@ -281,8 +282,8 @@ module frontend (
           assign val_else[65:32]=opcode[12:11]==1 ? 1<<33+1 : 'z;
           assign val_else[65:32]=opcode[12:11]==2 ? 1<<33 : 'z;
           assign val_else[65:32]=opcode[12:11]==3 ? 34'h1_ffff_ffff : 'z;
-        assign val_sxt[31:0]=dataBI[25:24]!=3 ? dataA[31:0]<<(8<<dataBI0[25:24])>>>(8<<dataBI0[25:24]) : {dataA[7:0],dataA[15:8],dataA[23:16],dataA[31:24]};
-        assign val_sxt[63:0]=dataBI_reg[25:24]!=3 ? dataA_reg[31:0]<<(8<<dataBI[25:24])>>>(8<<dataBI[25:24])>>>32 : {32{dataA_reg}};
+          assign val_sxt[31:0]=dataBI[25:24]!=3 ? dataA[31:0]<<(8<<dataBI0[25:24])>>>(8<<dataBI0[25:24]) : {dataA[7:0],dataA[15:8],dataA[23:16],dataA[31:24]};
+          assign val_sxt[63:0]=dataBI_reg[25:24]!=3 ? dataA_reg[31:0]<<(8<<dataBI[25:24])>>>(8<<dataBI[25:24])>>>32 : {32{dataA_reg}};
           always @(posedge clk) begin
               if (rst) sten<=12'hf; else sten<={sten[7:0],sten[12:8]};
               dataA_reg[63:32]<=dataA[63:32];
