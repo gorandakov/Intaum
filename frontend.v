@@ -411,12 +411,12 @@ module frontend (
           end
           always @* begin
                   wstall[PHY][fu]<=1'b0;
-                  lderrir[PHY][fu]<1'b0;
+                  lderror<=64'b0;
                   for(ldi=0;ldi<64;ldi++) begin
                       if (is_wconfl(dreqmort[LDI_reg],dreqmort_flags[LDI_reg],dreqmort[ldi],dreqmort_flags[ldi]))
                           wstall[PHY][fu]<=1'b1;
-                      if (is_lconfl(dreqmort[LDI_reg],dreqmort_flags[LDI_reg],dreqmort[ldi],dreqmort_flags[ldi]))
-                          lderror[PHY][fu]<=1'b1;
+                    if (is_lconfl(dreqmort[indexLDU],dreqmort_flags[indexLDU],dreqmort[ldi],dreqmort_flags[ldi]))
+                      lderror[ldi]<=1'b1;
                   end
           end
       end
