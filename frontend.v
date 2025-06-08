@@ -114,7 +114,8 @@ module frontend (
       end
   end
     
-    assign pred_en=predA[IP[13:0],GHT[1:0]]^predB[IP[7:0],GHT[7:0]]^predC[IP[1:0],GHT[13:0]]||ucjmp;
+  assign pred_en=predA[IP[17:5],GHT[1:0]]^predB[IP[12:5],GHT[7:0]]^predC[IP[6:5],GHT[13:0]]||ucjmp;
+  assign tbuf=tbufl[IP[13:5]];
   assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
   assign jen[1]=tbuf[1][43] && IP[42:4]==tbuf[1][82:44];
   assign iscall=jen[0] && tbuf[0][83] || jen[1] && tbuf[1][83];
@@ -141,7 +142,8 @@ module frontend (
               if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b1;
               if ($random()&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b1;
               GHT<=retGHT;
-          end
+              tbufl[retSRCIP[13:5]][0]={retJPR0,1'b1,retSRCIP,retIPA};
+           end
       end else if (jretire[1] && except) begin
         tbuf[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
           if (jmispred) begin
@@ -149,6 +151,7 @@ module frontend (
               if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b10;
               if ($random()&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b10;
               GHT<=retGHT;
+              tbufl[retSRCIP[13:5]][1]={retJPR1,1'b1,retSRCIP,retIPB}
           end
       end
   end
