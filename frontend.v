@@ -114,9 +114,12 @@ module frontend (
       end
   end
     
-  assign pred_en=predA[IP[13:0],GHT[1:0]]^predB[IP[7:0],GHT[7:0]]^predC[IP[1:0],GHT[13:0]];
+    assign pred_en=predA[IP[13:0],GHT[1:0]]^predB[IP[7:0],GHT[7:0]]^predC[IP[1:0],GHT[13:0]]||ucjmp;
   assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
   assign jen[1]=tbuf[1][43] && IP[42:4]==tbuf[1][82:44];
+  assign iscall=jen[0] && tbuf[0][83] || jen[1] && tbuf[1][83];
+  assign isret=jen[0] && tbuf[0][84] || jen[1] && tbuf[1][84];
+  assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
   always @(posedge clk) begin
       if (rst) begin
           IP<=init_IP;
