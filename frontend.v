@@ -310,6 +310,7 @@ module frontend (
               rB<=rdyB[indexLSU_ALU];
               rBX<=rdyB[indexLDU];
               rT<={fu,indexLSU_ALU};
+              rTMem<=rdyM[indexLSU_ALU];
               opcode<=data_op[indexLSU_ALU];
               opcodex<=data_op[indexLDU];
               if (except) begin 
