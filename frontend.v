@@ -168,6 +168,7 @@ module frontend (
           reg [63:0][63:0] data_fp;
           reg [63:0][63:0] data_imm;
           reg [63:0][16:0] data_op;
+          reg [63:0][6:0] cloopbndloff;
           reg [39:0] insn;
           reg [63:0][5:0] data_imm_phy;
           reg [63:0][5:0] rdy; //port lsu/alu=bits 2:1 a,b; port store data=bit 0,A,B; upper 3 bits=needed bits
