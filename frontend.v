@@ -174,6 +174,7 @@ module frontend (
           reg [63:0][5:0] rdy; //port lsu/alu=bits 2:1 a,b; port store data=bit 0,A,B; upper 3 bits=needed bits
           reg [63:0][4+5:0] rdyA;
           reg [63:0][4+5:0] rdyB;
+          reg [63:0][5:0] rdyM; // also used for cloop second condition
           reg [63:0] free;
           wire [4+5:0] rA;
           wire [4+5:0] rB;
@@ -183,8 +184,8 @@ module frontend (
           wire [65:0] dataA;
           wire [65:0] dataB;
           wire [65:0] dataBIX;
-          wire [65:0] dataBI;
-          wire [1:0] data_phy;
+          wire signed [65:0] dataBI;
+          wire [3:0] data_phy;
           wire [63:0] res;
           wire [7:0] opcode;
           wire [4:0] cond;
@@ -220,7 +221,7 @@ module frontend (
           assign dataB[63:32]=phy[PHY].funit[rB_reg[9:6]].data_gen[rB_reg[5:0]][63:32];
           assign dataAF[63:0]=phy[PHY].funit[rA_reg3[9:6]].data_gen[rA_reg3[5:0]][63:0];
           assign dataBF[63:0]=phy[PHY].funit[rB_reg3[9:6]].data_gen[rB_reg3[5:0]][63:0];
-          assign dataBI[63:32]=phy[PHY].funit[rT_reg[9:6]].data_imm[rT_reg[5:0]][63:0]*(data_phy+1)>>32;
+          assign dataBI[63:32]=phy[PHY].funit[rT_reg[9:6]].data_imm[rT_reg[5:0]][57:0]*(data_phy+1)>>32;
           assign dataBX[63:32]=phy[PHY].funit[rBX_reg[9:6]].data_gen[rBX_reg[5:0]][63:32];
           assign dataFL=phy[PHY].funit[rFL[9:6]].data_fl[rFL[5:0]][3:0];
           assign cond_tru=flcond(cond[3:0],dataFL);
@@ -312,7 +313,7 @@ module frontend (
               rB<=rdyB[indexLSU_ALU];
               rBX<=rdyB[indexLDU];
               rT<={fu,indexLSU_ALU};
-              rTMem<=rdyM[indexLSU_ALU];
+              rTMem<={fu,rdyM[indexLSU_ALU]};
               opcode<=data_op[indexLSU_ALU];
               opcodex<=data_op[indexLDU];
               if (except) begin 
