@@ -437,10 +437,24 @@ module frontend (
           reg [15:0][65:0] line_data;
           reg [1:0][52:0] tag;
              assign poo_c2[fuB]=cache_line[IP[12:7]][line][IP[6:3]][40*12+:32];
-             if (way==$random() && insert_en) begin
+                if (line==expaddr[5:0] && expen)
+                  tag[expaddr[expaddr[6]][67:66]<=0;
+                if (way==$random() && insert_en) begin
                  if (line==insetr_addr[5:0]) begin
                      tag[insetr_addr[6]]<={insetr_wrtable,1'b1,inser_addr[42:7]};
                      line[8*insetr_addr[6]+:8]<=insetr_daata;
+                 end
+             end
+             if (way==$random() && inserth_en) begin
+                 if (line==insetrh_addr[5:0]) begin
+                     tag[insetrh_addr[6]]<={insetr_wrtableh,1'b1,inser_addrh[42:7]};
+                     line[8*insetr_addrh[6]+:8]<=insetr_daatah;
+                 end
+             end
+             if (way==$random() && insertv_en) begin
+                 if (line==insetr_addrv[5:0]) begin
+                     tag[insetr_addrv[6]]<={insetr_wrtablev,1'b1,inser_addrv[42:7]};
+                     line[8*insetr_addrv[6]+:8]<=insetr_daatav;
                  end
              end
              for(fuB=0;fuB<12;fuB=fuB+1) begin : funit2
