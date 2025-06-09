@@ -437,6 +437,12 @@ module frontend (
           reg [15:0][65:0] line_data;
           reg [1:0][52:0] tag;
              assign poo_c2[fuB]=cache_line[IP[12:7]][line][IP[6:3]][40*12+:32];
+             if (way==$random() && insert_en) begin
+                 if (line==insetr_addr[5:0]) begin
+                     tag[insetr_addr[6]]<={insetr_wrtable,1'b1,inser_addr[42:7]};
+                     line[8*insetr_addr[6]+:8]<=insetr_daata;
+                 end
+             end
              for(fuB=0;fuB<12;fuB=fuB+1) begin : funit2
                 wire [65:-64] poo_mask;
                 assign poo_e[fuB]=cache_line[phy[PHY].funit[fuB].res[12:7]][line][phy[PHY].funit[fuB].res[6:3]]>>(phy[PHY].funit[fuB].res[2:0]*8)<<(phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(phy[PHY].funit[fuB].ldsizes[2:0]*8);
