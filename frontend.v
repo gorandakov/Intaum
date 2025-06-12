@@ -180,6 +180,7 @@ module frontend (
           wire [4+5:0] rB;
           wire [4+5:0] rBX;
           wire [4+5:0] rFL;
+          wire [4+5:0] rFL2;
           wire rA_en, rB_en;
           wire [65:0] dataA;
           wire [65:0] dataB;
