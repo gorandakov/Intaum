@@ -155,6 +155,7 @@ module frontend (
           end
       end
   end
+  bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
   generate
       genvar fu,fuB;
       genvar way;
@@ -174,6 +175,8 @@ module frontend (
           reg [63:0][5:0] rdy; //port lsu/alu=bits 2:1 a,b; port store data=bit 0,A,B; upper 3 bits=needed bits
           reg [63:0][4+5:0] rdyA;
           reg [63:0][4+5:0] rdyB;
+          reg [63:0][4+5:0] rdyFl0;
+          reg [63:0][4+5:0] rdyFl1;
           reg [63:0][5:0] rdyM; // also used for cloop second condition
           reg [63:0] free;
           wire [4+5:0] rA;
@@ -197,8 +200,8 @@ module frontend (
           reg [63:0][3:0] dreqdata_flags;
           bit_find_index indexLSU_ALU(rdy[63:0][2]&rdy[63:0][1]&{64{~phy[PHY].funit[(fu+1)%12].is_mul_reg3}},indexFU,indexFU_has);
           bit_find_index indexLDU(rdy[63:0][0],indexLDU,indexLDU_has);
-          bit_find_index indexAlloc(free,rT[5:0],rT_en0);
-          bit_find_indexR indexAlloc2(free,rTm[5:0],rTm_en0);
+          bit_find_index indexAlloc(free,alloc[5:0],rT_en0);
+          bit_find_indexR indexAlloc2(free,alloc2[5:0],rTm_en0);
           bit_find_index indexST(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] && {64{sten[fu]}},indexST,indexST_has);
           fpuadd64 Xadd(clk,rst,dataAF,dataBF,rnd,xaddres);
           fpuprod64 Xmul(clk,rst,dataAF,dataBF,rnd,xmulres);
@@ -350,6 +353,8 @@ module frontend (
                   if (rT_en && funit[fu3].rdyB[sch]==rT && funit[fu3].rdy[sch][5]) funit[fu3].rdy[sch][2]=1'b1; 
                   if (rT_en && funit[fu3].rdyB[sch]==rT && funit[fu3].rdy[sch][3]) funit[fu3].rdy[sch][0]=1'b1;
                   if (rT_en && funit[fu3].rdyA[sch]==rT && funit[fu3].rdy[sch][4]) funit[fu3].rdy[sch][1]=1'b1;
+                  if (rT_en && funit[fu3].rdyFl0[sch]==rT && funit[fu3].rdy[sch][6]) funit[fu3].rdy[sch[7]]=1'b1;
+                  if (rT_en && funit[fu3].rdyFl1[sch]==rT && funit[fu3].rdy[sch[8]]) funit[fu3].rdy[sch[9]]=1'b1;
               end
               aligned[PHY][fu]<=|dreqmort_flags[LDI][4:3];
               if (&aligned) begin
