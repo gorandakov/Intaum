@@ -193,7 +193,7 @@ module frontend (
           wire cond_tru;
           reg [63:0][63:0] dreqmort;
           reg [63:0][65:0] dreqdata;
-          reg [63:0][4:0] dreqmort_flags;
+          reg [63:0][5:0] dreqmort_flags;
           reg [63:0][3:0] dreqdata_flags;
           bit_find_index indexLSU_ALU(rdy[63:0][2]&rdy[63:0][1]&{64{~phy[PHY].funit[(fu+1)%12].is_mul_reg3}},indexFU,indexFU_has);
           bit_find_index indexLDU(rdy[63:0][0],indexLDU,indexLDU_has);
@@ -204,6 +204,10 @@ module frontend (
           fpuprod64 Xmul(clk,rst,dataAF,dataBF,rnd,xmulres);
           assign ret0[fu][PHY]=!data_retFL[RETI][0];
           assign ret1[fu]=&ret0[fu];
+          assign mret0[fu][PHY]=&dreqmort_flags[RETI][5:4];
+          assign mret1[fu]=&mret0[fu];
+          assign mxret0[fu][PHY]=^dreqmort_flags[RETI][5:4];
+          assign mxret1[fu]=&mxret0[fu];
           assign rT[9:6]=fu;
           assign rT_en=opcode[5] && rT_en0;
           assign ldsize=1<<opcode[9:8]-1;
@@ -328,7 +332,7 @@ module frontend (
               end
               if (rT_en0_reg | rT_en_reg && |opcode_reg[7:6]) begin
                   dreqmort[LQ][31:0]<=res[31:0];
-                  dreqmord_flags[LQ]<={sterror,opcode_reg[7:6],opcode_reg[1:0]};
+                  dreqmord_flags[LQ]<={~chk,1'b0,opcode_reg[7:6],opcode_reg[1:0]};
               end
               if (rT_en0_reg2 | rT_en_reg2 && |opcode_reg2[7:6]) begin
                   dreqmort[LQ][63:32]<=res[63:32];
@@ -349,7 +353,7 @@ module frontend (
               end
               aligned[PHY][fu]<=|dreqmort_flags[LDI][4:3];
               if (&aligned) begin
-                  dreqmort_flags[LDI_reg][4]<=~dreqmort_flags[LDI][5];
+                dreqmort_flags[LDI_reg][4]<=1'b1;
               end
               instr<=poo_c_reg2;
               instr_clopp<=poo_c2_reg2;
