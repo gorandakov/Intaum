@@ -233,7 +233,7 @@ module frontend (
           assign dataBX[63:32]=phy[PHY].funit[rBX_reg[9:6]].data_gen[rBX_reg[5:0]][63:32];
           assign dataFL=phy[PHY].funit[rFL[9:6]].data_fl[rFL[5:0]][3:0];
           assign cond_tru=flcond(cond[3:0],dataFL);
-          assign {c32,res[31:0]}=opcode[7:0]==0 && cond_tru ?
+        assign {c32,res[31:0]}=opcode[7:0]==0 && cond_tru && !dataBI[19] ?
             dataA[31:0]+dataB[31:0]^{32{dataBI[20]}}+dataBI[21] : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==0 && cond_tru_reg ?
            {dataA[63]~!chk,dataA[63:32]}+{dataB[63],dataB[63:32]}^
@@ -254,8 +254,8 @@ module frontend (
             {res_sxt[63],res_sxt[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
-          assign {c64,s64,res[63:32]}=opcode_reg[7:0]==2 && cond_tru_reg ?
-            {dataA[63]|~chk,dataA[63:32]}+op_anx_reg ? 0 : {dataBI[63],dataBI[63:32]} + c32: 'z;
+        assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[19])&& cond_tru_reg ?
+          {dataA[63]|~chk,dataA[63:32]}+op_anx_reg ? 0 : {dataBI_reg[63],dataBI_reg[63:32]} + c32: 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && cond_tru ?
             op_anx ? 1 : dataBI[31:0] : 'z;
           assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand)
