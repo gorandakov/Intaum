@@ -257,11 +257,11 @@ module frontend (
         assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[19])&& cond_tru_reg ?
         {dataA[63]|~chk,dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[19] ? !res_reg[31] :c32_reg) : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && cond_tru ?
-            op_anx ? 1 : dataBI[31:0] : 'z;
+            dataBI[31:0] : 'z;
           assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand)
              || ~dataA_reg[65] || ^dataA_reg[64:63];
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && cond_tru_reg ?
-            {1'b0,dataBI[63],dataBI[63:32]} : 'z;
+          {1'b0,dataBI_reg[63],dataBI_reg[63:32]} : 'z;
           assign res_logic[31:0]=opcode[2:1]==0 &~foo ? dataA[31:0]&dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==1 &~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==3 &~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
