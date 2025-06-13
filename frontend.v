@@ -379,9 +379,11 @@ module frontend (
                   if (&instr[39:38]) data_op[alloc][7:6]=2'b0;
                  if (instr[39:38]==2'b10 && |instr[13:12]) begin
                    data_imm[alloc]=&instr[13:12] ? ret_cookie : {instr[37:14],instr[11:0]};
-                      data_op[alloc][11]<=instr[12]; //1=call 0=jump
+                      data_op[alloc][11]<=instr[30]; //1=call 0=jump
                       data_cond[alloc]=instr[37:34];
                       data_op[10:8]=instr[32:30];
+                   if (instr[13:12]==2 && !instr[32]) data_imm[alloc]<=0;
+                      if (instr[32]) data_imm[alloc]<=1;
                   else if (^instr[39:38]) begin
                       data_op[alloc][10:8]=instr[37:35];
                       data_op[alloc][5]=instr[34];
