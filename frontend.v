@@ -237,7 +237,7 @@ module frontend (
             dataA[31:0]+dataB[31:0]^{32{dataBI[20]}}+dataBI[21] : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==0 && cond_tru_reg ?
            {dataA[63]~!chk,dataA[63:32]}+{dataB[63],dataB[63:32]}^
-            {32{c32_reg}}+c32_reg : 'z;
+          {32{dataBI_reg[20]}}+(dataBI_reg[19] ? !res_reg[31] :c32_reg) : 'z;
           assign {c32,res[31:0]}=(opcode[7:2]==1 || opcode[7:3]==1) 
                && cond_tru  ?
              res_shift[32:0] : 'z;
