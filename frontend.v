@@ -261,7 +261,7 @@ module frontend (
           assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand)
              || ~dataA_reg[65] || ^dataA_reg[64:63];
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && cond_tru_reg ?
-          {1'b0,dataBI_reg[63],dataBI_reg[63:32]} : 'z;
+          {1'b0,dataBI_reg[63]^opcode_reg[8],dataBI_reg[63:32]} : 'z;
           assign res_logic[31:0]=opcode[2:1]==0 &~foo ? dataA[31:0]&dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==1 &~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==3 &~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
@@ -398,7 +398,10 @@ module frontend (
                       data_op[alloc][5]=1'b1;
                     data_cond[alloc][3:0]=instr[12:9];
                     data_imm[alloc]={{46{instr[32]}},instr[32:15]};
-                   
+                    data_op[alloc][8]=flagi;
+                    if (flagi)
+                      data_imm[alloc]={spgcookie,6'b0,instr[32:15],instr[8:4],15'b0};
+                      
                   end
                   if (!|instr[39:38]) begin
                     data_op[alloc][4:0]={instr[37:34],instr[12]};
