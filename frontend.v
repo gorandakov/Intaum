@@ -212,6 +212,7 @@ module frontend (
           assign mxret0[fu][PHY]=^dreqmort_flags[RETI][5:4];
           assign mxret1[fu]=&mxret0[fu];
           assign rT[9:6]=fu;
+          assign clres={dataA_reg[63:32],dataA_reg2[31:0]}<{dataB_reg[63:32],dataB_reg2[31:0]}-1;
           assign rT_en=opcode[5] && rT_en0;
           assign ldsize=1<<opcode[9:8]-1;
           assign ldsizes=ldsize & {3{opcode[10]}};
