@@ -216,6 +216,8 @@ module frontend (
           assign clres2={dataA_reg[63:32],dataA_reg2[31:0]}<{dataB_reg[63:32],dataB_reg2[31:0]};
           assign clres3={dataA_reg[63:32],dataA_reg2[31:0]}<={dataB_reg[63:32],dataB_reg2[31:0]};
           assign res_cloop0=cond_tru_reg && cond_xtru_reg && clres;
+          assign res_cloop1=cond_tru_reg && cond_xtru_reg && clres2;
+          assign res_cloop2=cond_tru_reg && cond_xtru_reg && clres3;
 
           assign rT_en=opcode[5] && rT_en0;
           assign ldsize=1<<opcode[9:8]-1;
@@ -401,7 +403,7 @@ module frontend (
                       data_op[alloc][11]<=instr[30]; //1=call 0=jump
                       data_cond[alloc]=instr[37:34];
                       data_op[10:8]=instr[32:30];
-                   if (instr[13:12]==2 && !instr[32]) data_imm[alloc]<=0;
+                   if (instr[13:12]==2 && !instr[32]) data_imm[alloc]<=instr[1:0];
                       if (instr[32]) data_imm[alloc]<=1;
                   else if (^instr[39:38]) begin
                       data_op[alloc][10:8]=instr[37:35];
