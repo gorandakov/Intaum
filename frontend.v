@@ -403,13 +403,15 @@ module frontend (
                     (fu>=insn_cloop[23:10] && IP[4:0]==insn_cloop[29:25])  ) begin
                   data_op[alloc][7:6]=instr[39:38];
                   if (&instr[39:38]) data_op[alloc][7:6]=2'b0;
-                 if (instr[39:38]==2'b10 && |instr[13:12]) begin
-                   data_imm[alloc]=&instr[13:12] ? ret_cookie : {instr[37:14],instr[11:0]};
-                      data_op[alloc][11]<=instr[30]; //1=call 0=jump
-                      data_cond[alloc]=instr[37:34];
-                      data_op[10:8]=instr[32:30];
-                   if (instr[13:12]==2 && !instr[32]) data_imm[alloc]<=instr[1:0];
-                      if (instr[32]) data_imm[alloc]<=1;
+                 if (instr[39:38]==2'b10 && instr[33]|instr[34]&~instr[12]) begin
+                   data_imm[alloc]=&instr[34:33] ? ret_cookie : {{41{instr[24]}}instr[24:14],instr[11:0]};
+                   data_op[alloc][11]<=instr[13]; //1=call 0=jump
+                   data_cond[alloc]={instr[37:35],instr[32]};
+                   data_cond2[alloc]=instr[31:28];
+                   data_op[10:8]=instr[27:25];
+                   if (instr[34:33]==2 && !instr[25]) data_imm[alloc]<=instr[1:0];
+                   if (instr[25]) data_imm[alloc]<=0;
+                   data_op[7:0] = instr[25] || instr[34:33]==2 ? 0 : op_movi;
                   else if (^instr[39:38]) begin
                       data_op[alloc][10:8]=instr[37:35];
                       data_op[alloc][5]=instr[34];
