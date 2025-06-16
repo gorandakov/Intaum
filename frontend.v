@@ -157,6 +157,8 @@ module frontend (
       end
   end
   bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
+
+
   generate
       genvar fu,fuB;
       genvar way;
@@ -437,20 +439,47 @@ module frontend (
                         data_op[alloc][4:0]=2;
                       end
                   end
-                  rTT[instr[3:0]]<=alloc;
                   if (instr[39:38]==2) begin
                     rTT[instr[7:4]]<=alloc2;
                     rTTOldm[INSI]<=rTT[instr[7:4]];
                     rTTNewm[INSI]<=alloc2;
                     rTTe[alloc2][0]<=1'b1;
                   end
-                  rTTOld[INSI]<=rTT[instr[3:0]];
-                  rTTNew[INSI]<=alloc;
+                  if (~^instr[39:38] || instr[34]) begin
+                   rTT[instr[3:0]]<=alloc;
+                   rTTOld[INSI]<=rTT[instr[3:0]];
+                   rTTNew[INSI]<=alloc;
+                  end
                   data_retFL[INSI]<=1;
                   rTTe[alloc][0]<=1'b1;
                   rdyA[alloc]<=rTT[instr[7:4]];
-                  rdyB[alloc]<=rTT[instr[11:8]];
-                  rdyFL[alloc]<=rTT[instr[33]];
+                   for(fuZ=0;fuZ<12;fuZ++) begin
+                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && funit[fuZ].instr[39:38]==2)
+                       rdyA<=funit[fuZ].alloc2;
+                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && ~^funit[fuZ].instr[39:38])
+                       rdyA<=funit[fuZ].alloc;
+                   end
+                   rdyB[alloc]<=rTT[instr[11:8]];
+                   for(fuZ=0;fuZ<12;fuZ++) begin
+                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[11:8] && funit[fuZ].instr[39:38]==2)
+                       rdyB<=funit[fuZ].alloc2;
+                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[11:8] && ~^funit[fuZ].instr[39:38])
+                       rdyB<=funit[fuZ].alloc;
+                   end
+                   rdyFL[alloc]<=rTT[instr[33]];
+                   for(fuZ=0;fuZ<12;fuZ++) begin
+                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[33] && funit[fuZ].instr[39:32]==2)
+                       rdyFL<=funit[fuZ].alloc2;
+                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[33] && ~^funit[fuZ].instr[39:38])
+                       rdyFL<=funit[fuZ].alloc;
+                   end
+                   rdyFL2[alloc]<=rTT[2];
+                   for(fuZ=0;fuZ<12;fuZ++) begin
+                     if(fuZ<fu && funit[fuZ].instr[3:0]==2 && funit[fuZ].instr[39:32]==2)
+                       rdyFL2<=funit[fuZ].alloc2;
+                     if(fuZ<fu && funit[fuZ].instr[3:0]==2 && ~^funit[fuZ].instr[39:38])
+                       rdyFL2<=funit[fuZ].alloc;
+                   end
                   rdy[alloc]<={1'b1,instr[39],1'b1,instr[32:27]==3,instr[39]};  
                   data_op[alloc][12:11]=instr[13:12]
               end
