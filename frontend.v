@@ -286,11 +286,13 @@ module frontend (
 
           assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
           assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
-        assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b11 ? dataAS_reg3[63:0]*dataBIXS_reg3[5:0]>>22 : 'z;
+          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 'z;
+          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 'z;
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==1 ? {32{res_mul_reg[31]}} : 'z;
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
-        assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 ? dataAS_reg4[63:0]*dataBIXS_reg4[5:0]>>54 : 'z;
+        assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 'z;
           assign val_else[31:0]=opcode[12:11]==0 ? dataA[31:0] : 'z;
           assign val_else[31:0]=opcode[12:11]==1 ? 1 : 'z;
           assign val_else[31:0]=opcode[12:11]==2 ? 0: 'z;
