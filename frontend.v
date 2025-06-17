@@ -15,6 +15,7 @@ not a dako muscovite.
 not an apple cruscokh .
 not a royal crunch.
 not olga dakova's spirit.
+not a exchange token for getting into uni.
 */
 module frontend (
   );
@@ -242,8 +243,10 @@ module frontend (
           assign dataBI[63:32]=phy[PHY].funit[rT_reg[9:6]].data_imm[rT_reg[5:0]][57:0]*(data_phy+1)>>32;
           assign dataBX[63:32]=phy[PHY].funit[rBX_reg[9:6]].data_gen[rBX_reg[5:0]][63:32];
           assign dataFL=phy[PHY].funit[rFL[9:6]].data_fl[rFL[5:0]][3:0];
+          assign dataFL2=phy[PHY].funit[rFL2[9:6]].data_fl[rFL2[5:0]][3:0];
           assign cond_tru=flcond(cond[3:0],dataFL);
-        assign {c32,res[31:0]}=opcode[7:0]==0 && cond_tru && !dataBI[32] ?
+          assign cond_xtru=flcond(cond2[3:0],dataFL2);
+          assign {c32,res[31:0]}=opcode[7:0]==0 && cond_tru && !dataBI[32] ?
           dataA[31:0]+dataB[31:0]^{32{dataBI[33]}}+dataBI[33] : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==0 && cond_tru_reg ?
            {dataA[63]~!chk,dataA[63:32]}+{dataB[63],dataB[63:32]}^
@@ -306,17 +309,18 @@ module frontend (
           assign val_else[65:32]=opcode[12:11]==3 ? 34'h1_ffff_ffff : 'z;
           assign val_sxt[31:0]=dataBI[25:24]!=3 ? dataA[31:0]<<(8<<dataBI0[25:24])>>>(8<<dataBI0[25:24]) : {dataA[7:0],dataA[15:8],dataA[23:16],dataA[31:24]};
           assign val_sxt[63:0]=dataBI_reg[25:24]!=3 ? dataA_reg[31:0]<<(8<<dataBI[25:24])>>>(8<<dataBI[25:24])>>>32 : {32{dataA_reg}};
-        assign res_shift[31:0]=opcode[3:1]==2 ? dataA[31:0]<<dataB[5:0] : 'z;
-        assign res_shift[31:0]=opcode[3:1]==3 ? dataA[31:0]<<dataBI[5:0] : 'z;
-        assign res_shift[31:0]=opcode[3:0]==8 ? dataA[31:0]>>dataB[5:0] : 'z;
-        assign res_shift[31:0]=opcode[3:0]==9 ? dataA[31:0]>>dataBI[5:0] : 'z;
-        assign res_shift[31:0]=opcode[3:0]==10 ? dataA[31:0]>>>dataB[5:0] : 'z;
-        assign res_shift[31:0]=opcode[3:0]==11 ? dataA[31:0]>>>dataBI[5:0] : 'z;
-         assign res_shift[63:32]=opcode[3:0]==4 ? {dataA[63:32],dataA_reg[31:0]}<<dataB_reg[5:0] : 'z;
-        assign res_shift[63:32]=opcode[3:0]==5 ? {32{res_shift_reg[31]}} : 'z;
-        assign res_shift[63:32]=opcode[3:0]==6 ? {dataA[63:32],dataA_reg[31:0]}<<dataBI_reg[5:0] : 'z;
-        assign res_shift[63:32]=opcode[3:0]>=7 ? {32{res_shift_reg[31]}} : 'z;
-        
+          assign res_shift[31:0]=opcode[3:1]==2 ? dataA[31:0]<<dataB[5:0] : 'z;
+          assign res_shift[31:0]=opcode[3:1]==3 ? dataA[31:0]<<dataBI[5:0] : 'z;
+          assign res_shift[31:0]=opcode[3:0]==8 ? dataA[31:0]>>dataB[5:0] : 'z;
+          assign res_shift[31:0]=opcode[3:0]==9 ? dataA[31:0]>>dataBI[5:0] : 'z;
+          assign res_shift[31:0]=opcode[3:0]==10 ? dataA[31:0]>>>dataB[5:0] : 'z;
+          assign res_shift[31:0]=opcode[3:0]==11 ? dataA[31:0]>>>dataBI[5:0] : 'z;
+          assign res_shift[63:32]=opcode[3:0]==4 ? {dataA[63:32],dataA_reg[31:0]}<<dataB_reg[5:0] : 'z;
+          assign res_shift[63:32]=opcode[3:0]==5 ? {32{res_shift_reg[31]}} : 'z;
+          assign res_shift[63:32]=opcode[3:0]==6 ? {dataA[63:32],dataA_reg[31:0]}<<dataBI_reg[5:0] : 'z;
+          assign res_shift[63:32]=opcode[3:0]>=7 ? {32{res_shift_reg[31]}} : 'z;
+          assign cond=data_cond[indexLSU_ALU];
+          assign cond2=data_cond2[indexLSU_ALU];
           always @(posedge clk) begin
               if (rst) sten<=12'hf; else sten<={sten[7:0],sten[12:8]};
               dataA_reg[63:32]<=dataA[63:32];
