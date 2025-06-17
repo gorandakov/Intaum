@@ -160,7 +160,10 @@ module frontend (
   end
   bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
 
-
+  assign jretire[0]=&retire_reg[7:0] && cond(jcond0[reti_reg],funit[8].retFl[reti_reg][4:1]);
+  assign jretire[1]=&retire_reg[9:0] && cond(jcond1[reti_reg],funit[10].retFl[reti_reg][4:1]);
+  assign retIP[0]=jcond0[reti_reg];
+  assign retIP[1]=jcond1[reti_reg];
   generate
       genvar fu,fuB;
       genvar way;
