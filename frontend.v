@@ -450,19 +450,25 @@ module frontend (
                       end
                   end
                   if (instr[39:38]==2) begin
-                    rTT[instr[7:4]]<=alloc2;
-                    rTTOldm[INSI]<=rTT[instr[7:4]];
+                    rTT[instr[3:0]]<=alloc2;
+                    rTTOldm[INSI]<=rTT[instr[3:0]];
                     rTTNewm[INSI]<=alloc2;
                     rTTe[alloc2][0]<=1'b1;
+                    if (instr[34]) begin
+                        rTT[instr[7:4]]<=alloc;
+                        rTTOld[INSI]<=rTT[instr[7:4]];
+                        rTTNew[INSI]<=alloc;
+                        rTTe[alloc][0]<=1;
+                    end
                   end
-                  if (~^instr[39:38] || instr[34]) begin
-                   rTT[instr[3:0]]<=alloc;
-                   rTTOld[INSI]<=rTT[instr[3:0]];
-                   rTTNew[INSI]<=alloc;
+                  if (~^instr[39:38]) begin
+                       rTT[instr[3:0]]<=alloc;
+                       rTTOld[INSI]<=rTT[instr[3:0]];
+                       rTTNew[INSI]<=alloc;
+                       rTTe[alloc][0]<=1'b1;
                   end
-                  data_retFL[INSI]<=1;
-                  rTTe[alloc][0]<=1'b1;
-                  rdyA[alloc]<=rTT[instr[7:4]];
+                   data_retFL[INSI]<=1;
+                   rdyA[alloc]<=rTT[instr[7:4]];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && funit[fuZ].instr[39:38]==2)
                        rdyA<=funit[fuZ].alloc2;
