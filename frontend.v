@@ -405,8 +405,8 @@ module frontend (
               if (rT_en_reg6 &&(opcode_reg5[7] && dataBI_reg5[21])) data_fpu[rTMem_reg5[5:0]]<=pppoe_reg3;
               if (rT_en0_reg4 && opcode_reg3[7:3]==3) data_gen[rTMem_reg3[5:0]][65:32]<=res_mul[63:32];
               if (rT_en0_reg4 && opcode_reg3[7]) data_gen[rTMem_reg2[5:0]][65:32]<=pppoe_reg2[65:32];
-              if (rT_en0_reg3 && opcode_reg2[7:0]==2 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=dataAF_reg[65:32];
-              if (rT_en0_reg2 && opcode_reg[7:0]==2 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=dataAF[31:0];
+            if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=dataAF_reg[65:32];
+            if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=dataAF[31:0];
              
                if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
                     (fu>=insn_cloop[13:10] && IP[4:0]==insn_cloop[19:15])|
