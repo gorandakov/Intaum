@@ -7,3 +7,4 @@ in addition, if using write though rdram with many port and banks, additional 0.
 increase of tile size beyond 25 rapidly reduces performance in my estimated metrics.
 8 gb per core feasible for max 200gb and desktop package sized die.
 as of msi algorithm choice the core would not run at 50% with 25 tiles but at 45%. note that this is metric for running with significant cache miss rate.
+as for 2nm I can't promise it is possible to beat or match this 3nm cpu
