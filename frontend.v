@@ -301,7 +301,7 @@ module frontend (
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==1 ? {32{res_mul_reg[31]}} : 'z;
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
-        assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 'z;
           assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 'z;
           assign val_else[31:0]=opcode[12:11]==0 ? dataA[31:0] : 'z;
           assign val_else[31:0]=opcode[12:11]==1 ? 1 : 'z;
@@ -560,9 +560,9 @@ module frontend (
                 always @(posedge clk) begin
                   if (fuB==3 || fuB==7 || fuB==5 || fuB==11)
                     for (byte=0;byte<8;byte=byte+1)
-                        if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte<phy[PHY].funit[fuB].is_write_size_reg); 
-                            line_data[phy[PHY].funit[fuB].resW[6:3]]<=phy[PHY].funit[fuB].resW[8*phy[PHY].funit[fuB].resW[2:0]+:8];
-                //        if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte<phy[PHY].funit[fuB].is_write_size_reg &&
+                      if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[12:7]==line[5:0] && byte<phy[PHY].funit[fuB].is_write_size_reg); 
+                  line_data[phy[PHY].funit[fuB].resW[6:3]][8*(byte+phy[PHY].funit[fuB].resW[2:0])+:8]<=phy[PHY].funit[fuB].resWX[8*byte+:8];
+                //        if (][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte<phy[PHY].funit[fuB].is_write_size_reg &&
                 //            phy[PHY].funit[fuB].resX[63:9]=='1); 
                 //            line_data[line][phy[PHY].funit[fuB].resW[6:3]]<=phy[PHY].funit[fuB].resW[8*phy[PHY].funit[fuB].resW[2:0]+:8];
                 end
