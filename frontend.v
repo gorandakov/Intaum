@@ -271,8 +271,8 @@ module frontend (
             {res_sxt[63],res_sxt[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
-        assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[32])&& cond_tru_reg ?
-        {dataA[63]|~chk,dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[31] :c32_reg) : 'z;
+          assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[32])&& cond_tru_reg ?
+            {dataA[63]|~chk,dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[31] :c32_reg) : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && cond_tru ?
             dataBI[31:0] : 'z;
           assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand)
@@ -405,13 +405,18 @@ module frontend (
               if (rT_en_reg6 &&(opcode_reg5[7] && dataBI_reg5[21])) data_fpu[rTMem_reg5[5:0]]<=pppoe_reg3;
               if (rT_en0_reg4 && opcode_reg3[7:3]==3) data_gen[rTMem_reg3[5:0]][65:32]<=res_mul[63:32];
               if (rT_en0_reg4 && opcode_reg3[7]) data_gen[rTMem_reg2[5:0]][65:32]<=pppoe_reg2[65:32];
-            if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=dataAF_reg[65:32];
-            if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=dataAF[31:0];
-            if (rT_en0_reg4 && fu==8) begin
-              jcond0[LQ]<=res_reg3;
-              if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
-              if (opcode_reg4[8]) jcond0[LQ]<=srcIPOff[LQ]+res_reg3;
-            end
+               if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=dataAF_reg[65:32];
+               if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=dataAF[31:0];
+               if (rT_en0_reg4 && fu==8) begin
+                   jcond0[LQ]<=res_reg3;
+                   if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
+                   if (opcode_reg4[8]) jcond0[LQ]<=srcIPOff[LQ]+res_reg3;
+               end
+               if (rT_en0_reg4 && fu==10) begin
+                   jcond1[LQ]<=res_reg3;
+                 if (opcode_reg4[10]) jcond1[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
+                 if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ]+res_reg3;
+               end
                if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
                     (fu>=insn_cloop[13:10] && IP[4:0]==insn_cloop[19:15])|
                     (fu>=insn_cloop[23:10] && IP[4:0]==insn_cloop[29:25])  ) begin
