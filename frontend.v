@@ -407,7 +407,11 @@ module frontend (
               if (rT_en0_reg4 && opcode_reg3[7]) data_gen[rTMem_reg2[5:0]][65:32]<=pppoe_reg2[65:32];
             if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=dataAF_reg[65:32];
             if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=dataAF[31:0];
-             
+            if (rT_en0_reg4 && fu==8) begin
+              jcond0[LQ]<=res_reg3;
+              if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
+              if (opcode_reg4[8]) jcond0[LQ]<=srcIPOff[LQ]+res_reg3;
+            end
                if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
                     (fu>=insn_cloop[13:10] && IP[4:0]==insn_cloop[19:15])|
                     (fu>=insn_cloop[23:10] && IP[4:0]==insn_cloop[29:25])  ) begin
