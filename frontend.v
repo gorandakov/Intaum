@@ -403,11 +403,11 @@ module frontend (
               if (rT_en_reg2 && opcode_reg2[10] && ~|opcode_reg2[7:6]) data_retFL[LQ_reg][3:0]<=opcode_reg2[9]==0 ? {res_loop0,res_loop2,res_loop2,res_loop1,1'b0} : {res_cloop0,res_cloop2,res_cloop2,res_cloop1,1'b0};
             if (rT_en_reg5 &&(opcode_reg4[7:6]=0 && opcode_reg4[4:0]==1 && dataBI_reg4[20])) data_fpu[rT_reg4[5:0]]<=dataBI_reg4[22] ? dataAF_reg2 : xaddres;
               if (rT_en_reg6 &&(opcode_reg5[7:6]=0 && opcode_reg5[4:0]==1 && dataBI_reg5[21])) data_fpu[rTMem_reg5[5:0]]<=xmulres;
-              if (rT_en_reg6 &&(opcode_reg5[7] && dataBI_reg5[21])) data_fpu[rTMem_reg5[5:0]]<=pppoe_reg3;
+            if (rT_en_reg6 &&(opcode_reg5[7] && dataBI_reg5[21])) data_fpu[rTMem_reg5[5:0]]<=flconv(pppoe_reg3,opcode_reg5[9]);
               if (rT_en0_reg4 && opcode_reg3[7:3]==3) data_gen[rTMem_reg3[5:0]][65:32]<=res_mul[63:32];
               if (rT_en0_reg4 && opcode_reg3[7]) data_gen[rTMem_reg2[5:0]][65:32]<=pppoe_reg2[65:32];
-               if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=dataAF_reg[65:32];
-               if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=dataAF[31:0];
+            if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=fsconv(dataAF_reg,dataBI_reg3[24:23])>>32;
+            if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=fsconv(dataAF,dataBI_reg2[24:23]);
                if (rT_en0_reg4 && fu==8) begin
                    jcond0[LQ]<=res_reg3;
                    if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
