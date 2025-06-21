@@ -231,8 +231,8 @@ module frontend (
           assign rT_en=opcode[5] && rT_en0;
           assign ldsize=1<<opcode[9:8]-1;
           assign ldsizes=ldsize & {3{opcode[10]}};
-          assign LQ=opcode[16:11];
-          assign LQX=opcodex[16:11];
+          assign LQ=opcode[19:14];
+          assign LQX=opcodex[19:14];
           assign op_anx=opcode[7:5]==0 && |opcode[10:9];
           assign opand=opcode[7:5]!=0;
           assign jindir=fu!=10 && !opcode[10];
@@ -462,20 +462,20 @@ module frontend (
                       end
                   end
                   if (instr[39:38]==2) begin
-                    rTT[instr[3:0]]<=alloc2;
-                    rTTOldm[INSI]<=rTT[instr[3:0]];
+                    rTT[insn_cloop[4]&&~|instr[3:2],instr[3:0]]<=alloc2;
+                    rTTOldm[INSI]<=rTT[insn_cloop[4]&&~|instr[3:2]instr[3:0]];
                     rTTNewm[INSI]<=alloc2;
                     rTTe[alloc2][0]<=1'b1;
                     if (instr[34]) begin
-                        rTT[instr[7:4]]<=alloc;
-                        rTTOld[INSI]<=rTT[instr[7:4]];
+                        rTT[insn_cloop[4]&&~|instr[7:6],instr[7:4]]<=alloc;
+                        rTTOld[INSI]<=rTT[insn_cloop[4]&&~|instr[7:6],instr[7:4]];
                         rTTNew[INSI]<=alloc;
                         rTTe[alloc][0]<=1;
                     end
                   end
                   if (~^instr[39:38]) begin
-                       rTT[instr[3:0]]<=alloc;
-                       rTTOld[INSI]<=rTT[instr[3:0]];
+                       rTT[insn_cloop[4]&&~|instr[3:2],instr[3:0]]<=alloc;
+                       rTTOld[INSI]<=rTT[insn_cloop[4]&&~|instr[3:2],instr[3:0]];
                        rTTNew[INSI]<=alloc;
                        rTTe[alloc][0]<=1'b1;
                   end
