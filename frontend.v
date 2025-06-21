@@ -139,29 +139,29 @@ module frontend (
           IP=IP+16;
       end
       if (|jretire[0] && except) begin
-        tbuf[0][IP[12:4]]={retSRCIP[63:13],retIP[0][63:13]};
+        tbuf[0][IP[12:4]]={retSRCIP[63:13],retIP[0][0][63:13]};
           if (jmispred) begin
               if ($random()&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b1;
               if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b1;
               if ($random()&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b1;
               GHT<=retGHT;
               tbufl[retSRCIP[13:5]][0]={retJPR0,1'b1,retSRCIP,retIPA};
+              for(k=0;k<10;k++) IP<=jmptaken0[k] ? retIP[k] : retSRCIP + 32;
            end
       end else if (|jretire[1] && except) begin
-        tbuf[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
+        tbuf[1][IP[12:4]]={retSRCIP[63:13],retIP[0][1][63:13]};
           if (jmispred) begin
               if ($random()&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b10;
               if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b10;
               if ($random()&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b10;
               GHT<=retGHT;
               tbufl[retSRCIP[13:5]][1]={retJPR1,1'b1,retSRCIP,retIPB}
-          end
+              for (k=0;k<10;k++) IP<=jmptaken0[k] ? retIP[k] : retSRCIP + 32;
+         end
       end
   end
   bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
 
-  assign retIP[0]=jcond0[reti_reg];
-  assign retIP[1]=jcond1[reti_reg];
   generate
       genvar fu,fuB;
       genvar way;
@@ -171,7 +171,8 @@ module frontend (
       reg [31:0] insn_clopp;
       assign jretire[0][PHY]=&retire_reg[7:0] && cond(jcond0[reti_reg],funit[8].retFl[reti_reg][4:1]);
       assign jretire[1][PHY]=&retire_reg[9:0] && cond(jcond1[reti_reg],funit[10].retFl[reti_reg][4:1]);
-
+      assign retIP[0]=jcond0[reti_reg];
+      assign retIP[1]=jcond1[reti_reg];
       for(fu=0;fu<12;fu=fu+1) begin : funit
           reg [63:0][63:0] data_gen;
           reg [63:0][63:0] data_fp;
