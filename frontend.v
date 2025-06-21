@@ -124,7 +124,18 @@ module frontend (
   assign iscall=jen[0] && tbuf[0][83] || jen[1] && tbuf[1][83];
   assign isret=jen[0] && tbuf[0][84] || jen[1] && tbuf[1][84];
   assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
-  always @(posedge clk) begin
+  bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
+
+  generate
+      genvar fu,fuB;
+      genvar way;
+      genvar line;
+      genvar PHY;
+    for(PHY=0;PHY<10;PHY=PHY+1) begin : phy
+      reg [31:0] insn_clopp;
+      assign jretire[0][PHY]=&retire_reg[7:0] && cond(jcond0[reti_reg],funit[8].retFl[reti_reg][4:1]);
+      assign jretire[1][PHY]=&retire_reg[9:0] && cond(jcond1[reti_reg],funit[10].retFl[reti_reg][4:1]);
+      always @(posedge clk) begin
       if (rst) begin
           IP<=init_IP;
       end else if (&jen[1:0]) begin
@@ -139,38 +150,27 @@ module frontend (
           IP=IP+32;
       end
       if (|jretire[0] && except) begin
-        tbuf[0][IP[12:4]]={retSRCIP[63:13],retIP[0][0][63:13]};
+        tbuf[0][IP[12:4]]={retSRCIP[63:13],retIP[0][63:13]};
           if (jmispred) begin
               if ($random()&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b1;
               if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b1;
               if ($random()&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b1;
               GHT<=retGHT;
-              tbufl[retSRCIP[13:5]][0]={retJPR0,1'b1,retSRCIP,retIPA};
-              for(k=0;k<10;k++) IP<=jmptaken0[k] ? retIP[k] : retSRCIP + 32;
+              //tbufl[retSRCIP[13:5]][0]={retJPR0,1'b1,retSRCIP,retIPA};
+              IP<=jmptaken0 ? retIP[0] : retSRCIP + 32;
            end
       end else if (|jretire[1] && except) begin
-        tbuf[1][IP[12:4]]={retSRCIP[63:13],retIP[0][1][63:13]};
+        tbuf[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
           if (jmispred) begin
               if ($random()&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b10;
               if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b10;
               if ($random()&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b10;
               GHT<=retGHT;
-              tbufl[retSRCIP[13:5]][1]={retJPR1,1'b1,retSRCIP,retIPB}
-              for (k=0;k<10;k++) IP<=jmptaken0[k] ? retIP[k] : retSRCIP + 32;
+            //tbufl[retSRCIP[13:5]][1]={retJPR1,1'b1,retSRCIP,retIPB  };                 
+              IP<=jmptaken1 ? retIP[1] : retSRCIP + 32;
          end
       end
-  end
-  bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
-
-  generate
-      genvar fu,fuB;
-      genvar way;
-      genvar line;
-      genvar PHY;
-    for(PHY=0;PHY<10;PHY=PHY+1) begin : phy
-      reg [31:0] insn_clopp;
-      assign jretire[0][PHY]=&retire_reg[7:0] && cond(jcond0[reti_reg],funit[8].retFl[reti_reg][4:1]);
-      assign jretire[1][PHY]=&retire_reg[9:0] && cond(jcond1[reti_reg],funit[10].retFl[reti_reg][4:1]);
+      end
       assign retIP[0]=jcond0[reti_reg];
       assign retIP[1]=jcond1[reti_reg];
       for(fu=0;fu<12;fu=fu+1) begin : funit
