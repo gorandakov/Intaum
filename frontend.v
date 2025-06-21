@@ -48,7 +48,15 @@ module frontend (
     input isdbl;
     flconv=isdbl ? {din[63:62],din[60:0],din[0]} : {din[31:30],{2{~din[30]}},din[29:0],{2{din[0]}},28'b0};
   endfunction
+  function [65:0] fsconv;
+    input [63:0] din;
+    input [1:0] sel;
+    case (sel)
 
+      0: fsconv={2'b10,din[63:62],~din[62],din[61:1]};
+      1: fsconv={2'b10,din[63:62],din[59:30]};
+      default: fsconv={2'b10,din[63:0]}
+                                
   function is_wconfl;
       input [63:0] addr_aligned;
       input [4:0] flag_aligned;
