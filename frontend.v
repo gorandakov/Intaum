@@ -136,7 +136,7 @@ module frontend (
         //else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+16; end
       end else begin
-          IP=IP+16;
+          IP=IP+32;
       end
       if (|jretire[0] && except) begin
         tbuf[0][IP[12:4]]={retSRCIP[63:13],retIP[0][0][63:13]};
