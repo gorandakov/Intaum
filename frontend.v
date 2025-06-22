@@ -125,7 +125,7 @@ module frontend (
   always @(posedge clk) begin
       if (!ins_addr[0][42:37]) ins_addr[1]<=htlb[{ci,ins_addr[0][36:15]}];
       if (isret) glptr<=htlb[1<<24+sttop];
-      if (iscall) begin
+      if (iscall|irqload) begin
           htlb[1<<24+sttop+1]<=glptr;
           htlb[1<<24+sttop+257]<=lastIP+5;
       end
@@ -151,10 +151,7 @@ module frontend (
       assign jretire[1][PHY]=&retire_reg[9:0] && cond(jcond1[reti_reg],funit[10].retFl[reti_reg][4:1]);
       always @(posedge clk) begin
       if (irqload) begin
-          IP_save<=IP;
           IP<=irq_IP;
-      end else if (irqload_reg) begin
-          IP=IP_save;
       end else if (&jen[1:0]) begin
         if (pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
         else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; if (tbuf[1][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
