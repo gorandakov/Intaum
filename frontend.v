@@ -532,6 +532,8 @@ module frontend (
           always @* begin
                   wstall[PHY][fu]<=1'b0;
                   lderror<=64'b0;
+                  missus=0;
+                  miss=0;
                   for(ldi=0;ldi<64;ldi++) begin
                       if (is_wconfl(dreqmort[LDI_reg],dreqmort_flags[LDI_reg],dreqmort[ldi],dreqmort_flags[ldi]))
                           wstall[PHY][fu]<=1'b1;
@@ -539,12 +541,17 @@ module frontend (
                           lderror[ldi]<=1'b1;
                       if (!anyhitw_reg && is_store_reg && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
-                          missus[resX[16:11][PHY]=1;
+                          missus[resX[18:11][PHY]=1;
                       end
                       if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
-                          missus[res_reg[16:11]][PHY]=1;
+                          missus[res_reg[18:11]][PHY]=1;
                       end
+                  end
+                  missrs=0;
+                  for(ldi=0;ldi<64;ldi++) begin
+                    if (!anyhitw_reg && is_store_reg && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[resX[18:11]];
+                    if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[resX[18:11]];
                   end
           end
       end
