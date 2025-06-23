@@ -221,6 +221,9 @@ module frontend (
           reg [63:0][65:0] dreqdata;
           reg [63:0][5:0] dreqmort_flags;
           reg [63:0][3:0] dreqdata_flags;
+          bit_find_index indexMiss(miss_reg2,index_miss,index_miss_has[fu]);
+          bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
+          assign interPHY_pfaff=missrs_reg4[dreqmort[index_miss_reg4][18:11]] && {10{index12m_idx=fu && (cntphy==1 || cntfirst==PHY)}};
           bit_find_index indexLSU_ALU(rdy[63:0][2]&rdy[63:0][1]&{64{~phy[PHY].funit[(fu+1)%12].is_mul_reg3}},indexFU,indexFU_has);
           bit_find_index indexLDU(rdy[63:0][0],indexLDU,indexLDU_has);
           bit_find_index indexAlloc(free,alloc[5:0],rT_en0);
@@ -373,6 +376,7 @@ module frontend (
               rTMem<={fu,rdyM[indexLSU_ALU]};
               opcode<=data_op[indexLSU_ALU];
               opcodex<=data_op[indexLDU];
+              if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
               if (except) begin 
                   rTT<=rTTB;
                   rTTE<='1;
