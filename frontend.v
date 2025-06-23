@@ -577,8 +577,8 @@ module frontend (
              end
              for(fuB=0;fuB<12;fuB=fuB+1) begin : funit2
                 wire [65:-64] poo_mask;
-                assign poo_e[fuB]=cache_line[phy[PHY].funit[fuB].res[12:7]][line][phy[PHY].funit[fuB].res[6:3]]>>(phy[PHY].funit[fuB].res[2:0]*8)<<(phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(phy[PHY].funit[fuB].ldsizes[2:0]*8);
-                assign poo_c[fuB]=cache_line[IP[12:7]][line][IP[6:3]][40*fuB+:40];
+               assign poo_e[fuB]=line_data[phy[PHY].funit[fuB].res[6:3]]>>(phy[PHY].funit[fuB].res[2:0]*8)<<(64-phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(64-phy[PHY].funit[fuB].ldsizes[2:0]*8);
+               assign poo_c[66*fuB+:66]=line_data[IP[8:5]];
                 assign poo_mask=(130'h3ffff_ffff_ffff_ffff<<(phy[PHY].funit[fuB].ldsize_reg[2:0]*8))&{phy[PHY].funit[fuB].resX[65],65'h1ffff_ffff_ffff_ffff};
                 if (line==0) assign pppoe[fuB]=tag[51]&&tag[18:0][phy[PHY].funit[fuB].res[6]]=={res[31:26],res[25:13]} ? poo_e_reg && poo_mask_reg[65:0] : 'z;
                 if (line==1) assign anyhit[fuB][way]==tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
