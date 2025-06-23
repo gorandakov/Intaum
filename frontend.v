@@ -241,6 +241,9 @@ module frontend (
           assign res_cloop0=cond_tru_reg && cond_xtru_reg && clres;
           assign res_cloop1=cond_tru_reg && cond_xtru_reg && clres2;
           assign res_cloop2=cond_tru_reg && cond_xtru_reg && clres3;
+          assign res_loop0=clres;
+          assign res_loop1=clres2;
+          assign res_loop2=clres3;
 
           assign rT_en=opcode[5] && rT_en0;
           assign ldsize=1<<opcode[9:8]-1;
