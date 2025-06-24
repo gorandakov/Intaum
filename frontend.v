@@ -142,7 +142,7 @@ module frontend (
 
   generate
       genvar fu,fuB;
-      genvar way;
+      genvar way,way2;
       genvar line;
       genvar PHY;
     for(PHY=0;PHY<10;PHY=PHY+1) begin : phy
@@ -560,31 +560,44 @@ module frontend (
           end
       end
       reg [9:0][38:0] tr;
+      reg wway,hway,vway;
+      for(way2=0;way2<8;way2=way2+1) begin
+        if (insert_en && cache_way[way2].cache_line[insetr_addr[5:0]].tag[insetr_addr[6]]==insetr_addr[36:6]) 
+                  wway=1;
+        if (inserth_en && cache_way[way2].cache_line[insetrh_addr[5:0]].tag[insetrh_addr[6]]==insetrh_addr[36:6]) 
+                  hway=1;
+        if (insertv_en && cache_way[way2].cache_line[insetrv_addr[5:0]].tag[insetrv_addr[6]]==insetrv_addr[36:6]) 
+                  vway=1;
+      end
       for(way=0;way<8;way=way+1) begin : cache_way
           wire [11:0][65:0] poo_e;
+
         for(line=0;line<64;line=line+1) begin : cache_line
           reg [15:0][65:0] line_data;
           reg [1:0][52:0] tag;
              assign poo_c2[fuB]=cache_line[IP[12:7]][line][IP[6:3]][40*12+:32];
+             always @(posedge clk) begin
+                if (way==0) wway=0;
                 if (line==expaddr[5:0] && expen)
                   tag[expaddr[expaddr[6]][67:66]<=0;
-                if (way==random && insert_en) begin
+                if (way==random && insert_en && !wway) begin
                  if (line==insetr_addr[5:0]) begin
-                     tag[insetr_addr[6]]<={insetr_wrtable,1'b1,inser_addr[42:7]};
+                   tag[insetr_addr[6]]<={insetr_wrtable,1'b1,insetr_addr[36:7]};
                      line[8*insetr_addr[6]+:8]<=insetr_daata;
                  end
-             end
-             if (way==random && inserth_en) begin
+                end
+                      if (way==random && inserth_en && !hway) begin
                  if (line==insetrh_addr[5:0]) begin
                      tag[insetrh_addr[6]]<={insetr_wrtableh,1'b1,inser_addrh[42:7]};
                      line[8*insetr_addrh[6]+:8]<=insetr_daatah;
                  end
              end
-             if (way==random && insertv_en) begin
+                      if (way==random && insertv_en && !vway) begin
                  if (line==insetr_addrv[5:0]) begin
                      tag[insetr_addrv[6]]<={insetr_wrtablev,1'b1,inser_addrv[42:7]};
                      line[8*insetr_addrv[6]+:8]<=insetr_daatav;
                  end
+             end
              end
              for(fuB=0;fuB<12;fuB=fuB+1) begin : funit2
                 wire [65:-64] poo_mask;
