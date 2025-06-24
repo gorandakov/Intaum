@@ -166,9 +166,9 @@ module frontend (
       if (|jretire[0] && except) begin
         tbuf[0][IP[12:4]]={retSRCIP[63:13],retIP[0][63:13]};
           if (jmispred) begin
-              if ($random()&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b1;
-              if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b1;
-              if ($random()&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b1;
+              if (random&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b1;
+              if (random&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b1;
+              if (random&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b1;
               GHT<=retGHT;
               //tbufl[retSRCIP[13:5]][0]={retJPR0,1'b1,retSRCIP,retIPA};
               IP<=jmptaken0 ? retIP[0] : retSRCIP + 32;
@@ -176,9 +176,9 @@ module frontend (
       end else if (|jretire[1] && except) begin
         tbuf[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
           if (jmispred) begin
-              if ($random()&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b10;
-              if ($random()&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b10;
-              if ($random()&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b10;
+              if (random&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b10;
+              if (random&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b10;
+              if (random&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b10;
               GHT<=retGHT;
             //tbufl[retSRCIP[13:5]][1]={retJPR1,1'b1,retSRCIP,retIPB  };                 
               IP<=jmptaken1 ? retIP[1] : retSRCIP + 32;
@@ -568,19 +568,19 @@ module frontend (
              assign poo_c2[fuB]=cache_line[IP[12:7]][line][IP[6:3]][40*12+:32];
                 if (line==expaddr[5:0] && expen)
                   tag[expaddr[expaddr[6]][67:66]<=0;
-                if (way==$random() && insert_en) begin
+                if (way==random && insert_en) begin
                  if (line==insetr_addr[5:0]) begin
                      tag[insetr_addr[6]]<={insetr_wrtable,1'b1,inser_addr[42:7]};
                      line[8*insetr_addr[6]+:8]<=insetr_daata;
                  end
              end
-             if (way==$random() && inserth_en) begin
+             if (way==random && inserth_en) begin
                  if (line==insetrh_addr[5:0]) begin
                      tag[insetrh_addr[6]]<={insetr_wrtableh,1'b1,inser_addrh[42:7]};
                      line[8*insetr_addrh[6]+:8]<=insetr_daatah;
                  end
              end
-             if (way==$random() && insertv_en) begin
+             if (way==random && insertv_en) begin
                  if (line==insetr_addrv[5:0]) begin
                      tag[insetr_addrv[6]]<={insetr_wrtablev,1'b1,inser_addrv[42:7]};
                      line[8*insetr_addrv[6]+:8]<=insetr_daatav;
