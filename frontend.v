@@ -139,6 +139,33 @@ module frontend (
   assign isret=jen[0] && tbuf[0][84] || jen[1] && tbuf[1][84];
   assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
   bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
+    tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
+      XH_intf_in, 
+      XH_intf_out,
+      index12mO_has_hfirst,
+      in12mO_datum, 
+      in12mO_addr,
+      in12mO_size,//{shared,exclusive,phymsk}
+      wrtXH_stall,
+      insetrh_data,
+      insetrh_addr,
+      {insetrh_shared,insetrh_write,insetrh_phy},
+      insetrh_en,
+      shareX);
+    tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
+      XV_intf_in, 
+      XV_intf_out,
+      index12mO_has_vfirst,
+      in12mO_datum, 
+      in12mO_addr,
+      in12mO_size,//{shared,exclusive,phymsk}
+      wrtXV_stall,
+      insetrh_data,
+      insetrh_addr,
+      {insetrh_shared,insetrh_write,insetrh_phy},
+      insetrh_en,
+      shareX);
+
 
   generate
       genvar fu,fuB;
@@ -149,6 +176,7 @@ module frontend (
       reg [31:0] insn_clopp;
       assign jretire[0][PHY]=&retire_reg[7:0] && cond(jcond0[reti_reg],funit[8].retFl[reti_reg][4:1]);
       assign jretire[1][PHY]=&retire_reg[9:0] && cond(jcond1[reti_reg],funit[10].retFl[reti_reg][4:1]);
+     
       always @(posedge clk) begin
       if (irqload) begin
           IP<=irq_IP;
@@ -582,22 +610,28 @@ module frontend (
                   tag[expaddr[expaddr[6]][67:66]<=0;
                    if (way==random && insetr_en && !wway) begin
                    if (line==insetr_addr[5:0]) begin
-                     tag[insetr_addr[6]]<={insetr_wrtable,1'b1,insetr_addr[36:7]};
-                     line_data[8*insetr_addr[6]+:8]<=insetr_daata;
+                       tag[insetr_addr[6]]<={insetr_wrtable,1'b1,insetr_addr[36:7]};
+                       line_data[8*insetr_addr[6]+:8]<=insetr_daata;
+                       expun_data<=line_data[8*insetr_addrh[6]+:8];
+                       expun_tag<=tag[insetrh_addr[6]];
                    end
                  end
                 if (way==random && insetrh_en && !hway) begin
-                 if (line==insetrh_addr[5:0]) begin
-                   tag[insetrh_addr[6]]<={insetr_wrtableh,1'b1,inser_addrh[36:7]};
-                   line_data[8*insetr_addrh[6]+:8]<=insetr_daatah;
-                 end
+                  if (line==insetrh_addr[5:0] && instetrh_phy[PHY]) begin
+                      tag[insetrh_addr[6]]<={insetr_wrtableh,1'b1,inser_addrh[36:7]};
+                      expunH_data<=line_data[8*insetr_addrh[6]+:8];
+                      expunH_tag<=tag[insetrh_addr[6]];
+                      line_data[8*insetr_addrh[6]+:8]<=insetr_daatah;
+                  end
                 end
-      /*                if (way==random && insertv_en && !vway) begin
-                 if (line==insetr_addrv[5:0]) begin
-                     tag[insetr_addrv[6]]<={insetr_wrtablev,1'b1,inser_addrv[42:7]};
-                     line[8*insetr_addrv[6]+:8]<=insetr_daatav;
+                if (way==random && insertv_en && !vway) begin
+                  if (line==insetr_addrv[5:0] && instetrv_phy[PHY]) begin
+                      tag[insetr_addrv[6]]<={insetr_wrtablev,1'b1,inser_addrv[36:7]};
+                      line_data[8*insetr_addrv[6]+:8]<=insetr_daatav;
+                      expunV_data<=line_data[8*insetr_addrh[6]+:8];
+                      expunV_tag<=tag[insetrh_addr[6]];
                  end
-             end*/
+             end
              end
              for(fuB=0;fuB<12;fuB=fuB+1) begin : funit2
                 wire [65:-64] poo_mask;
