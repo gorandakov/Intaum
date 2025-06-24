@@ -12,13 +12,13 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   input [1:0][`wrreq_size:0] X_intf_in, 
   output [1:0][`wrreq_size:0] X_intf_out,
   input in_en,
-  input [73:0] in_datum, 
-  input [42:0] in_addr,
-  input [39:0] insize,
+  input [66*8-1:0] in_datum, 
+  input [36:0] in_addr,
+  input [11:0] insize,//{shared,exclusive,phymsk}
   output wrt_stall,
-  output [73:0] reqmort_data,
-  output [42:0] reqmortaddr,
-  output [39:0] reqmort_size,
+  output [66*8-1:0] reqmort_data,
+  output [36:0] reqmortaddr,
+  output [11:0] reqmort_size,
   input outen,
   inout [5:0] shareX);
 
