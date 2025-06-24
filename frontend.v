@@ -117,6 +117,11 @@ module frontend (
           end
       end
   end
+generate
+  genvar tile_X,tile_Y;
+  for(tile_X=0;tile_X<5;tile_X=tile_X+1) 
+  for(tile_Y=0;tile_Y<5;tile_Y=tile_Y+1) begin : HV
+    
   reg [15:0][9:0] rTT;
   reg [65535:0][1:0] predA;
   reg [65535:0][1:0] predB;
@@ -140,8 +145,8 @@ module frontend (
   assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
   bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
     tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
-      XH_intf_in, 
-      XH_intf_out,
+      XH_intf_in[tile_X], 
+      XH_intf_out[tile_X],
       index12mO_has_hfirst,
       in12mO_datum, 
       in12mO_addr,
@@ -153,8 +158,8 @@ module frontend (
       insetrh_en,
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
-      XV_intf_in, 
-      XV_intf_out,
+      XV_intf_in[tile_Y], 
+      XV_intf_out[tile_Y],
       index12mO_has_vfirst,
       in12mO_datum, 
       in12mO_addr,
@@ -165,9 +170,33 @@ module frontend (
       {insetrh_shared,insetrh_write,insetrh_phy},
       insetrh_en,
       shareX);
-
-
-  generate
+    tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
+      XH_intf_in[tile_X], 
+      XH_intf_out[tile_X],
+      index12mO_has_hfirst,
+      in12mO_datum, 
+      in12mO_addr,
+      in12mO_size,//{shared,exclusive,phymsk}
+      wrtXH_stall,
+      insetrv_data,
+      insetrv_addr,
+      {insetrv_shared,insetrv_write,insetrv_phy},
+      insetrv_en,
+      shareX);
+    tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
+      XV_intf_in[tile_Y], 
+      XV_intf_out[tile_Y],
+      index12mO_has_vfirst,
+      in12mO_datum, 
+      in12mO_addr,
+      in12mO_size,//{shared,exclusive,phymsk}
+      wrtXV_stall,
+      insetrv_data,
+      insetrv_addr,
+      {insetrv_shared,insetrv_write,insetrv_phy},
+      insetrv_en,
+      shareX);
+  
       genvar fu,fuB;
       genvar way,way2;
       genvar line;
@@ -655,5 +684,6 @@ module frontend (
           end
       end
     end
+    end //multicore loop
   endgenerate
 endmodule
