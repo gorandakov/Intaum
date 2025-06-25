@@ -561,8 +561,8 @@ generate
                     rTTNewm[INSI]<=alloc2;
                     rTTe[alloc2][0]<=1'b1;
                     if (instr[34]) begin
-                        rTT[insn_cloop[4]&&~|instr[7:6],instr_clopp[14],instr[7:4]]<=alloc;
-                      rTTOld[INSI]<=rTT[insn_cloop[4]&&~|instr[7:6],instr_clopp[14],instr[7:4]];
+                      rTT[insn_cloop[4]&&~|instr[7:6],instr_clopp[24],instr[7:4]]<=alloc;
+                        rTTOld[INSI]<=rTT[insn_cloop[4]&&~|instr[7:6],instr_clopp[24],instr[7:4]];
                         rTTNew[INSI]<=alloc;
                         rTTe[alloc][0]<=1;
                     end
@@ -574,7 +574,7 @@ generate
                        rTTe[alloc][0]<=1'b1;
                   end
                    data_retFL[INSI]<=1;
-                   rdyA[alloc]<=rTT[insn_cloop[4]&&~|instr[7:6],instr_clopp[14],instr[7:4]];
+                   rdyA[alloc]<=rTT[insn_cloop[4]&&~|instr[7:6],instr[39:38]==2 ? instr_clopp [24] : instr_clopp[14],instr[7:4]];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && funit[fuZ].instr[39:38]==2)
                        rdyA<=funit[fuZ].alloc2;
