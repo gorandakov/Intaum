@@ -122,7 +122,7 @@ generate
   for(tile_X=0;tile_X<5;tile_X=tile_X+1) 
   for(tile_Y=0;tile_Y<5;tile_Y=tile_Y+1) begin : HV
     
-  reg [15:0][9:0] rTT;
+  reg [38:0][9:0] rTT;
   reg [65535:0][1:0] predA;
   reg [65535:0][1:0] predB;
   reg [65535:0][1:0] predC;
@@ -556,32 +556,32 @@ generate
                       end
                   end
                   if (instr[39:38]==2) begin
-                    rTT[insn_cloop[4]&&~|instr[3:2],instr[3:0]]<=alloc2;
-                    rTTOldm[INSI]<=rTT[insn_cloop[4]&&~|instr[3:2]instr[3:0]];
+                    rTT[insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]]<=alloc2;
+                    rTTOldm[INSI]<=rTT[insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]];
                     rTTNewm[INSI]<=alloc2;
                     rTTe[alloc2][0]<=1'b1;
                     if (instr[34]) begin
-                        rTT[insn_cloop[4]&&~|instr[7:6],instr[7:4]]<=alloc;
-                        rTTOld[INSI]<=rTT[insn_cloop[4]&&~|instr[7:6],instr[7:4]];
+                        rTT[insn_cloop[4]&&~|instr[7:6],instr_clopp[14],instr[7:4]]<=alloc;
+                      rTTOld[INSI]<=rTT[insn_cloop[4]&&~|instr[7:6],instr_clopp[14],instr[7:4]];
                         rTTNew[INSI]<=alloc;
                         rTTe[alloc][0]<=1;
                     end
                   end
                   if (~^instr[39:38]) begin
-                       rTT[insn_cloop[4]&&~|instr[3:2],instr[3:0]]<=alloc;
-                       rTTOld[INSI]<=rTT[insn_cloop[4]&&~|instr[3:2],instr[3:0]];
+                       rTT[insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]]<=alloc;
+                       rTTOld[INSI]<=rTT[insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]];
                        rTTNew[INSI]<=alloc;
                        rTTe[alloc][0]<=1'b1;
                   end
                    data_retFL[INSI]<=1;
-                   rdyA[alloc]<=rTT[instr[7:4]];
+                   rdyA[alloc]<=rTT[insn_cloop[4]&&~|instr[7:6],instr_clopp[14],instr[7:4]];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && funit[fuZ].instr[39:38]==2)
                        rdyA<=funit[fuZ].alloc2;
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && ~^funit[fuZ].instr[39:38])
                        rdyA<=funit[fuZ].alloc;
                    end
-                   rdyB[alloc]<=rTT[instr[11:8]];
+                   rdyB[alloc]<=rTT[insn_cloop[4]&&~|instr[11:10],instr_clopp[14],instr[11:8]];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[11:8] && funit[fuZ].instr[39:38]==2)
                        rdyB<=funit[fuZ].alloc2;
