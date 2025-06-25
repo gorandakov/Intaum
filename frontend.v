@@ -147,6 +147,8 @@ generate
     tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
       XH_intf_in[tile_X], 
       XH_intf_out[tile_X],
+      AXH_intf_in[tile_X], 
+      AXH_intf_out[tile_X],
       expun_addr_reg[37]&~random[0],
       expun_data_reg, 
       expun_addr_reg,
@@ -156,10 +158,14 @@ generate
       insetrh_addr,
       {insetrh_shared,insetrh_write,insetrh_phy},
       insetrh_en,
+      missx_en,
+      missx_addr,
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
       XV_intf_in[tile_Y], 
       XV_intf_out[tile_Y],
+      AXV_intf_in[tile_X], 
+      AXV_intf_out[tile_X],
       expun_addr_reg[37]&random[0],
       expun_data_reg, 
       expun_addr_reg,
@@ -169,10 +175,13 @@ generate
       insetrh_addr,
       {insetrh_shared,insetrh_write,insetrh_phy},
       insetrh_en,
+      0,0,
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
       XH_intf_in[tile_X], 
       XH_intf_out[tile_X],
+      AXH_intf_in[tile_X], 
+      AXH_intf_out[tile_X],
       expunh_addr_reg[37],
       expunh_data_reg, 
       expunh_addr_reg,
@@ -181,11 +190,13 @@ generate
       insetrv_data,
       insetrv_addr,
       {insetrv_shared,insetrv_write,insetrv_phy},
-      insetrv_en,
+      insetrv_en,0,0,
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
       XV_intf_in[tile_Y], 
       XV_intf_out[tile_Y],
+      AXV_intf_in[tile_X], 
+      AXV_intf_out[tile_X],
       expunv_addr_reg[37],
       expunv_data_reg, 
       expunv_addr_reg,
@@ -194,7 +205,7 @@ generate
       insetrv_data,
       insetrv_addr,
       {insetrv_shared,insetrv_write,insetrv_phy},
-      insetrv_en,
+      insetrv_en,0,0,
       shareX);
   
       genvar fu,fuB;
