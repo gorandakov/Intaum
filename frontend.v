@@ -147,10 +147,10 @@ generate
     tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
       XH_intf_in[tile_X], 
       XH_intf_out[tile_X],
-      index12mO_has_hfirst,
-      in12mO_datum, 
-      in12mO_addr,
-      in12mO_size,//{shared,exclusive,phymsk}
+      expun_addr_reg[37]&~random[0],
+      expun_data_reg, 
+      expun_addr_reg,
+      {expun_addr_reg[38:37],expun_phy_reg},
       wrtXH_stall,
       insetrh_data,
       insetrh_addr,
@@ -160,10 +160,10 @@ generate
     tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
       XV_intf_in[tile_Y], 
       XV_intf_out[tile_Y],
-      index12mO_has_vfirst,
-      in12mO_datum, 
-      in12mO_addr,
-      in12mO_size,//{shared,exclusive,phymsk}
+      expun_addr_reg[37]&random[0],
+      expun_data_reg, 
+      expun_addr_reg,
+      {expun_addr_reg[38:37],expun_phy_reg},
       wrtXV_stall,
       insetrh_data,
       insetrh_addr,
@@ -173,10 +173,10 @@ generate
     tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
       XH_intf_in[tile_X], 
       XH_intf_out[tile_X],
-      index12mO_has_hfirst,
-      in12mO_datum, 
-      in12mO_addr,
-      in12mO_size,//{shared,exclusive,phymsk}
+      expunh_addr_reg[37],
+      expunh_data_reg, 
+      expunh_addr_reg,
+      {expunh_addr_reg[38:37],expunh_phy_reg},
       wrtXH_stall,
       insetrv_data,
       insetrv_addr,
@@ -186,10 +186,10 @@ generate
     tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
       XV_intf_in[tile_Y], 
       XV_intf_out[tile_Y],
-      index12mO_has_vfirst,
-      in12mO_datum, 
-      in12mO_addr,
-      in12mO_size,//{shared,exclusive,phymsk}
+      expunv_addr_reg[37],
+      expunv_data_reg, 
+      expunv_addr_reg,
+      {expunv_addr_reg[38:37],expunv_phy_reg},
       wrtXV_stall,
       insetrv_data,
       insetrv_addr,
