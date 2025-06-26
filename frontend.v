@@ -330,8 +330,8 @@ generate
           assign opand=opcode[7:5]!=0;
           assign jindir=fu!=10 && !opcode[10];
           assign dataA[31:0]=phy[PHY].funit[rA[9:6]].data_gen[rA[5:0]][31:0] & {32{opand}};
-          assign dataB[31:0]=opcode[11] ? dataBI[19:10] : phy[PHY].funit[rB[9:6]].data_gen[rB[5:0]][31:0];
-          assign dataBI[31:0]=opcode[11] ?phy[PHY].funit[rT[9:6]].data_imm[rT[5:0]][9:0]*(data_phy+1): phy[PHY].funit[rT[9:6]].data_imm[rT[5:0]][31:0]*(data_phy+1);
+          assign dataB[31:0]=opcode[11] ? dataBI[19:10] + data_BI[9:0]*(data_phy): phy[PHY].funit[rB[9:6]].data_gen[rB[5:0]][31:0];
+          assign dataBI[31:0]=opcode[11] ?phy[PHY].funit[rT[9:6]].data_imm[rT[5:0]][9:0]*(data_phy): phy[PHY].funit[rT[9:6]].data_imm[rT[5:0]][31:0]*(data_phy+1);
           assign data_phy[31:0]=phy[PHY].funit[rT[9:6]].data_imm_phy[rT[5:0]][31:0];
           assign dataBX[31:0]=phy[PHY].funit[rBX[9:6]].data_gen[rBX[5:0]][31:0];
           assign dataA[63:32]=phy[PHY].funit[rA_reg[9:6]].data_gen[rA_reg[5:0]][63:32] & {34{opand_reg}};
