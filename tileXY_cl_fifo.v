@@ -11,6 +11,8 @@
 module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   input [1:0][`wrreq_size:0] X_intf_in, 
   output [1:0][`wrreq_size:0] X_intf_out,
+  input [1:0][`wrAreq_size:0] X_intf_in, 
+  output [1:0][`wrAreq_size:0] X_intf_out,
   input in_en,
   input [66*8-1:0] in_datum, 
   input [36:0] in_addr,
@@ -20,6 +22,9 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   output [36:0] reqmortaddr,
   output [11:0] reqmort_size,
   input outen,
+  input [2:0] missue_en,
+  input [2:0][38:0] missue_addr,
+  input [2:0][9:0] missue_phy,
   inout [5:0] shareX);
 
   wire [`wrreq_size-1:0] wrreq;
