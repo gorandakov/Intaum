@@ -3,10 +3,21 @@
 `define wrreq_YDONE 593
 `define wrreq_TX 598:594
 `define wrreq_TY 603:599
-`define wrreq_sz 643:604
-`define wrreq_addr 677:645
-`define wrreq_size 678
-`define wrreq_extra 678
+`define wrreq_sz 615:604
+`define wrreq_addr 652:616
+`define wrreq_size 653
+`define wrreq_extra 654
+
+`define wrAreq_data 73:0
+`define wrAreq_XDONE 74
+`define wrAreq_YDONE 75
+`define wrAreq_TX 80:76
+`define wrAreq_TY 85:81
+`define wrAreq_sz 87:86
+`define wrAreq_addr 120:88
+`define wrAreq_snd 121
+`define wrAreq_size 122
+`define wrAreq_extra 123
 
 module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   input [1:0][`wrreq_size:0] X_intf_in, 
