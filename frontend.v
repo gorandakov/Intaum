@@ -637,7 +637,7 @@ generate
       end
       reg [9:0][38:0] tr;
       reg wway,hway,vway;
-      for(way2=0;way2<8;way2=way2+1) begin
+      for(way2=0;way2<8;way2=way2+1) always @* begin
         if (insert_en && cache_way[way2].cache_line[insetr_addr[5:0]].tag[insetr_addr[6]]==insetr_addr[36:6]) 
                   wway=1;
         if (inserth_en && cache_way[way2].cache_line[insetrh_addr[5:0]].tag[insetrh_addr[6]]==insetrh_addr[36:6]) 
@@ -655,7 +655,7 @@ generate
              always @(posedge clk) begin
                 if (way==0) wway=0;
                 if (line==expaddr[5:0] && expen)
-                  tag[expaddr[expaddr[6]][67:66]<=0;
+                  tag[expaddr[6]][67:66]<=0;
                    if (way==random && insetr_en && !wway) begin
                    if (line==insetr_addr[5:0]) begin
                        tag[insetr_addr[6]]<={insetr_wrtable,1'b1,insetr_addr[36:7]};
@@ -683,19 +683,20 @@ generate
              end
              for(fuB=0;fuB<12;fuB=fuB+1) begin : funit2
                 wire [65:-64] poo_mask;
-               assign poo_e[fuB]=line_data[phy[PHY].funit[fuB].res[6:3]]>>(phy[PHY].funit[fuB].res[2:0]*8)<<(56-phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(56-phy[PHY].funit[fuB].ldsizes[2:0]*8);
-               assign poo_c[66*fuB+:66]=line_data[IP[8:5]];
+                integer byte_;
+                assign poo_e[fuB]=line_data[phy[PHY].funit[fuB].res[6:3]]>>(phy[PHY].funit[fuB].res[2:0]*8)<<(56-phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(56-phy[PHY].funit[fuB].ldsizes[2:0]*8);
+                assign poo_c[66*fuB+:66]=line_data[IP[8:5]];
                 assign poo_mask=(130'h3ffff_ffff_ffff_ffff<<(phy[PHY].funit[fuB].ldsize_reg[2:0]*8))&{phy[PHY].funit[fuB].resX[65],65'h1ffff_ffff_ffff_ffff};
                 if (line==0) assign pppoe[fuB]=tag[51]&&tag[18:0][phy[PHY].funit[fuB].res[6]]=={res[31:26],res[25:13]} ? poo_e_reg && poo_mask_reg[65:0] : 'z;
-                if (line==1) assign anyhit[fuB][way]==tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
-                if (line==3) assign anyhitW[fuB][way]==tag[52]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
+                if (line==1) assign anyhit[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
+                if (line==3) assign anyhitW[fuB][way]=tag[52]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
               //  if (line==4) assign tlbhit=tr_reg[phy[PHY].funit[fuB].resX[31:22]][37:6]==phy[PHY].funit[fuB].resX[63:37] && tr_reg[phy[PHY].funit[fuB].resX[31:22]][38];
                 always @(posedge clk) begin
                   if (fuB==3 || fuB==7 || fuB==5 || fuB==11)
-                    for (byte=0;byte<8;byte=byte+1)
-                      if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[12:7]==line[5:0] && byte<phy[PHY].funit[fuB].is_write_size_reg); 
-                  line_data[phy[PHY].funit[fuB].resW[6:3]][8*(byte+phy[PHY].funit[fuB].resW[2:0])+:8]<=phy[PHY].funit[fuB].resWX[8*byte+:8];
-                //        if (][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte<phy[PHY].funit[fuB].is_write_size_reg &&
+                    for (byte_=0;byte_<8;byte_=byte_+1)
+                      if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[12:7]==line[5:0] && byte_<phy[PHY].funit[fuB].is_write_size_reg); 
+                  line_data[phy[PHY].funit[fuB].resW[6:3]][8*(byte_+phy[PHY].funit[fuB].resW[2:0])+:8]<=phy[PHY].funit[fuB].resWX[8*byte_+:8];
+                //        if (][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte_<phy[PHY].funit[fuB].is_write_size_reg &&
                 //            phy[PHY].funit[fuB].resX[63:9]=='1); 
                 //            line_data[line][phy[PHY].funit[fuB].resW[6:3]]<=phy[PHY].funit[fuB].resW[8*phy[PHY].funit[fuB].resW[2:0]+:8];
                 end
