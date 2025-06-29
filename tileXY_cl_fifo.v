@@ -23,8 +23,8 @@
 module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   input [1:0][`wrreq_size:0] X_intf_in, 
   output [1:0][`wrreq_size:0] X_intf_out,
-  input [1:0][`wrAreq_size:0] X_intf_in, 
-  output [1:0][`wrAreq_size:0] X_intf_out,
+  input [1:0][`wrAreq_size:0] XA_intf_in, 
+  output [1:0][`wrAreq_size:0] XA_intf_out,
   input in_en,
   input [66*8-1:0] in_datum, 
   input [36:0] in_addr,
@@ -135,13 +135,18 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   end
  // assign outen=&shareX || |match_overflow_begin&(~(sharX[IDX+3]));
 
-  assign wrAreq[`wrAreq_data]=in_datum;
+  assign wrAreq[`wrAreq_data]=missue0[missue_idx_first];
   assign wrAreq[`wrAreq_XDONE]=IDX<2;
   assign wrAreq[`wrAreq_YDONE]=IDX>=2;
-  assign wrAreq[`wrAreq_TX]=in_addr_reg[37:33];
-  assign wrAreq[`wrAreq_TY]=in_addr_reg[42:38];
-  assign wrAreq[`wrAreq_addr]=in_addr_reg[32:0];
-  assign wrAreq[`wrAreq_sz]=in_size_reg;
+  assign wrAreq[`wrAreq_TX]=missue0[missue_idx_first][35:31];
+  assign wrAreq[`wrAreq_TY]=missue0[missue_idx_first][36:32];
+ // assign wrAreq[`wrAreq_addr]=in_addr_reg[32:0];
+  assign wrAreq[`wrAreq_sz]=missue0_phy[missue_idx_first];
+
+  assign missue0[2:0]=missue;
+  assign missue0_en[2:0]=missue_en;
+  assign missue0[3]=Aqueue[0][Aqposr0];
+  assign missue0_en[3]=Aqposr0!=Aqpos0;
 
   assign XA_intf_out[0][`wrAreq_size-1:0]=inA_en_reg & backA ? wrAreq : queueA[0][Aqposr0];
   assign XA_intf_out[1][`wrAreq_size-1:0]=inA_en_reg & fwdA ? wrAreq : queueA[1][Aqposr1];
