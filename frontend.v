@@ -55,8 +55,9 @@ module frontend (
 
       0: fsconv={2'b10,din[63:62],~din[62],din[61:1]};
       1: fsconv={2'b10,din[63:62],din[59:30]};
-      default: fsconv={2'b10,din[63:0]}
-                                
+      default: fsconv={2'b10,din[63:0]};
+    endcase
+  endfunction               
   function is_wconfl;
       input [63:0] addr_aligned;
       input [4:0] flag_aligned;
@@ -116,7 +117,7 @@ module frontend (
                 addition_check=0;
           end
       end
-  end
+  endfunction
 generate
   genvar tile_X,tile_Y;
   for(tile_X=0;tile_X<5;tile_X=tile_X+1) 
@@ -136,7 +137,7 @@ generate
       end
   end
     
-  assign pred_en=predA[IP[17:5],GHT[1:0]]^predB[IP[12:5],GHT[7:0]]^predC[IP[6:5],GHT[13:0]]||ucjmp;
+  assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
   assign tbuf=tbufl[IP[13:5]];
   assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
   assign jen[1]=tbuf[1][43] && IP[42:4]==tbuf[1][82:44];
@@ -239,9 +240,9 @@ generate
       if (|jretire[0] && except) begin
         tbuf[0][IP[12:4]]={retSRCIP[63:13],retIP[0][63:13]};
           if (jmispred) begin
-              if (random&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b1;
-              if (random&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b1;
-              if (random&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b1;
+              if (random&3==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b1;
+              if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b1;
+              if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b1;
               GHT<=retGHT;
               //tbufl[retSRCIP[13:5]][0]={retJPR0,1'b1,retSRCIP,retIPA};
               IP<=jmptaken0 ? retIP[0] : retSRCIP + 32;
@@ -249,9 +250,9 @@ generate
       end else if (|jretire[1] && except) begin
         tbuf[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
           if (jmispred) begin
-              if (random&0x3==0x3) predA[retSRCIP[13:0],retGHT[1:0]]~=2'b10;
-              if (random&0xf==0xf) predB[retSRCIP[7:0],retGHT[7:0]]~=2'b10;
-              if (random&0xff==0xff) predC[retSRCIP[1:0],retGHT[13:0]]~=2'b10;
+              if (random&3==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b10;
+              if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b10;
+              if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b10;
               GHT<=retGHT;
             //tbufl[retSRCIP[13:5]][1]={retJPR1,1'b1,retSRCIP,retIPB  };                 
               IP<=jmptaken1 ? retIP[1] : retSRCIP + 32;
@@ -298,7 +299,7 @@ generate
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
           assign missx_en[PHY]=index12m_idx_reg==fu;
           assign missx_addr[PHY]= fu==index12m_idx_reg ? funit[index12m_idx_reg].dreqmort[index_miss_reg3[index12m_idx_reg]] : 'z;
-          assign interPHY_pfaff=missrs_reg4[dreqmort[index_miss_reg4][18:11]] && {10{index12m_idx=fu && (cntphy==1 || cntfirst==PHY)}};
+          assign interPHY_pfaff=missrs_reg4[dreqmort[index_miss_reg4][18:11]] && {10{index12m_idx==fu && (cntphy==1 || cntfirst==PHY)}};
           bit_find_index indexLSU_ALU(rdy[63:0][2]&rdy[63:0][1]&{64{~phy[PHY].funit[(fu+1)%12].is_mul_reg3}},indexFU,indexFU_has);
           bit_find_index indexLDU(rdy[63:0][0],indexLDU,indexLDU_has);
           bit_find_index indexAlloc(free,alloc[5:0],rT_en0);
@@ -349,7 +350,7 @@ generate
           assign {c32,res[31:0]}=opcode[7:0]==0 && cond_tru && !dataBI[32] ?
           dataA[31:0]+dataB[31:0]^{32{dataBI[33]}}+dataBI[33] : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==0 && cond_tru_reg ?
-           {dataA[63]~!chk,dataA[63:32]}+{dataB[63],dataB[63:32]}^
+           {dataA[63],dataA[63:32]}+{dataB[63],dataB[63:32]}^
           {32{dataBI_reg[33]}}+(c32_reg) : 'z;
           assign {c32,res[31:0]}=(opcode[7:2]==1 || opcode[7:3]==1) 
                && cond_tru  ?
@@ -387,8 +388,8 @@ generate
           assign res_logic[63:32]=opcode_reg[2:1]==3 &~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? phy[(LOOPSTOP+dataBIX_reg[1:0])%4].dataA[63:32] 
               : 'z;
-          assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? {opcode_reg[2:1],dataBI_reg[18:0],dataA[42:32]};
-          assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? dataA[63:32];
+          assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? {opcode_reg[2:1],dataBI_reg[18:0],dataA[42:32]} : 'z;
+          assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? dataA[63:32] : 'z;
 
           assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
           assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
@@ -494,8 +495,8 @@ generate
               if (rT_en0_reg3 && opcode[7]) data_gen[rTMem_reg2[5:0]][31:0]<=pppoe_reg[31:0];
               if (rT_en0_reg3 && opcode[7:3]==3) data_gen[rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
               if (rT_en_reg2) data_gen[rT_reg2[5:0]][65:32]<={c64,s64,res[63:32]};
-              if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<=opcode_reg2[7:0]==1 && dataBI_reg2[22] ? {dataAF_reg[65:63],~|dataAF_reg[62:53]} : {c64,s64,res[63],~|resX[63:0]]};
-              if (rT_en_reg2) data_retFL[LQ_reg][3:0]<=opcode_reg2[7:5]==0 ? {dataAF[65:63],~|dataAF[62:53]} : {c64,s64,res[63],~|resX[63:0]],1'b0};
+              if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<=opcode_reg2[7:0]==1 && dataBI_reg2[22] ? {dataAF_reg[65:63],~|dataAF_reg[62:53]} : {c64|~chk,s64,res[63],~|resX[63:0]};
+              if (rT_en_reg2) data_retFL[LQ_reg][3:0]<=opcode_reg2[7:5]==0 ? {dataAF[65:63],~|dataAF[62:53]} : {c64|~chk,s64,res[63],~|resX[63:0],1'b0};
               if (rT_en_reg2 && opcode_reg2[10] && ~|opcode_reg2[7:6]) data_retFL[LQ_reg][3:0]<=opcode_reg2[9]==0 ? {res_loop0,res_loop2,res_loop2,res_loop1,1'b0} : {res_cloop0,res_cloop2,res_cloop2,res_cloop1,1'b0};
             if (rT_en_reg5 &&(opcode_reg4[7:6]=0 && opcode_reg4[4:0]==1 && dataBI_reg4[20])) data_fpu[rT_reg4[5:0]]<=dataBI_reg4[22] ? dataAF_reg2 : xaddres;
               if (rT_en_reg6 &&(opcode_reg5[7:6]=0 && opcode_reg5[4:0]==1 && dataBI_reg5[21])) data_fpu[rTMem_reg5[5:0]]<=xmulres;
@@ -520,7 +521,7 @@ generate
                   data_op[alloc][7:6]=instr[39:38];
                   if (&instr[39:38]) data_op[alloc][7:6]=2'b0;
                  if (instr[39:38]==2'b10 && instr[33]|instr[34]&~instr[12]) begin
-                   data_imm[alloc]=&instr[34:33] ? ret_cookie : {{41{instr[24]}}instr[24:14],instr[11:0]};
+                   data_imm[alloc]=&instr[34:33] ? ret_cookie : {{41{instr[24]}},instr[24:14],instr[11:0]};
                    data_op[alloc][11]<=instr[13]; //1=call 0=jump
                    data_cond[alloc]={instr[37:35],instr[32]};
                    data_cond2[alloc]=instr[31:28];
@@ -528,7 +529,7 @@ generate
                    if (instr[34:33]==2 && !instr[25]) data_imm[alloc]<=instr[1:0];
                    if (instr[25]) data_imm[alloc]<=0;
                    data_op[7:0] = instr[25] || instr[34:33]==2 ? 0 : op_movi;
-                  else if (^instr[39:38]) begin
+                  end else if (^instr[39:38]) begin
                       data_op[alloc][10:8]=instr[37:35];
                       data_op[alloc][5]=instr[34];
                       data_op[alloc][4:0]=5'b1;
@@ -558,32 +559,32 @@ generate
                       end
                   end
                   if (instr[39:38]==2) begin
-                    rTT[insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]]<=alloc2;
-                    rTTOldm[INSI]<=rTT[insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]];
+                    rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]}]<=alloc2;
+                    rTTOldm[INSI]<=rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]}];
                     rTTNewm[INSI]<=alloc2;
                     rTTe[alloc2][0]<=1'b1;
                     if (instr[34]) begin
-                      rTT[insn_cloop[4]&&~|instr[7:6],instr_clopp[24],instr[7:4]]<=alloc;
-                        rTTOld[INSI]<=rTT[insn_cloop[4]&&~|instr[7:6],instr_clopp[24],instr[7:4]];
+                      rTT[{insn_cloop[4]&&~|instr[7:6],instr_clopp[24],instr[7:4]}]<=alloc;
+                        rTTOld[INSI]<=rTT[{insn_cloop[4]&&~|instr[7:6],instr_clopp[24],instr[7:4]}];
                         rTTNew[INSI]<=alloc;
                         rTTe[alloc][0]<=1;
                     end
                   end
                   if (~^instr[39:38]) begin
-                       rTT[insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]]<=alloc;
-                       rTTOld[INSI]<=rTT[insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]];
+                       rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]}]<=alloc;
+                       rTTOld[INSI]<=rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]}];
                        rTTNew[INSI]<=alloc;
                        rTTe[alloc][0]<=1'b1;
                   end
                    data_retFL[INSI]<=1;
-                   rdyA[alloc]<=rTT[insn_cloop[4]&&~|instr[7:6],instr[39:38]==2 ? instr_clopp [24] : instr_clopp[14],instr[7:4]];
+                   rdyA[alloc]<=rTT[{insn_cloop[4]&&~|instr[7:6],instr[39:38]==2 ? instr_clopp [24] : instr_clopp[14],instr[7:4]}];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && funit[fuZ].instr[39:38]==2)
                        rdyA<=funit[fuZ].alloc2;
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && ~^funit[fuZ].instr[39:38])
                        rdyA<=funit[fuZ].alloc;
                    end
-                   rdyB[alloc]<=rTT[insn_cloop[4]&&~|instr[11:10],instr_clopp[14],instr[11:8]];
+                   rdyB[alloc]<=rTT[{insn_cloop[4]&&~|instr[11:10],instr_clopp[14],instr[11:8]}];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[11:8] && funit[fuZ].instr[39:38]==2)
                        rdyB<=funit[fuZ].alloc2;
@@ -605,7 +606,7 @@ generate
                        rdyFL2<=funit[fuZ].alloc;
                    end
                   rdy[alloc]<={1'b1,instr[39],1'b1,instr[32:27]==3,instr[39]};  
-                  data_op[alloc][12:11]=instr[13:12]
+                  data_op[alloc][12:11]=instr[13:12];
               end
           end
           always @* begin
@@ -620,7 +621,7 @@ generate
                           lderror[ldi]<=1'b1;
                       if (!anyhitw_reg && is_store_reg && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
-                          missus[resX[18:11][PHY]=1;
+                          missus[resX[18:11]][PHY]=1;
                       end
                       if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
