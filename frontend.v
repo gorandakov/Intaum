@@ -294,8 +294,10 @@ generate
           reg [63:0][65:0] dreqdata;
           reg [63:0][5:0] dreqmort_flags;
           reg [63:0][3:0] dreqdata_flags;
-          bit_find_index indexMiss(miss_reg2,index_miss,index_miss_has[fu]);
+          bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
+          assign missx_en[PHY]=index12m_idx_reg==fu;
+          assign missx_addr[PHY]= fu==index12m_idx_reg ? funit[index12m_idx_reg].dreqmort[index_miss_reg3[index12m_idx_reg]] : 'z;
           assign interPHY_pfaff=missrs_reg4[dreqmort[index_miss_reg4][18:11]] && {10{index12m_idx=fu && (cntphy==1 || cntfirst==PHY)}};
           bit_find_index indexLSU_ALU(rdy[63:0][2]&rdy[63:0][1]&{64{~phy[PHY].funit[(fu+1)%12].is_mul_reg3}},indexFU,indexFU_has);
           bit_find_index indexLDU(rdy[63:0][0],indexLDU,indexLDU_has);
