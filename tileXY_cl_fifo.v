@@ -5,8 +5,9 @@
 `define wrreq_TY 603:599
 `define wrreq_sz 615:604
 `define wrreq_addr 652:616
-`define wrreq_size 653
-`define wrreq_extra 654
+`define wrreq_snd 653
+`define wrreq_size 654
+`define wrreq_extra 655
 
 `define wrAreq_data 73:0
 `define wrAreq_XDONE 74
