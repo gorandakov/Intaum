@@ -133,5 +133,86 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
           in_size_reg<=in_size;
       end
   end
+ // assign outen=&shareX || |match_overflow_begin&(~(sharX[IDX+3]));
+
+  assign wrAreq[`wrAreq_data]=in_datum;
+  assign wrAreq[`wrAreq_XDONE]=IDX<2;
+  assign wrAreq[`wrAreq_YDONE]=IDX>=2;
+  assign wrAreq[`wrAreq_TX]=in_addr_reg[37:33];
+  assign wrAreq[`wrAreq_TY]=in_addr_reg[42:38];
+  assign wrAreq[`wrAreq_addr]=in_addr_reg[32:0];
+  assign wrAreq[`wrAreq_sz]=in_size_reg;
+
+  assign XA_intf_out[0][`wrAreq_size-1:0]=inA_en_reg & backA ? wrAreq : queueA[0][Aqposr0];
+  assign XA_intf_out[1][`wrAreq_size-1:0]=inA_en_reg & fwdA ? wrAreq : queueA[1][Aqposr1];
+
+  assign fwdA=IDX<2 ? inA_addr_reg[37:33]>tileX : inA_addr_reg[42:38]>tileY;
+  assign backA=IDX<2 ? inA_addr_reg[37:33]<=tileX : inA_addr_reg[42:38]<=tileY;
+
+  assign XA_intf_in[0][`wrreq_extra]=|Adatacnt0[8:4];
+  assign XA_intf_in[1][`wrreq_extra]=|Adatacnt1[8:4];
+ 
+  assign Amatch[0]=IDX<3 ? XA_intf_in[0][`wrAreq_TX]==tileX : XA_intf_in[0][`wrAreq_TY]==tileY;
+  assign Amatch[1]=IDX<3 ? XA_intf_in[1][`wrAreq_TX]==tileX : XA_intf_in[1][`wrAreq_TY]==tileY;
+
+  assign reqmort_data=|Aodata_in[0] ? Aoqueue[0][Aorpos0][`wrAreq_data] : Aoqueue[1][Aorpos1][`wrAreq_data];
+  assign reqmortaddr=|Aodata_in[0] ? {tileY[4:0],tileX[4:0],Aoqueue[0][Aorpos0][`wrAreq_addr]} : {tileY[4:0],tileX[4:0],Aoqueue[1][Aorpos1][`wrAreq_addr]};
+  assign reqmort_size=|Aodata_in[0] ? Aoqueue[0][Aorpos0][`wrAreq_sz] : Aoqueue[1][Aorpos1][`wrAreq_sz];
+
+  popcnt12 pa(Adata_in[0],Adatacnt0);
+  popcnt12 pb(Adata_in[1],Adatacnt1);
+  
+  popcnt12 pxa(Aodata_in[0],pAdatacnt0);
+  popcnt12 pxb(Aodata_in[1],pAdatacnt1);
+
+  always @(posedge clk) begin
+      if (rst) begin
+          Adata_in<='0;
+          inA_en_reg<='0;
+      end else begin
+          if (in_en_reg && XA_intf_in[0][`wrAreq_snd]) begin
+              Aqueue[0][Aqpos0]=XA_intf_in[0];
+              Adata_in[0][Aqpos0]<=1'b1;
+              Aqpos0<=Aqpos0+1;
+          end
+          if (inA_en_reg && XA_intf_in[1][`wrAreq_snd]) begin
+              Aqueue[1][Aqpos1]=XA_intf_in[1];
+              Adata_in[1][Aqpos1]<=1'b1;
+              Aqpos1<=Aqpos1+1;
+          end
+          if (!inA_en_reg || fwdA) begin
+              if (Adata_in[0]!=0 && XA_intf_out[0][`wrAreq_extra]) begin
+                  Aqposr0<=Aqposr0+1;
+                  Adata_in[0][Aqposr0]<=1'b0;
+              end
+          end
+          if (!inA_en_reg || backA) begin
+              if (Adata_in[1]!=0 && XA_intf_out[1][`wrAreq_extra]) begin
+                  Aqposr1<=Aqposr1+1;
+                  Adata_in[1][Aqposr1]<=1'b0;
+              end
+          end
+          if (Amatch[0]) begin
+              Aoqueue[0][Aqpos0]<=XA_intf_in[0];
+              Aodata_in[Aqpos0]<=1'b1;
+              Aqpos0<=Aqpos0+1;
+          end
+          if (Amatch[1]) begin
+              Aoqueue[1][Aqpos1]<=XA_intf_in[1];
+              Aodata_in[Aqpos1]<=1'b1;
+              Aqpos1<=Aqpos1+1;
+          end
+          if (Aouten && |Aodata_in[0]) begin
+              Aorpos0<=Aorpos0+1;
+              Aodata_in[0][Aorpos0]<=1'b0;
+          end else if (Aouten) begin
+              Aorpos1<=Aorpos1+1;
+              Aodata_in[1][Aorpos1]<=1'b0;
+          end
+          inA_addr_reg<=inA_addr;
+          inA_en_reg<=inA_en;
+          inA_size_reg<=inA_size;
+      end
+  end
 endmodule
 
