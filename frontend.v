@@ -38,8 +38,8 @@ module frontend (
       11: flcond=1'b1;
       12: flcond=cond[1]^1;
       13: flcond=cond[1]^1&~cond[0];
-      14: ~cond[3]&&^cond[2:1];//pointer set
-      15: !(~cond[3]&&^cond[2:1]); //pointer clear
+      14: flcond=~cond[3]&&^cond[2:1];//pointer set
+      15: flcond=!(~cond[3]&&^cond[2:1]); //pointer clear
     endcase
   endfunction
 
