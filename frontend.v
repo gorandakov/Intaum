@@ -143,6 +143,10 @@ generate
           htlb[1<<24+sttop+257]<=lastIP+5;
       end
   end
+
+  wire [59:0] missx_en;
+  wire [59:0][38:0] missx_addr;
+  wire [59:0][59:0] missx_phy;
     
   assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
   assign tbuf=tbufl[IP[13:5]];
@@ -151,6 +155,7 @@ generate
   assign iscall=jen[0] && tbuf[0][83] || jen[1] && tbuf[1][83];
   assign isret=jen[0] && tbuf[0][84] || jen[1] && tbuf[1][84];
   assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
+  for(subPHY=0;subPHY<5;subPHY=subPHY+1) begin
   bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
     tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
       clk,rst,
@@ -167,9 +172,9 @@ generate
       insetrh_addr,
       {insetrh_shared,insetrh_write,insetrh_phy},
       insetrh_en,
-      missx_en[2:0],
-      missx_addr[2:0],
-      missx_phy[2:0],
+      missx_en[subPHY*12+2:subPHY*12+0],
+      missx_addr[subPHY*12+2:subPHY*12+0],
+      missx_phy[subPHY*12+2:subPHY*12+0],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
       clk,rst,
@@ -186,9 +191,9 @@ generate
       insetrh_addr,
       {insetrh_shared,insetrh_write,insetrh_phy},
       insetrh_en,
-      missx_en[5:3],
-      missx_addr[5:3],
-      missx_phy[5:3],
+      missx_en[subPHY*12+5:subPHY*12+3],
+      missx_addr[subPHY*12+5:subPHY*12+3],
+      missx_phy[subPHY*12+5:subPHY*12+3],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
       clk,rst,
@@ -205,9 +210,9 @@ generate
       insetrv_addr,
       {insetrv_shared,insetrv_write,insetrv_phy},
       insetrv_en,
-      missx_en[8:6],
-      missx_addr[8:6],
-      missx_phy[8:6],
+      missx_en[subPHY*12+8:subPHY*12+6],
+      missx_addr[subPHY*12+8:subPHY*12+6],
+      missx_phy[subPHY*12+8:subPHY*12+6],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
       clk,rst,
@@ -224,9 +229,9 @@ generate
       insetrv_addr,
       {insetrv_shared,insetrv_write,insetrv_phy},
       insetrv_en,
-      missx_en[11:9],
-      missx_addr[11:9],
-      missx_phy[11:9],
+      missx_en[subPHY*12+11:subPHY*12+9],
+      missx_addr[subPHY*12+11:subPHY*12+9],
+      missx_phy[subPHY*12+11:subPHY*12+9],
       shareX);
   
       genvar fu,fuB;
@@ -284,6 +289,7 @@ generate
           reg [63:0][6:0] cloopbndloff;
           reg [39:0] insn;
           reg [63:0][5:0] data_imm_phy;
+          reg [63:0][5:0] data_loopstop;
           reg [63:0][5:0] rdy; //port lsu/alu=bits 2:1 a,b; port store data=bit 0,A,B; upper 3 bits=needed bits
           reg [63:0][4+5:0] rdyA;
           reg [63:0][4+5:0] rdyB;
@@ -707,7 +713,7 @@ generate
                 if (line==3) assign anyhitW[fuB][way]=tag[52]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
               //  if (line==4) assign tlbhit=tr_reg[phy[PHY].funit[fuB].resX[31:22]][37:6]==phy[PHY].funit[fuB].resX[63:37] && tr_reg[phy[PHY].funit[fuB].resX[31:22]][38];
                 always @(posedge clk) begin
-                  if (fuB==3 || fuB==7 || fuB==5 || fuB==11)
+                  if (fuB==5 || fuB==11)
                     for (byte_=0;byte_<8;byte_=byte_+1)
                       if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[12:7]==line[5:0] && byte_<phy[PHY].funit[fuB].is_write_size_reg); 
                   line_data[phy[PHY].funit[fuB].resW[6:3]][8*(byte_+phy[PHY].funit[fuB].resW[2:0])+:8]<=phy[PHY].funit[fuB].resWX[8*byte_+:8];
