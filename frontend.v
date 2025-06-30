@@ -281,6 +281,8 @@ generate
       end
       assign retIP[0]=jcond0[reti_reg];
       assign retIP[1]=jcond1[reti_reg];
+      bit_find_index12 fst(indexST_has,ids0p,ids0,ids0_has);
+      bit_find_index12r fst(indexST_has,ids1p,ids1,ids1_has);
       for(fu=0;fu<12;fu=fu+1) begin : funit
           reg [63:0][63:0] data_gen;
           reg [63:0][63:0] data_fp;
@@ -713,7 +715,7 @@ generate
                 if (line==3) assign anyhitW[fuB][way]=tag[52]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
               //  if (line==4) assign tlbhit=tr_reg[phy[PHY].funit[fuB].resX[31:22]][37:6]==phy[PHY].funit[fuB].resX[63:37] && tr_reg[phy[PHY].funit[fuB].resX[31:22]][38];
                 always @(posedge clk) begin
-                  if (fuB==5 || fuB==11)
+                  if (fuB==ids0_reg || fuB==ids1_reg)
                     for (byte_=0;byte_<8;byte_=byte_+1)
                       if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[12:7]==line[5:0] && byte_<phy[PHY].funit[fuB].is_write_size_reg); 
                   line_data[phy[PHY].funit[fuB].resW[6:3]][8*(byte_+phy[PHY].funit[fuB].resW[2:0])+:8]<=phy[PHY].funit[fuB].resWX[8*byte_+:8];
