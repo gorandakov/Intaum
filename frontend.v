@@ -233,7 +233,7 @@ generate
       genvar way,way2;
       genvar line;
       genvar PHY;
-    for(PHY=0;PHY<10;PHY=PHY+1) begin : phy
+    for(PHY=0;PHY<60;PHY=PHY+1) begin : phy
       reg [31:0] insn_clopp;
       assign jretire[0][PHY]=&retire_reg[7:0] && cond(jcond0[reti_reg],funit[8].retFl[reti_reg][4:1]);
       assign jretire[1][PHY]=&retire_reg[9:0] && cond(jcond1[reti_reg],funit[10].retFl[reti_reg][4:1]);
@@ -394,14 +394,14 @@ generate
           assign res_logic[31:0]=opcode[2:1]==0 &~foo ? dataA[31:0]&dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==1 &~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==3 &~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
-          assign res_logic[31:0]=opcode[2:1]==2 &~foo ? phy[(LOOPSTOP+dataBIX[1:0])%4].dataA[31:0] 
+          assign res_logic[31:0]=opcode[2:1]==2 &~foo ? phy[(LOOPSTOP+dataBIX[5:0])%60].dataA[31:0] 
               : 'z;
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
 
           assign res_logic[63:32]=opcode_reg[2:1]==0 &~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 &~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==3 &~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
-          assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? phy[(LOOPSTOP+dataBIX_reg[1:0])%4].dataA[63:32] 
+          assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? phy[(LOOPSTOP+dataBIX_reg[5:0])%60].dataA[63:32] 
               : 'z;
           assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? {opcode_reg[2:1],dataBI_reg[18:0],dataA[42:32]} : 'z;
           assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? dataA[63:32] : 'z;
