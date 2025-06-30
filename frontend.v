@@ -19,7 +19,14 @@ not a exchange token for getting into uni.
 not a physX token.
 */
 module frontend (
+  input clk
   );
+  reg rst=1;
+  reg rst0=1;
+  always @(posedge clk) begin
+      if (rst0) rst0<=0;
+      else if (rst1) rst1<=0;
+  end
   function flcond;
     input [3:0] cond;
     input [3:0] FL;
@@ -146,6 +153,7 @@ generate
   assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
   bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
     tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
+      clk,rst,
       XH_intf_in[tile_X], 
       XH_intf_out[tile_X],
       AXH_intf_in[tile_X], 
@@ -164,6 +172,7 @@ generate
       missx_phy[2:0],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
+      clk,rst,
       XV_intf_in[tile_Y], 
       XV_intf_out[tile_Y],
       AXV_intf_in[tile_X], 
@@ -182,6 +191,7 @@ generate
       missx_phy[5:3],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
+      clk,rst,
       XH_intf_in[tile_X], 
       XH_intf_out[tile_X],
       AXH_intf_in[tile_X], 
@@ -200,6 +210,7 @@ generate
       missx_phy[8:6],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
+      clk,rst,
       XV_intf_in[tile_Y], 
       XV_intf_out[tile_Y],
       AXV_intf_in[tile_X], 

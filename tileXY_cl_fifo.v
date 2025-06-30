@@ -21,6 +21,8 @@
 `define wrAreq_extra 123
 
 module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
+  input clk,
+  input rst,
   input [1:0][`wrreq_size:0] X_intf_in, 
   output [1:0][`wrreq_size:0] X_intf_out,
   input [1:0][`wrAreq_size:0] XA_intf_in, 
@@ -42,17 +44,47 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   wire [`wrreq_size-1:0] wrreq;
 
   reg [7:0][`wrreq_size-1:0] queue;
+  reg [7:0][`wrreq_size-1:0] oqueue;
   reg [7:0] data_in;
+  reg [7:0] odata_in;
   reg stall;
   reg [42:0] in_addr_reg;
   reg [1:0] in_size_reg;
   reg in_en_reg;
+  integer qrpos0,qrpos1,qrposr0,qrposr1;
+  integer qpos0,qpos1,qposr0,qposr1;
+  wire [8:0] sharX;
+  wire fwd,back;
+  wire [8:0] pdatacnt0;
+  wire [8:0] pdatacnt1;
+  wire [8:0] datacnt0;
+  wire [8:0] datacnt1;
+  wire [1:0] match;
+
+  wire [`wrreq_size-1:0] wrAreq;
+
+  reg [7:0][`wrreq_size-1:0] Aqueue;
+  reg [7:0][`wrreq_size-1:0] Aoqueue;
+  reg [7:0] Adata_in;
+  reg [7:0] Aodata_in;
+  reg Astall;
+  reg [42:0] inA_addr_reg;
+  reg [1:0] inA_size_reg;
+  reg in_enA_reg;
+  integer Aqrpos0,Aqrpos1,Aqrposr0,Aqrposr1;
+  integer Aqpos0,Aqpos1,Aqposr0,Aqposr1;
+  wire fwdA,backA;
+  wire [8:0] Apdatacnt0;
+  wire [8:0] Apdatacnt1;
+  wire [8:0] Adatacnt0;
+  wire [8:0] Adatacnt1;
+  wire [1:0] amatch;
 
   assign shareX[IDX]=|odata_in;
 
   assign sharX={3'b0,shareX};
 
-  assign outen=&shareX || |match_overflow_begin&(~(sharX[IDX+3]));
+  assign outen=&shareX || (|pdatacnt0[7:4] || |pdatacnt1[7:4])&(~(sharX[IDX+3]));
 
   assign wrreq[`wrreq_data]=in_datum;
   assign wrreq[`wrreq_XDONE]=IDX<2;
@@ -65,18 +97,18 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign X_intf_out[0][`wrreq_size-1:0]=in_en_reg & back ? wrreq : queue[0][qposr0];
   assign X_intf_out[1][`wrreq_size-1:0]=in_en_reg & fwd ? wrreq : queue[1][qposr1];
 
-  assign fwd=IDX<2 ? in_addr_reg[37:33]>tileX : in_addr_reg[42:38]>tileY;
-  assign back=IDX<2 ? in_addr_reg[37:33]<=tileX : in_addr_reg[42:38]<=tileY;
+  assign fwd=IDX<2 ? in_addr_reg[37:33]>tile_X : in_addr_reg[42:38]>tile_Y;
+  assign back=IDX<2 ? in_addr_reg[37:33]<=tile_X : in_addr_reg[42:38]<=tile_Y;
 
   assign X_intf_in[0][`wrreq_extra]=|datacnt0[8:4];
   assign X_intf_in[1][`wrreq_extra]=|datacnt1[8:4];
  
-  assign match[0]=IDX<3 ? X_intf_in[0][`wrreq_TX]==tileX : X_intf_in[0][wrreq_TY]==tileY;
-  assign match[1]=IDX<3 ? X_intf_in[1][`wrreq_TX]==tileX : X_intf_in[1][wrreq_TY]==tileY;
+  assign match[0]=IDX<3 ? X_intf_in[0][`wrreq_TX]==tile_X : X_intf_in[0][`wrreq_TY]==tile_Y;
+  assign match[1]=IDX<3 ? X_intf_in[1][`wrreq_TX]==tile_X : X_intf_in[1][`wrreq_TY]==tile_Y;
 
-  assign reqmort_data=|odata_in[0] ? oqueue[0][orpos0][`wrreq_data] : oqueue[1][orpos1][`wrreq_data];
-  assign reqmortaddr=|odata_in[0] ? {tileY[4:0],tileX[4:0],oqueue[0][orpos0][`wrreq_addr]} : {tileY[4:0],tileX[4:0],oqueue[1][orpos1][`wrreq_addr]};
-  assign reqmort_size=|odata_in[0] ? oqueue[0][orpos0][`wrreq_sz] : oqueue[1][orpos1][`wrreq_sz];
+  assign reqmort_data=|odata_in[0] ? oqueue[0][qrpos0][`wrreq_data] : oqueue[1][qrpos1][`wrreq_data];
+  assign reqmortaddr=|odata_in[0] ? {tile_Y[4:0],tile_X[4:0],oqueue[0][qrpos0][`wrreq_addr]} : {tile_Y[4:0],tile_X[4:0],oqueue[1][qrpos1][`wrreq_addr]};
+  assign reqmort_size=|odata_in[0] ? oqueue[0][qrpos0][`wrreq_sz] : oqueue[1][qrpos1][`wrreq_sz];
 
   popcnt12 pa(data_in[0],datacnt0);
   popcnt12 pb(data_in[1],datacnt1);
@@ -122,18 +154,22 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
               qpos1<=qpos1+1;
           end
           if (outen && |odata_in[0]) begin
-              orpos0<=orpos0+1;
-              odata_in[0][orpos0]<=1'b0;
+              qrpos0<=qrpos0+1;
+              odata_in[0][qrpos0]<=1'b0;
           end else if (outen) begin
-              orpos1<=orpos1+1;
-              odata_in[1][orpos1]<=1'b0;
+              qrpos1<=qrpos1+1;
+              odata_in[1][qrpos1]<=1'b0;
           end
           in_addr_reg<=in_addr;
           in_en_reg<=in_en;
-          in_size_reg<=in_size;
+          in_size_reg<=insize;
       end
   end
  // assign outen=&shareX || |match_overflow_begin&(~(sharX[IDX+3]));
+  wire [3:0][38:0] missue0;
+  wire [3:0] missue0_en;
+  wire [3:0][9:0] missue0_phy;
+  wire [1:0] missue_idx_first;
 
   assign wrAreq[`wrAreq_data]=missue0[missue_idx_first];
   assign wrAreq[`wrAreq_XDONE]=IDX<2;
@@ -143,32 +179,36 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
  // assign wrAreq[`wrAreq_addr]=in_addr_reg[32:0];
   assign wrAreq[`wrAreq_sz]=missue0_phy[missue_idx_first];
 
-  assign missue0[2:0]=missue;
+  assign missue0[2:0]=missue_addr;
   assign missue0_en[2:0]=missue_en;
   assign missue0[3]=Aqueue[0][Aqposr0];
   assign missue0_en[3]=Aqposr0!=Aqpos0;
+  assign missue_idx_first=missue_en[0] ? 0 : 'z;
+  assign missue_idx_first=missue_en[1:0]==2'b10 ? 1 : 'z;
+  assign missue_idx_first=missue_en[2:0]==3'b100 ? 2 : 'z;
+  assign missue_idx_first=missue_en[2:0]==3'b0 ? 3 : 'z;
 
   assign XA_intf_out[0][`wrAreq_size-1:0]=inA_en_reg & backA ? wrAreq : queueA[0][Aqposr0];
   assign XA_intf_out[1][`wrAreq_size-1:0]=inA_en_reg & fwdA ? wrAreq : queueA[1][Aqposr1];
 
-  assign fwdA=IDX<2 ? inA_addr_reg[37:33]>tileX : inA_addr_reg[42:38]>tileY;
-  assign backA=IDX<2 ? inA_addr_reg[37:33]<=tileX : inA_addr_reg[42:38]<=tileY;
+  assign fwdA=IDX<2 ? inA_addr_reg[37:33]>tile_X : inA_addr_reg[42:38]>tile_Y;
+  assign backA=IDX<2 ? inA_addr_reg[37:33]<=tile_X : inA_addr_reg[42:38]<=tile_Y;
 
   assign XA_intf_in[0][`wrreq_extra]=|Adatacnt0[8:4];
   assign XA_intf_in[1][`wrreq_extra]=|Adatacnt1[8:4];
  
-  assign Amatch[0]=IDX<3 ? XA_intf_in[0][`wrAreq_TX]==tileX : XA_intf_in[0][`wrAreq_TY]==tileY;
-  assign Amatch[1]=IDX<3 ? XA_intf_in[1][`wrAreq_TX]==tileX : XA_intf_in[1][`wrAreq_TY]==tileY;
+  assign Amatch[0]=IDX<3 ? XA_intf_in[0][`wrAreq_TX]==tile_X : XA_intf_in[0][`wrAreq_TY]==tile_Y;
+  assign Amatch[1]=IDX<3 ? XA_intf_in[1][`wrAreq_TX]==tile_X : XA_intf_in[1][`wrAreq_TY]==tile_Y;
 
-  assign reqmort_data=|Aodata_in[0] ? Aoqueue[0][Aorpos0][`wrAreq_data] : Aoqueue[1][Aorpos1][`wrAreq_data];
-  assign reqmortaddr=|Aodata_in[0] ? {tileY[4:0],tileX[4:0],Aoqueue[0][Aorpos0][`wrAreq_addr]} : {tileY[4:0],tileX[4:0],Aoqueue[1][Aorpos1][`wrAreq_addr]};
-  assign reqmort_size=|Aodata_in[0] ? Aoqueue[0][Aorpos0][`wrAreq_sz] : Aoqueue[1][Aorpos1][`wrAreq_sz];
+  assign reqmort_data=|Aodata_in[0] ? Aoqueue[0][Aqrpos0][`wrAreq_data] : Aoqueue[1][Aqrpos1][`wrAreq_data];
+  assign reqmortaddr=|Aodata_in[0] ? {tile_Y[4:0],tile_X[4:0],Aoqueue[0][Aqrpos0][`wrAreq_addr]} : {tile_Y[4:0],tileX_[4:0],Aoqueue[1][Aqrpos1][`wrAreq_addr]};
+  assign reqmort_size=|Aodata_in[0] ? Aoqueue[0][Aqrpos0][`wrAreq_sz] : Aoqueue[1][Aqrpos1][`wrAreq_sz];
 
-  popcnt12 pa(Adata_in[0],Adatacnt0);
-  popcnt12 pb(Adata_in[1],Adatacnt1);
+  popcnt12 a_pa(Adata_in[0],Adatacnt0);
+  popcnt12 a_pb(Adata_in[1],Adatacnt1);
   
-  popcnt12 pxa(Aodata_in[0],pAdatacnt0);
-  popcnt12 pxb(Aodata_in[1],pAdatacnt1);
+  popcnt12 a_pxa(Aodata_in[0],pAdatacnt0);
+  popcnt12 a_pxb(Aodata_in[1],pAdatacnt1);
 
   always @(posedge clk) begin
       if (rst) begin
@@ -208,11 +248,11 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
               Aqpos1<=Aqpos1+1;
           end
           if (Aouten && |Aodata_in[0]) begin
-              Aorpos0<=Aorpos0+1;
-              Aodata_in[0][Aorpos0]<=1'b0;
+              Aqrpos0<=Aqrpos0+1;
+              Aodata_in[0][Aqrpos0]<=1'b0;
           end else if (Aouten) begin
-              Aorpos1<=Aorpos1+1;
-              Aodata_in[1][Aorpos1]<=1'b0;
+              Aqrpos1<=Aqrpos1+1;
+              Aodata_in[1][Aqrpos1]<=1'b0;
           end
           inA_addr_reg<=inA_addr;
           inA_en_reg<=inA_en;
