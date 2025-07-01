@@ -581,7 +581,7 @@ generate
                     data_op[alloc][4:0]={instr[37:34],instr[12]};
                       data_op[alloc][5]=1'b1;
                       data_cond[alloc][3:0]=instr[32:27];
-                    data_imm[alloc]={{21{instr[26]}},instr[26:14],19'b0};
+                    data_imm[alloc]={{20{instr[26]}},instr[26:14],instr[11:10],18'b0};
                       if ({instr[37:34],instr[14]}==19) begin
                         data_imm[alloc]={{30{instr[26]}},instr[26:25],{20{instr[24]}},instr[24:14]};
                         data_op[alloc][4:0]=2;
