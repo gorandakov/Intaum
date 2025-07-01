@@ -282,7 +282,9 @@ generate
       assign retIP[0]=jcond0[reti_reg];
       assign retIP[1]=jcond1[reti_reg];
       bit_find_index12 fst(indexST_has,ids0p,ids0,ids0_has);
-      bit_find_index12r fst(indexST_has,ids1p,ids1,ids1_has);
+      bit_find_index12r fstb(indexST_has,ids1p,ids1,ids1_has);
+      bit_find_index12 fjmp(isJump, idj0p,idj0,idj0_has);
+      bit_find_index12r fjmp(isJump, idj1p,idj1,idj1_has);
       for(fu=0;fu<12;fu=fu+1) begin : funit
           reg [63:0][63:0] data_gen;
           reg [63:0][63:0] data_fp;
@@ -526,17 +528,19 @@ generate
             if (rT_en_reg6 &&(opcode_reg5[7] && dataBI_reg5[21])) data_fpu[rTMem_reg5[5:0]]<=flconv(pppoe_reg3,opcode_reg5[8]);
               if (rT_en0_reg4 && opcode_reg3[7:3]==3) data_gen[rTMem_reg3[5:0]][65:32]<=res_mul[63:32];
               if (rT_en0_reg4 && opcode_reg3[7]) data_gen[rTMem_reg2[5:0]][65:32]<=pppoe_reg2[65:32];
-            if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=fsconv(dataAF_reg,dataBI_reg3[24:23])>>32;
-            if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=fsconv(dataAF,dataBI_reg2[24:23]);
-               if (rT_en0_reg4 && fu==8) begin
+              if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=fsconv(dataAF_reg,dataBI_reg3[24:23])>>32;
+              if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=fsconv(dataAF,dataBI_reg2[24:23]);
+              if (rT_en0_reg4 && fu==idj0p) begin
                    jcond0[LQ]<=res_reg3;
                    if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
                    if (opcode_reg4[8]) jcond0[LQ]<=srcIPOff[LQ]+res_reg3;
+                   jcc0[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataAF_reg4[65:63],~|dataAF_reg4[62:53]} : {c64_reg4|~chk_reg4,s63_reg4,res_reg4[63],~|resX_reg4[63:0],1'b0};
                end
-               if (rT_en0_reg4 && fu==10) begin
+               if (rT_en0_reg4 && fu==idj1p) begin
                    jcond1[LQ]<=res_reg3;
                  if (opcode_reg4[10]) jcond1[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
                  if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ]+res_reg3;
+                 jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataAF_reg4[65:63],~|dataAF_reg4[62:53]} : {c64_reg4|~chk_reg4,s63_reg4,res_reg4[63],~|resX_reg4[63:0],1'b0};
                end
                if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
                     (fu>=insn_cloop[13:10] && IP[4:0]==insn_cloop[19:15])|
