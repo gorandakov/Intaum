@@ -240,8 +240,8 @@ generate
       genvar PHY;
     for(PHY=0;PHY<60;PHY=PHY+1) begin : phy
       reg [31:0] insn_clopp;
-      assign jretire[0][PHY]=&retire_reg[7:0] && cond(jcond0[reti_reg],funit[8].retFl[reti_reg][4:1]);
-      assign jretire[1][PHY]=&retire_reg[9:0] && cond(jcond1[reti_reg],funit[10].retFl[reti_reg][4:1]);
+      assign jretire[0][PHY]=&retire_reg[7:0] && cond(jcondx0[reti_reg],jcc0[reti_reg][4:1]);
+      assign jretire[1][PHY]=&retire_reg[9:0] && cond(jcondx1[reti_reg],jcc1[reti_reg][4:1]);
      
       always @(posedge clk) begin
       if (irqload) begin
@@ -532,15 +532,17 @@ generate
               if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=fsconv(dataAF,dataBI_reg2[24:23]);
               if (rT_en0_reg4 && fu==idj0p) begin
                    jcond0[LQ]<=res_reg3;
+                   jcondx0[LQ]<=opcode_reg4 [10]  ? 4 : cond;
                    if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
                    if (opcode_reg4[8]) jcond0[LQ]<=srcIPOff[LQ]+res_reg3;
                    jcc0[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataAF_reg4[65:63],~|dataAF_reg4[62:53]} : {c64_reg4|~chk_reg4,s63_reg4,res_reg4[63],~|resX_reg4[63:0],1'b0};
                end
                if (rT_en0_reg4 && fu==idj1p) begin
                    jcond1[LQ]<=res_reg3;
-                 if (opcode_reg4[10]) jcond1[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
-                 if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ]+res_reg3;
-                 jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataAF_reg4[65:63],~|dataAF_reg4[62:53]} : {c64_reg4|~chk_reg4,s63_reg4,res_reg4[63],~|resX_reg4[63:0],1'b0};
+                   jcondx1[LQ]<=opcode_reg4 [10]  ? 4 : cond;
+                   if (opcode_reg4[10]) jcond1[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
+                   if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ]+res_reg3;
+                   jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataAF_reg4[65:63],~|dataAF_reg4[62:53]} : {c64_reg4|~chk_reg4,s63_reg4,res_reg4[63],~|resX_reg4[63:0],1'b0};
                end
                if (insert_en && (fu>=insn_cloop[3:0] && IP[4:0]==insn_cloop[9:5])|
                     (fu>=insn_cloop[13:10] && IP[4:0]==insn_cloop[19:15])|
