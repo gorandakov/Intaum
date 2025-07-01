@@ -244,8 +244,8 @@ generate
       assign jretire[1][PHY]=&retire_reg[9:0] && cond(jcondx1[reti_reg],jcc1[reti_reg][4:1]);
      
       always @(posedge clk) begin
-      if (irqload) begin
-          IP<=irq_IP;
+      if (irqload|ccmiss) begin
+          IP<=irqload ? irq_IP : IP_reg4;
       end else if (&jen[1:0]) begin
         if (pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
         else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; if (tbuf[1][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
