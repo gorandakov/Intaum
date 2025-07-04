@@ -17,6 +17,7 @@ not a royal crunch.
 not olga dakova's spirit.
 not a exchange token for getting into uni.
 not a physX token.
+not the source code of my person.
 */
 module frontend (
   input clk
