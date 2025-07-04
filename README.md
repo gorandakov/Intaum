@@ -8,3 +8,4 @@ increase of tile size beyond 25 rapidly reduces performance in my estimated metr
 8 gb per core feasible for max 200gb and desktop package sized die.
 as of msi algorithm choice the core would not run at 50% with 25 tiles but at 45%. note that this is metric for running with significant cache miss rate.
 as for 2nm I can't promise it is possible to beat or match this 3nm cpu
+note: with 5 gold layer matter rather than 4 the frequency can be 22GHz on 3nm depletion mode 7 phase dynamic logic.
