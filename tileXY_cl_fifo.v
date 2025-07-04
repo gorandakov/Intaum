@@ -166,9 +166,9 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
       end
   end
  // assign outen=&shareX || |match_overflow_begin&(~(sharX[IDX+3]));
-  wire [3:0][38:0] missue0;
-  wire [3:0] missue0_en;
-  wire [3:0][9:0] missue0_phy;
+  wire [5:0][38:0] missue0;
+  wire [5:0] missue0_en;
+  wire [5:0][9:0] missue0_phy;
   wire [1:0] missue_idx_first;
 
   assign wrAreq[`wrAreq_data]=missue0[missue_idx_first];
@@ -180,14 +180,22 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign wrAreq[`wrAreq_sz]=missue0_phy[missue_idx_first];
 
   assign missue0[2:0]=missue_addr;
+  assign missue0_phy[2:0]=missue_phy;
   assign missue0_en[2:0]=missue_en;
-  assign missue0[3]=Aqueue[0][Aqposr0];
+  assign {missue0[3],missue0_phy[3]}=Aqueue[0][Aqposr0];
   assign missue0_en[3]=Aqposr0!=Aqpos0;
   assign missue_idx_first=missue_en[0] ? 0 : 'z;
   assign missue_idx_first=missue_en[1:0]==2'b10 ? 1 : 'z;
   assign missue_idx_first=missue_en[2:0]==3'b100 ? 2 : 'z;
   assign missue_idx_first=missue_en[2:0]==3'b0 ? 3 : 'z;
 
+  assign mqueue[0]=missue0[missue_idx_first+1];
+  assign mqueue[1]=missue0[missue_idx_first+2];
+  assign mqueue_en[0]=missue0_en[missue_idx_first+1] && missue_idx_first<2;
+  assign mqueue_en[1]=missue0_en[missue_idx_first+2] && missue_idx_first<1;
+  assign mqueue_phy[0]=missue0_phy[missue_idx_first+1];
+  assign mqueue_phy[1]=missue0_phy[missue_idx_first+2];
+  
   assign XA_intf_out[0][`wrAreq_size-1:0]=inA_en_reg & backA ? wrAreq : Aqueue[0][Aqposr0];
   assign XA_intf_out[1][`wrAreq_size-1:0]=inA_en_reg & fwdA ? wrAreq : Aqueue[1][Aqposr1];
 
