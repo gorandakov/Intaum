@@ -285,7 +285,7 @@ generate
       bit_find_index12 fst(indexST_has,ids0p,ids0,ids0_has);
       bit_find_index12r fstb(indexST_has,ids1p,ids1,ids1_has);
       bit_find_index12 fjmp(isJump, idj0p,idj0,idj0_has);
-      bit_find_index12r fjmp(isJump, idj1p,idj1,idj1_has);
+      bit_find_index12r fjmp2(isJump, idj1p,idj1,idj1_has);
       for(fu=0;fu<12;fu=fu+1) begin : funit
           reg [63:0][63:0] data_gen;
           reg [63:0][63:0] data_fp;
@@ -448,6 +448,7 @@ generate
           assign res_shift[63:32]=opcode[3:0]>=7 ? {32{res_shift_reg[31]}} : 'z;
           assign cond=data_cond[indexLSU_ALU];
           assign cond2=data_cond2[indexLSU_ALU];
+          assign isJump[fu]=opcode[7:5]==0 && opcode[8];
           always @(posedge clk) begin
               if (rst) sten<=12'hf; else sten<={sten[7:0],sten[12:8]};
               dataA_reg[63:32]<=dataA[63:32];
@@ -533,14 +534,14 @@ generate
               if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=fsconv(dataAF,dataBI_reg2[24:23]);
               if (rT_en0_reg4 && fu==idj0p) begin
                    jcond0[LQ]<=res_reg3;
-                   jcondx0[LQ]<=opcode_reg4 [10]  ? 4 : cond;
+                   jcondx0[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond;
                    if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
                    if (opcode_reg4[8]) jcond0[LQ]<=srcIPOff[LQ]+res_reg3;
                    jcc0[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataAF_reg4[65:63],~|dataAF_reg4[62:53]} : {c64_reg4|~chk_reg4,s63_reg4,res_reg4[63],~|resX_reg4[63:0],1'b0};
                end
                if (rT_en0_reg4 && fu==idj1p) begin
                    jcond1[LQ]<=res_reg3;
-                   jcondx1[LQ]<=opcode_reg4 [10]  ? 4 : cond;
+                   jcondx1[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond;
                    if (opcode_reg4[10]) jcond1[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
                    if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ]+res_reg3;
                    jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataAF_reg4[65:63],~|dataAF_reg4[62:53]} : {c64_reg4|~chk_reg4,s63_reg4,res_reg4[63],~|resX_reg4[63:0],1'b0};
@@ -734,6 +735,6 @@ generate
           end
       end
     end
-    end //multicore loop
+    end end //multicore loop
   endgenerate
 endmodule
