@@ -223,26 +223,26 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
           Adata_in<='0;
           inA_en_reg<='0;
       end else begin
-          if (in_en_reg && XA_intf_in[0][`wrAreq_snd]) begin
-              Aqueue[0][Aqpos0]=XA_intf_in[0];
-              Adata_in[0][Aqpos0]<=1'b1;
-              Aqpos0<=Aqpos0+1;
+          if (mqueue_en[0]) begin
+              Aqueue[Aqpos0]=mqueue[0];
+              Adata_in[Aqpos0]=1'b1;
+              Aqpos0=Aqpos0+1;
           end
-          if (inA_en_reg && XA_intf_in[1][`wrAreq_snd]) begin
-              Aqueue[1][Aqpos1]=XA_intf_in[1];
-              Adata_in[1][Aqpos1]<=1'b1;
-              Aqpos1<=Aqpos1+1;
+          if (mqueue_en[1]) begin
+              Aqueue[Aqpos1]=mqueuep[1];
+              Adata_in[Aqpos1]=1'b1;
+              Aqpos1=Aqpos1+1;
           end
-          if (!inA_en_reg || fwdA) begin
-              if (Adata_in[0]!=0 && XA_intf_out[0][`wrAreq_extra]) begin
-                  Aqposr0<=Aqposr0+1;
-                  Adata_in[0][Aqposr0]<=1'b0;
+          if (fwdA) begin
+            if (!mqueue_en[0] && XA_intf_out[0][`wrAreq_extra]) begin
+                  Aqposr0=Aqposr0+1;
+                  Adata_in[Aqposr0]<=1'b0;
               end
           end
-          if (!inA_en_reg || backA) begin
-              if (Adata_in[1]!=0 && XA_intf_out[1][`wrAreq_extra]) begin
-                  Aqposr1<=Aqposr1+1;
-                  Adata_in[1][Aqposr1]<=1'b0;
+          if (backA) begin
+              if (!mqueue_en[0] && XA_intf_out[1][`wrAreq_extra]) begin
+                  Aqposr1=Aqposr1+1;
+                  Adata_in[Aqposr1]=1'b0;
               end
           end
           if (amatch[0]) begin
@@ -262,9 +262,9 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
               Aqrpos1<=Aqrpos1+1;
               Aodata_in[1][Aqrpos1]<=1'b0;
           end
-          inA_addr_reg<=inA_addr;
-          inA_en_reg<=inA_en;
-          inA_size_reg<=inA_size;
+          //inA_addr_reg<=inA_addr;
+          //inA_en_reg<=inA_en;
+          //inA_size_reg<=inA_size;
       end
   end
 endmodule
