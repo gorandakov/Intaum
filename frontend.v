@@ -721,7 +721,8 @@ generate
                 if (line==0) assign pppoe[fuB]=tag[51]&&tag[18:0][phy[PHY].funit[fuB].res[6]]=={res[31:26],res[25:13]} ? poo_e_reg && poo_mask_reg[65:0] : 'z;
                 if (line==1) assign anyhit[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
                 if (line==3) assign anyhitW[fuB][way]=tag[52]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
-               if (line==4) assign anyhitcc[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]=={6'h3ff,IP_reg[37],IP_reg[22:5]};
+                if (line==4) assign anyhitcc[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]=={6'h3ff,IP_reg[37],IP_reg[22:5]};
+               if (line==5) assign anyhitC[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==IP_reg[36:5];
               //  if (line==4) assign tlbhit=tr_reg[phy[PHY].funit[fuB].resX[31:22]][37:6]==phy[PHY].funit[fuB].resX[63:37] && tr_reg[phy[PHY].funit[fuB].resX[31:22]][38];
                 always @(posedge clk) begin
                   if (fuB==ids0_reg || fuB==ids1_reg)
