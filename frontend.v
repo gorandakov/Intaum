@@ -365,6 +365,9 @@ generate
           reg [17:0] opcodex_reg4;
           wire [4:0] cond;
           wire cond_tru;
+          wire [4:0] cond2;
+          wire cond_xtru;
+          wire isand,op_anx,c32,c63,s64,foo,clres,clres2,clres3,res_cloop0,res_cloop1,res_cloop2,res_loop0,res_loop1,res_loop2;
           reg [63:0][63:0] dreqmort;
           reg [63:0][65:0] dreqdata;
           reg [63:0][5:0] dreqmort_flags;
