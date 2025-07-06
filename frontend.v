@@ -518,10 +518,10 @@ generate
               end
               instr<=poo_c_reg2;
               instr_clopp<=poo_c2_reg2;
-              if (rT_en_reg) data_gen[rT_reg[5:0]][31:0]<=res[31:0];
+              if (rT_en_reg && !opcode_reg[10] && opcode_reg[5]) data_gen[rT_reg[5:0]][31:0]<=res[31:0];
               if (rT_en0_reg3 && opcode[7]) data_gen[rTMem_reg2[5:0]][31:0]<=pppoe_reg[31:0];
               if (rT_en0_reg3 && opcode[7:3]==3) data_gen[rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
-              if (rT_en_reg2) data_gen[rT_reg2[5:0]][65:32]<={c64,s64,res[63:32]};
+              if (rT_en_reg2 && !opcode_reg2[10] && opcode_reg2[5]) data_gen[rT_reg2[5:0]][65:32]<={c64,s64,res[63:32]};
               if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<=opcode_reg2[7:0]==1 && dataBI_reg2[22] ? {dataAF_reg[65:63],~|dataAF_reg[62:53]} : {c64|~chk,s64,res[63],~|resX[63:0]};
               if (rT_en_reg2) data_retFL[LQ_reg][3:0]<=opcode_reg2[7:5]==0 ? {dataAF[65:63],~|dataAF[62:53]} : {c64|~chk,s64,res[63],~|resX[63:0],1'b0};
               if (rT_en_reg2 && opcode_reg2[10] && ~|opcode_reg2[7:6]) data_retFL[LQ_reg][3:0]<=opcode_reg2[9]==0 ? {res_loop0,res_loop2,res_loop2,res_loop1,1'b0} : {res_cloop0,res_cloop2,res_cloop2,res_cloop1,1'b0};
