@@ -92,9 +92,9 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign wrreq[`wrreq_data]=in_datum;
   assign wrreq[`wrreq_XDONE]=IDX<2;
   assign wrreq[`wrreq_YDONE]=IDX>=2;
-  assign wrreq[`wrreq_TX]=in_addr_reg[37:33];
-  assign wrreq[`wrreq_TY]=in_addr_reg[42:38];
-  assign wrreq[`wrreq_addr]=in_addr_reg[32:0];
+  assign wrreq[`wrreq_TX]=in_addr_reg[1:0];
+  assign wrreq[`wrreq_TY]=in_addr_reg[3:2];
+  assign wrreq[`wrreq_addr]=in_addr_reg[36:0];
   assign wrreq[`wrreq_sz]=in_size_reg;
 
   assign XA_intf_in_chg[0][`wrreq_addr]=XA_intf_in[0][`wrAreq_addr];
@@ -105,8 +105,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign X_intf_out[0][`wrreq_size-1:0]=in_en_reg & back ? wrreq : queue[0][qposr0];
   assign X_intf_out[1][`wrreq_size-1:0]=in_en_reg & fwd ? wrreq : queue[1][qposr1];
 
-  assign fwd=IDX<2 ? in_addr_reg[37:33]>tile_X : in_addr_reg[42:38]>tile_Y;
-  assign back=IDX<2 ? in_addr_reg[37:33]<=tile_X : in_addr_reg[42:38]<=tile_Y;
+  assign fwd=IDX<2 ? in_addr_reg[1:0]>tile_X : in_addr_reg[3:2]>tile_Y;
+  assign back=IDX<2 ? in_addr_reg[1:0]<=tile_X : in_addr_reg[3:2]<=tile_Y;
 
   assign X_intf_in[0][`wrreq_extra]=|datacnt0[8:4];
   assign X_intf_in[1][`wrreq_extra]=|datacnt1[8:4];
@@ -195,8 +195,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign wrAreq[`wrAreq_data]=missue0[missue_idx_first];
   assign wrAreq[`wrAreq_XDONE]=IDX<2;
   assign wrAreq[`wrAreq_YDONE]=IDX>=2;
-  assign wrAreq[`wrAreq_TX]=missue0[missue_idx_first][35:31];
-  assign wrAreq[`wrAreq_TY]=missue0[missue_idx_first][36:32];
+  assign wrAreq[`wrAreq_TX]=missue0[missue_idx_first][1:0];
+  assign wrAreq[`wrAreq_TY]=missue0[missue_idx_first][3:2];
  // assign wrAreq[`wrAreq_addr]=in_addr_reg[32:0];
   assign wrAreq[`wrAreq_sz]=missue0_phy[missue_idx_first];
 
@@ -220,8 +220,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign XA_intf_out[0][`wrAreq_size-1:0]=inA_en_reg & backA ? wrAreq : Aqueue[0][Aqposr0];
   assign XA_intf_out[1][`wrAreq_size-1:0]=inA_en_reg & fwdA ? wrAreq : Aqueue[1][Aqposr1];
 
-  assign fwdA=IDX<2 ? inA_addr_reg[37:33]>tile_X : inA_addr_reg[42:38]>tile_Y;
-  assign backA=IDX<2 ? inA_addr_reg[37:33]<=tile_X : inA_addr_reg[42:38]<=tile_Y;
+  assign fwdA=IDX<2 ? inA_addr_reg[1:0]>tile_X : inA_addr_reg[3:2]>tile_Y;
+  assign backA=IDX<2 ? inA_addr_reg[1:0]<=tile_X : inA_addr_reg[3:2]<=tile_Y;
 
   assign XA_intf_in[0][`wrreq_extra]=|Adatacnt0[8:4];
   assign XA_intf_in[1][`wrreq_extra]=|Adatacnt1[8:4];
