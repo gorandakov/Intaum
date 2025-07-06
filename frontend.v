@@ -26,7 +26,7 @@ module frontend (
   reg rst0=1;
   always @(posedge clk) begin
       if (rst0) rst0<=0;
-      else if (rst1) rst1<=0;
+      else if (rst) rst<=0;
   end
   function flcond;
     input [3:0] cond;
@@ -104,13 +104,16 @@ module frontend (
       input isand;
       reg [42:0] boogie;
       reg on_low;
+      reg byone;
+      reg byzero,byminus;
+      reg [42:0] val1;
       begin
           boogie=addend>>cookie[5:0];
           val1=val0>>cookie[5:0];
           on_low=boogie[8]==cookie[20];
-          byone=(val1>>7)==1;
-          byminus=(val1>>7)=='1;
-          byzero=(val1>>7)=='0;
+          byone=(boogie>>7)==1;
+          byminus=(boogie>>7)=='1;
+          byzero=(boogie>>7)=='0;
           if (on_low) begin
             addition_check=(boogie[6:0]+val1[6:0])>=cookie[19:13]-!protect_cookie;
               if (cookie[12:6]>cookie[19:13] && (boogie[6:0]+val1[6:0])>cookie[12:6])
@@ -678,7 +681,13 @@ generate
       end
       for(way=0;way<8;way=way+1) begin : cache_way
           wire [11:0][65:0] poo_e;
-
+          wire [66*8-1:0] poo_c;
+          reg [66*8-1:0] poo_c_reg;
+          reg [11:0][65:0] poo_e_reg;
+          always @(posedge clk) begin
+              poo_e_reg<=poo_e;
+              poo_c_reg<=poo_c;
+          end
         for(line=0;line<64;line=line+1) begin : cache_line
           reg [15:0][65:0] line_data;
           reg [1:0][52:0] tag;
@@ -721,7 +730,7 @@ generate
                 if (line==0) assign pppoe[fuB]=tag[51]&&tag[18:0][phy[PHY].funit[fuB].res[6]]=={res[31:26],res[25:13]} ? poo_e_reg && poo_mask_reg[65:0] : 'z;
                 if (line==1) assign anyhit[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
                 if (line==3) assign anyhitW[fuB][way]=tag[52]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
-                if (line==4) assign anyhitcc[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]=={6'h3ff,IP_reg[37],IP_reg[27:5]} && {1'b1,IP_reg[37:28]}=={poo_c_reg[224+30],poo_c_reg[224+8:224+5],poo_c_reg[224+3:224+0];
+                if (line==4) assign anyhitcc[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]=={7'h7f,IP_reg[37],IP_reg[27:5]} && {1'b1,IP_reg[37:28]}=={poo_c_reg[224+30],poo_c_reg[224+8:224+5],poo_c_reg[224+3:224+0]};
                 if (line==5) assign anyhitC[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==IP_reg[36:5] && !poo_c_reg[224+30];
               //  if (line==4) assign tlbhit=tr_reg[phy[PHY].funit[fuB].resX[31:22]][37:6]==phy[PHY].funit[fuB].resX[63:37] && tr_reg[phy[PHY].funit[fuB].resX[31:22]][38];
                 always @(posedge clk) begin

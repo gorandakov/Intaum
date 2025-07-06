@@ -35,7 +35,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   output [66*8-1:0] reqmort_data,
   output [36:0] reqmortaddr,
   output [11:0] reqmort_size,
-  output reqmort_flush_only,
+//  output reqmort_flush_only,
   input outen,
   input [2:0] missue_en,
   input [2:0][38:0] missue_addr,
@@ -61,6 +61,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   wire [8:0] datacnt0;
   wire [8:0] datacnt1;
   wire [1:0] match;
+
+  wire [1:0][`wrreq_size-1:0] XA_intf_in_chg;
 
   wire [`wrreq_size-1:0] wrAreq;
 
@@ -186,6 +188,9 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   wire [5:0] missue0_en;
   wire [5:0][9:0] missue0_phy;
   wire [1:0] missue_idx_first;
+  wire [1:0][38:0] mqueue;
+  wire [1:0] mqueue_en;
+  wire [1:0][9:0] mqueue_phy;
 
   assign wrAreq[`wrAreq_data]=missue0[missue_idx_first];
   assign wrAreq[`wrAreq_XDONE]=IDX<2;
@@ -245,7 +250,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
               Aqpos0=Aqpos0+1;
           end
           if (mqueue_en[1]) begin
-              Aqueue[Aqpos1]=mqueuep[1];
+              Aqueue[Aqpos1]=mqueue[1];
               Adata_in[Aqpos1]=1'b1;
               Aqpos1=Aqpos1+1;
           end
