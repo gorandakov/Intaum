@@ -20,7 +20,9 @@ not a physX token.
 not the source code of my person.
 */
 module frontend (
-  input clk
+  input clk,
+  input irqload,
+  input [36:0] irqaddr
   );
   reg rst=1;
   reg rst0=1;
@@ -130,7 +132,7 @@ module frontend (
       end
   endfunction
 generate
-  genvar tile_X,tile_Y;
+  genvar tile_X,tile_Y,subPHY;
   for(tile_X=0;tile_X<4;tile_X=tile_X+1) 
   for(tile_Y=0;tile_Y<4;tile_Y=tile_Y+1) begin : HV
   wire iscall,isret,ucjmp;
@@ -140,24 +142,11 @@ generate
   reg [65535:0][1:0] predB;
   reg [65535:0][1:0] predC;
   reg [(1<<9)-1:0][65:0] htlb;
-  always @(posedge clk) begin
-      if (isret) glptr<=htlb[sttop--];
-      if (iscall|irqload) begin
-          htlb[sttop++ +1]<=lastIP+5;
-      end
-  end
 
   wire [59:0] missx_en;
   wire [59:0][38:0] missx_addr;
   wire [59:0][59:0] missx_phy;
     
-  assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
-  assign tbuf=tbufl[IP[13:5]];
-  assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
-  assign jen[1]=tbuf[1][43] && IP[42:4]==tbuf[1][82:44];
-  assign iscall=jen[0] && tbuf[0][83] || jen[1] && tbuf[1][83];
-  assign isret=jen[0] && tbuf[0][84] || jen[1] && tbuf[1][84];
-  assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
   for(subPHY=0;subPHY<5;subPHY=subPHY+1) begin
   bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
     tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
@@ -236,15 +225,30 @@ generate
       missx_addr[subPHY*12+11:subPHY*12+9],
       missx_phy[subPHY*12+11:subPHY*12+9],
       shareX);
-  
+    end
       genvar fu,fuB;
       genvar way,way2;
       genvar line;
       genvar PHY;
     for(PHY=0;PHY<60;PHY=PHY+1) begin : phy
       reg [31:0] insn_clopp;
+      reg [41:0] IP; //shl 1
+      reg [13:0] GHT;
+      assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
+      assign tbuf=tbufl[IP[13:5]];
+      assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
+      assign jen[1]=tbuf[1][43] && IP[42:4]==tbuf[1][82:44];
+      assign iscall=jen[0] && tbuf[0][83] || jen[1] && tbuf[1][83];
+      assign isret=jen[0] && tbuf[0][84] || jen[1] && tbuf[1][84];
+      assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
       assign jretire[0][PHY]=&retire_reg[7:0] && cond(jcondx0[reti_reg],jcc0[reti_reg][4:1]);
       assign jretire[1][PHY]=&retire_reg[9:0] && cond(jcondx1[reti_reg],jcc1[reti_reg][4:1]);
+      always @(posedge clk) begin
+          if (isret) sttop--;
+          if (iscall|irqload) begin
+              htlb[sttop++ +1]<={IP_reg4[35:6]+1,5'b0};
+          end
+      end
      
       always @(posedge clk) begin
       if (irqload|ccmiss) begin
@@ -747,6 +751,6 @@ generate
           end
       end
     end
-    end end //multicore loop
+    end //multicore loop
   endgenerate
 endmodule
