@@ -133,7 +133,8 @@ generate
   genvar tile_X,tile_Y;
   for(tile_X=0;tile_X<5;tile_X=tile_X+1) 
   for(tile_Y=0;tile_Y<5;tile_Y=tile_Y+1) begin : HV
-    
+  wire iscall,isret,ucjmp;
+  reg [7:0] sttop;
   reg [38:0][9:0] rTT;
   reg [65535:0][1:0] predA;
   reg [65535:0][1:0] predB;
@@ -141,10 +142,10 @@ generate
   reg [(1<<24)+(1<<9)-1:0][65:0] htlb;
   always @(posedge clk) begin
       if (!ins_addr[0][42:37]) ins_addr[1]<=htlb[{ci,ins_addr[0][36:15]}];
-      if (isret) glptr<=htlb[1<<24+sttop];
+      if (isret) glptr<=htlb[1<<24+sttop--];
       if (iscall|irqload) begin
-          htlb[1<<24+sttop+1]<=glptr;
-          htlb[1<<24+sttop+257]<=lastIP+5;
+         // htlb[1<<24+sttop+1]<=glptr;
+          htlb[1<<24+sttop++ +1]<=lastIP+5;
       end
   end
 
