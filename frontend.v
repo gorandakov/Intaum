@@ -345,8 +345,29 @@ generate
           reg rA_en_reg4, rB_en_reg4, rT_en_reg4;
           wire [65:0] dataA;
           wire [65:0] dataB;
+          wire [65:0] dataBX;
           wire [65:0] dataBIX;
           wire signed [65:0] dataBI;
+          reg [65:0] dataA_reg;
+          reg [65:0] dataB_reg;
+          reg [65:0] dataBIX_reg;
+          reg signed [65:0] dataBI_reg;
+          reg [65:0] dataA_reg2;
+          reg [65:0] dataB_reg2;
+          reg [65:0] dataBIX_reg2;
+          reg signed [65:0] dataBI_reg2;
+          reg [65:0] dataA_reg3;
+          reg signed [65:0] dataAS_reg3;
+          reg [65:0] dataB_reg3;
+          reg [65:0] dataBIX_reg3;
+          reg signed [65:0] dataBIXS_reg3;
+          reg signed [65:0] dataBI_reg3;
+          reg [65:0] dataA_reg4;
+          reg [65:0] dataAS_reg4;
+          reg [65:0] dataB_reg4;
+          reg [65:0] dataBIX_reg4;
+          reg signed [65:0] dataBIXS_reg4;
+          reg signed [65:0] dataBI_reg4;
           wire [3:0] data_phy;
           wire [63:0] res;
           wire [63:0] res_logic;
@@ -367,7 +388,7 @@ generate
           wire cond_tru;
           wire [4:0] cond2;
           wire cond_xtru;
-          wire isand,op_anx,c32,c63,s64,foo,clres,clres2,clres3,res_cloop0,res_cloop1,res_cloop2,res_loop0,res_loop1,res_loop2;
+          wire isand,op_anx,c32,c64,s64,foo,clres,clres2,clres3,res_cloop0,res_cloop1,res_cloop2,res_loop0,res_loop1,res_loop2;
           reg [63:0][63:0] dreqmort;
           reg [63:0][65:0] dreqdata;
           reg [63:0][5:0] dreqmort_flags;
@@ -458,14 +479,14 @@ generate
           assign res_logic[31:0]=opcode[2:1]==0 &~foo ? dataA[31:0]&dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==1 &~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==3 &~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
-          assign res_logic[31:0]=opcode[2:1]==2 &~foo ? phy[(LOOPSTOP+dataBIX[5:0])%60].dataA[31:0] 
+          assign res_logic[31:0]=opcode[2:1]==2 &~foo ? phy[(LOOPSTOP[6:0]+dataBIX[5:0])%60].funit[fu].dataA[31:0] 
               : 'z;
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
 
           assign res_logic[63:32]=opcode_reg[2:1]==0 &~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 &~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==3 &~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
-          assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? phy[(LOOPSTOP+dataBIX_reg[5:0])%60].dataA[63:32] 
+          assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? phy[(LOOPSTOP[6:0]+dataBIX_reg[5:0])%60].funit[fu].dataA[63:32] 
               : 'z;
           assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? {opcode_reg[2:1],dataBI_reg[18:0],dataA[42:32]} : 'z;
           assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? dataA[63:32] : 'z;
