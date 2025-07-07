@@ -514,8 +514,8 @@ generate
           assign res_logic[63:32]=opcode_reg[2:1]==3 &~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? phy[(LOOPSTOP[6:0]+dataBIX_reg[5:0])%60].funit[fu].dataA[63:32] 
               : 'z;
-          assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? {opcode_reg[2:1],dataBI_reg[18:0],dataA[42:32]} : 'z;
-          assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? dataA[63:32] : 'z;
+          assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? {dataB_reg[63:43],dataA[42:32]} : 'z;
+          assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? dataA[63:32] : 'z;
 
           assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg2[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
           assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg2[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
