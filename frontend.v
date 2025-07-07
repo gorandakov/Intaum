@@ -146,6 +146,18 @@ generate
   wire [59:0] missx_en;
   wire [59:0][38:0] missx_addr;
   wire [59:0][59:0] missx_phy;
+
+  `define wrreq_size 654
+  `define wrAreq_size 122
+  wire [1:0][`wrreq_size:0] XH_intf_in[3:0];
+  wire [1:0][`wrreq_size:0] XV_intf_in[3:0];
+  wire [1:0][`wrreq_size:0] XH_intf_out[3:0];
+  wire [1:0][`wrreq_size:0] XV_intf_out[3:0];
+    
+  wire [1:0][`wrAreq_size:0] AXH_intf_in[3:0];
+  wire [1:0][`wrAreq_size:0] AXV_intf_in[3:0];
+  wire [1:0][`wrAreq_size:0] AXH_intf_out[3:0];
+  wire [1:0][`wrAreq_size:0] AXV_intf_out[3:0];
     
   for(subPHY=0;subPHY<5;subPHY=subPHY+1) begin
   bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
@@ -297,6 +309,8 @@ generate
           reg [63:0][63:0] data_fp;
           reg signed [63:0][63:0] data_imm;
           reg [63:0][16:0] data_op;
+          reg [63:0][3:0] data_cond;
+          reg [63:0][3:0] data_cond2;
           reg [63:0][6:0] cloopbndloff;
           reg [39:0] insn;
           reg [63:0][5:0] data_imm_phy;
@@ -304,8 +318,8 @@ generate
           reg [63:0][5:0] rdy; //port lsu/alu=bits 2:1 a,b; port store data=bit 0,A,B; upper 3 bits=needed bits
           reg [63:0][4+5:0] rdyA;
           reg [63:0][4+5:0] rdyB;
-          reg [63:0][4+5:0] rdyFl0;
-          reg [63:0][4+5:0] rdyFl1;
+          reg [63:0][4+5:0] rdyFL0;
+          reg [63:0][4+5:0] rdyFL1;
           reg [63:0][5:0] rdyM; // also used for cloop second condition
           reg [63:0] free;
           reg [4+5:0] rA;
@@ -343,6 +357,11 @@ generate
           reg [4+5:0] rFL2_reg4;
           reg [4+5:0] rT_reg4;
           reg rA_en_reg4, rB_en_reg4, rT_en_reg4;
+          reg [4+5:0] rTMem;
+          reg [4+5:0] rTMem_reg;
+          reg [4+5:0] rTMem_reg2;
+          reg [4+5:0] rTMem_reg3;
+          reg [4+5:0] rTMem_reg4;
           wire [65:0] dataA;
           wire [65:0] dataB;
           wire [65:0] dataBX;
@@ -372,8 +391,14 @@ generate
           wire [63:0] res;
           wire [63:0] res_logic;
           wire [63:0] res_shift;
-          wire [63:0] res_sxt;
+          wire [63:0] val_sxt;
+          wire [63:0] val_else;
           wire [63:0] res_mul;
+          reg  [63:0] res_shift_reg;
+          reg [63:0] res_reg;
+          reg [63:0] res_reg2;
+          reg [63:0] res_reg3;
+          reg [63:0] res_mul_reg;
           reg [17:0] opcode;
           reg [17:0] opcodex;
           reg [17:0] opcode_reg;
@@ -398,8 +423,8 @@ generate
           assign missx_en[PHY]=index12m_idx_reg==fu;
           assign missx_addr[PHY]= fu==index12m_idx_reg ? funit[index12m_idx_reg].dreqmort[index_miss_reg3[index12m_idx_reg]] : 'z;
           assign interPHY_pfaff=missrs_reg4[dreqmort[index_miss_reg4][18:11]] && {10{index12m_idx==fu && (cntphy==1 || cntfirst==PHY)}};
-          bit_find_index indexLSU_ALU(rdy[63:0][2]&rdy[63:0][1]&{64{~phy[PHY].funit[(fu+1)%12].is_mul_reg3}},indexFU,indexFU_has);
-          bit_find_index indexLDU(rdy[63:0][0],indexLDU,indexLDU_has);
+          bit_find_index indexLSU_ALU_mod(rdy[63:0][2]&rdy[63:0][1]&{64{~phy[PHY].funit[(fu+1)%12].is_mul_reg3}},indexLSU_ALU,indexLSU_ALU_has);
+          bit_find_index indexLDU_mod(rdy[63:0][0],indexLDU,indexLDU_has);
           bit_find_index indexAlloc(free,alloc[5:0],rT_en0);
           bit_find_indexR indexAlloc2(free,alloc2[5:0],rTm_en0);
           bit_find_index indexST(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] && {64{sten[fu]}},indexST,indexST_has);
@@ -491,15 +516,15 @@ generate
           assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? {opcode_reg[2:1],dataBI_reg[18:0],dataA[42:32]} : 'z;
           assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{opcode_reg[2:1],dataBI_reg[18:0]}) ? dataA[63:32] : 'z;
 
-          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
-          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
-          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 'z;
-          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg4[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 'z;
-          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==1 ? {32{res_mul_reg[31]}} : 'z;
-          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg5[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 'z;
+          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg2[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
+          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg2[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
+          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg2[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 'z;
+          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg3[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg3[2:1]==1 ? {32{res_mul_reg[31]}} : 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg3[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg3[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 'z;
           assign val_else[31:0]=opcode[12:11]==0 ? dataA[31:0] : 'z;
           assign val_else[31:0]=opcode[12:11]==1 ? 1 : 'z;
           assign val_else[31:0]=opcode[12:11]==2 ? 0: 'z;
@@ -508,7 +533,7 @@ generate
           assign val_else[65:32]=opcode[12:11]==1 ? 1<<33+1 : 'z;
           assign val_else[65:32]=opcode[12:11]==2 ? 1<<33 : 'z;
           assign val_else[65:32]=opcode[12:11]==3 ? 34'h1_ffff_ffff : 'z;
-          assign val_sxt[31:0]=dataBI[25:24]!=3 ? dataA[31:0]<<(8<<dataBI0[25:24])>>>(8<<dataBI0[25:24]) : {dataA[7:0],dataA[15:8],dataA[23:16],dataA[31:24]};
+          assign val_sxt[31:0]=dataBI[25:24]!=3 ? dataA[31:0]<<(8<<dataBI[25:24])>>>(8<<dataBI[25:24]) : {dataA[7:0],dataA[15:8],dataA[23:16],dataA[31:24]};
           assign val_sxt[63:0]=dataBI_reg[25:24]!=3 ? dataA_reg[31:0]<<(8<<dataBI[25:24])>>>(8<<dataBI[25:24])>>>32 : {32{dataA_reg}};
           assign res_shift[31:0]=opcode[3:1]==2 ? dataA[31:0]<<dataB[5:0] : 'z;
           assign res_shift[31:0]=opcode[3:1]==3 ? dataA[31:0]<<dataBI[5:0] : 'z;
@@ -553,8 +578,8 @@ generate
               rTMem<={fu,rdyM[indexLSU_ALU]};
               opcode<=data_op[indexLSU_ALU];
               opcodex<=data_op[indexLDU];
-              rFL<=rdyFL[indexLSU_ALU];
-              rFL2<=rdyFL2[indexLSU_ALU];
+              rFL<=rdyFL0[indexLSU_ALU];
+              rFL2<=rdyFL1[indexLSU_ALU];
               rA_reg<=rA;
               rB_reg<=rB;
               rBX_reg<=rBX;
@@ -591,6 +616,11 @@ generate
               opcodex_reg4<=opcodex_reg3;
               rFL_reg4<=rFL_reg3;
               rFL2_reg4<=rFL2_reg3;
+              res_shift_reg<=res_shift;
+              res_reg<=res;
+              res_reg2<=res_reg;
+              res_reg3<=res_reg2;
+              res_mul_reg<=res_mul;
               if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
               if (except) begin 
                   rTT<=rTTB;
@@ -621,8 +651,8 @@ generate
                   if (rT_en && funit[fu3].rdyB[sch]==rT && funit[fu3].rdy[sch][5]) funit[fu3].rdy[sch][2]=1'b1; 
                   if (rT_en && funit[fu3].rdyB[sch]==rT && funit[fu3].rdy[sch][3]) funit[fu3].rdy[sch][0]=1'b1;
                   if (rT_en && funit[fu3].rdyA[sch]==rT && funit[fu3].rdy[sch][4]) funit[fu3].rdy[sch][1]=1'b1;
-                  if (rT_en && funit[fu3].rdyFl0[sch]==rT && funit[fu3].rdy[sch][6]) funit[fu3].rdy[sch[7]]=1'b1;
-                  if (rT_en && funit[fu3].rdyFl1[sch]==rT && funit[fu3].rdy[sch[8]]) funit[fu3].rdy[sch[9]]=1'b1;
+                  if (rT_en && funit[fu3].rdyFL0[sch]==rT && funit[fu3].rdy[sch][6]) funit[fu3].rdy[sch[7]]=1'b1;
+                  if (rT_en && funit[fu3].rdyFL1[sch]==rT && funit[fu3].rdy[sch[8]]) funit[fu3].rdy[sch[9]]=1'b1;
               end
               aligned[PHY][fu]<=|dreqmort_flags[LDI][4:3];
               if (&aligned) begin
@@ -734,19 +764,19 @@ generate
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[11:8] && ~^funit[fuZ].instr[39:38])
                        rdyB<=funit[fuZ].alloc;
                    end
-                   rdyFL[alloc]<=rTT[instr[33]];
+                   rdyFL0[alloc]<=rTT[instr[33]];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[33] && funit[fuZ].instr[39:32]==2)
-                       rdyFL<=funit[fuZ].alloc2;
+                       rdyFL0<=funit[fuZ].alloc2;
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[33] && ~^funit[fuZ].instr[39:38])
-                       rdyFL<=funit[fuZ].alloc;
+                       rdyFL0<=funit[fuZ].alloc;
                    end
-                   rdyFL2[alloc]<=rTT[2];
+                   rdyFL1[alloc]<=rTT[2];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==2 && funit[fuZ].instr[39:32]==2)
-                       rdyFL2<=funit[fuZ].alloc2;
+                       rdyFL1<=funit[fuZ].alloc2;
                      if(fuZ<fu && funit[fuZ].instr[3:0]==2 && ~^funit[fuZ].instr[39:38])
-                       rdyFL2<=funit[fuZ].alloc;
+                       rdyFL1<=funit[fuZ].alloc;
                    end
                   rdy[alloc]<={1'b1,instr[39],1'b1,instr[32:27]==3,instr[39]};  
                   data_op[alloc][12:11]=instr[13:12];
