@@ -1,10 +1,7 @@
 module memblk(
   input clk,
   input rst,
-  input [39:0][1:0] wsz0,
-  input [39:0][32:0] waddr0,
-  input [39:0][65:0] wdata0,
-  input [39:0] wen0,
+  
   input [4:0][26:0] rdaddr0,
   output reg [4:0][8*66-1:0] rddata,
   input [4:0] rden_in,
