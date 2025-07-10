@@ -382,6 +382,8 @@ generate
           wire cond_tru;
           wire [4:0] cond2;
           wire cond_xtru;
+          integer fu3;
+          integer sch;
           wire isand,op_anx,c32,c64,s64,foo,clres,clres2,clres3,res_cloop0,res_cloop1,res_cloop2,res_loop0,res_loop1,res_loop2;
           reg [63:0][63:0] dreqmort;
           reg [63:0][65:0] dreqdata;
