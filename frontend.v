@@ -147,6 +147,9 @@ generate
   wire [59:0][38:0] missx_addr;
   wire [59:0][59:0] missx_phy;
 
+  wire except;
+  wire [1:0][42:0] retIP;
+
   `define wrreq_size 654
   `define wrAreq_size 122
   wire [1:0][`wrreq_size:0] XH_intf_in[3:0];
@@ -167,6 +170,10 @@ generate
     for(PHY=0;PHY<60;PHY=PHY+1) begin : phy
       reg [31:0] insn_clopp;
       reg [41:0] IP; //shl 1
+      reg [41:0] IP_reg;
+      reg [41:0] IP_reg2;
+      reg [41:0] IP_reg3;
+      reg [41:0] IP_reg4;
       reg [13:0] GHT;
       wire ccmiss;
       reg [38:0][9:0] rTT;
@@ -249,6 +256,10 @@ generate
           anyhitC_reg<=anyhitC;
           anyhitC_reg2<=anyhitC_reg;
           anyhitC_reg3<=anyhitC_reg2;
+          IP_reg<=IP;
+          IP_reg2<=IP_reg;
+          IP_reg3<=IP_reg2;
+          IP_reg4<=IP_reg3;
       end
 
       assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
