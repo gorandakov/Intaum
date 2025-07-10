@@ -206,6 +206,8 @@ generate
       reg [63:0][4:0] miss_reg3;
       reg [63:0][4:0] miss_reg4;
       reg [255:0][85:0] tbufl;
+      wire [11:0] retire;
+      reg [11:0] retire_reg;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -391,8 +393,6 @@ generate
           reg [63:0][65:0] dreqdata;
           reg [63:0][5:0] dreqmort_flags;
           reg [63:0][3:0] dreqdata_flags;
-          wire retire;
-          reg retire_reg;
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
           assign missx_en[PHY]=index12m_idx_reg==fu;
