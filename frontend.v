@@ -598,7 +598,7 @@ generate
               end
               if (rT_en0_reg | rT_en_reg && |opcode_reg[7:6]) begin
                   dreqmort[LQ][31:0]<=res[31:0];
-                  dreqmord_flags[LQ]<={~chk,1'b0,opcode_reg[7:6],opcode_reg[1:0]};
+                  dreqmort_flags[LQ]<={~chk,1'b0,opcode_reg[7:6],opcode_reg[1:0]};
               end
               if (rT_en0_reg2 | rT_en_reg2 && |opcode_reg2[7:6]) begin
                   dreqmort[LQ][63:32]<=res[63:32];
