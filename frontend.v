@@ -212,6 +212,18 @@ generate
       reg [63:0][4:0] jcc1;
       reg reti;
       reg reti_reg;
+      wire [11:0][65:0] pppoe;
+      reg [11:0][65:0] pppoe_reg;
+      reg [11:0][65:0] pppoe_reg2;
+      reg [11:0][65:0] pppoe_reg3;
+      reg [11:0] anyhit;
+      reg [11:0] anyhitW;
+      reg [11:0] anyhitC;
+      reg [11:0] anyhit_reg;
+      reg [11:0] anyhitW_reg;
+      reg [11:0] anyhitC_reg;
+      reg [11:0] anyhitC_reg2;
+      reg [11:0] anyhitC_reg3;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -227,6 +239,14 @@ generate
               htlb[sttop++ +1]<={IP_reg4[35:6]+1,5'b0};
           end
           reti_reg<=reti;
+          pppoe_reg<=pppoe;
+          pppoe_reg2<=pppoe_reg;
+          pppoe_reg3<=pppoe_reg2;
+          anyhit_reg<=anyhit;
+          anyhitW_reg<=anyhitW;
+          anyhitC_reg<=anyhitC;
+          anyhitC_reg2<=anyhitC_reg;
+          anyhitC_reg3<=anyhitC_reg2;
       end
 
       assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
