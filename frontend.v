@@ -199,12 +199,8 @@ generate
       wire [1:0] pred_en;
       wire [1:0][85:0] tbuf;
       wire [1:0] jen;
-      reg [63:0][4:0] miss;
+      reg [63:0][59:0] miss;
       reg [63:0][11:0] missus;
-      reg [63:0][4:0] miss_reg;
-      reg [63:0][4:0] miss_reg2;
-      reg [63:0][4:0] miss_reg3;
-      reg [63:0][4:0] miss_reg4;
       reg [255:0][85:0] tbufl;
       wire [11:0] retire;
       reg [11:0] retire_reg;
@@ -222,10 +218,6 @@ generate
           if (iscall|irqload) begin
               htlb[sttop++ +1]<={IP_reg4[35:6]+1,5'b0};
           end
-          miss_reg<=miss;
-          miss_reg2<=miss_reg;
-          miss_reg3<=miss_reg2;
-          miss_reg4<=miss_reg3;
       end
      
       always @(posedge clk) begin
@@ -393,6 +385,11 @@ generate
           reg [63:0][65:0] dreqdata;
           reg [63:0][5:0] dreqmort_flags;
           reg [63:0][3:0] dreqdata_flags;
+          reg [63:0] miss;
+          reg [63:0] miss_reg;
+          reg [63:0] miss_reg2;
+          reg [63:0] miss_reg3;
+          reg [63:0] miss_reg4;
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
           assign missx_en[PHY]=index12m_idx_reg==fu;
@@ -601,6 +598,10 @@ generate
               isand_reg<=isand;
               c32_reg<=c32;
               retire_reg<=retire;
+              miss_reg<=miss;
+              miss_reg2<=miss_reg;
+              miss_reg3<=miss_reg2;
+              miss_reg4<=miss_reg4|miss_reg3;
               if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
               if (except) begin 
                   rTT<=rTTB;
