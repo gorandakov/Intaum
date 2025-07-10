@@ -196,6 +196,8 @@ generate
       reg [9:0] expunh_phy_reg;
       reg [36:0] expunv_addr_reg;
       reg [9:0] expunv_phy_reg;
+      wire [1:0] pred_en;
+      wire [1:0][85:0] tbuf;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
