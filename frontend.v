@@ -158,7 +158,7 @@ generate
   wire [1:0][`wrAreq_size:0] AXV_intf_in[3:0];
   wire [1:0][`wrAreq_size:0] AXH_intf_out[3:0];
   wire [1:0][`wrAreq_size:0] AXV_intf_out[3:0];
-    
+  wire [1:0][59:0] jretire;
       genvar fu,fuB;
       genvar way,way2;
       genvar line;
@@ -208,6 +208,8 @@ generate
       reg [63:0][3:0] jcondx1;
       reg [63:0][4:0] jcc0;
       reg [63:0][4:0] jcc1;
+      reg reti;
+      reg reti_reg;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -222,6 +224,7 @@ generate
           if (iscall|irqload) begin
               htlb[sttop++ +1]<={IP_reg4[35:6]+1,5'b0};
           end
+          reti_reg<=reti;
       end
      
       always @(posedge clk) begin
