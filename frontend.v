@@ -138,7 +138,6 @@ generate
   for(tile_Y=0;tile_Y<4;tile_Y=tile_Y+1) begin : HV
   wire iscall,isret,ucjmp;
   reg [7:0] sttop;
-  reg [38:0][9:0] rTT;
   reg [65535:0][1:0] predA;
   reg [65535:0][1:0] predB;
   reg [65535:0][1:0] predC;
@@ -247,6 +246,13 @@ generate
       reg [31:0] insn_clopp;
       reg [41:0] IP; //shl 1
       reg [13:0] GHT;
+      reg [38:0][9:0] rTT;
+      reg [38:0][9:0] rTTB;
+      reg [63:0][1:0] rTTE;
+      reg [63:0][9:0] rTTNew;
+      reg [63:0][9:0] rTTOld;
+      reg [63:0][9:0] rTTNewm;
+      reg [63:0][9:0] rTTOldm;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -736,19 +742,19 @@ generate
                   if (instr[39:38]==2) begin
                     rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14]|(insn_cloop[4]&&~|instr[3:2]),instr[3:0]}]<=alloc2;
                     rTTOldm[INSI]<=rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14]|(insn_cloop[4]&&~|instr[3:2]),instr[3:0]}];
-                    rTTNewm[INSI]<=alloc2;
+                    rTTNewm[INSI]<={fu[3:0],alloc2};
                     rTTe[alloc2][0]<=1'b1;
                     if (instr[34]) begin
                         rTT[{insn_cloop[4]&&~|instr[7:6],1'b0|(insn_cloop[4]&&~|instr[7:6]),instr[7:4]}]<=alloc;
                         rTTOld[INSI]<=rTT[{insn_cloop[4]&&~|instr[7:6],1'b0,instr[7:4]}];
-                        rTTNew[INSI]<=alloc;
+                        rTTNew[INSI]<={fu[3:0],alloc};
                         rTTe[alloc][0]<=1;
                     end
                   end
                   if (~^instr[39:38]) begin
                        rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14]|(insn_cloop[4]&&~|instr[3:2]),instr[3:0]}]<=alloc;
                        rTTOld[INSI]<=rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]}];
-                       rTTNew[INSI]<=alloc;
+                       rTTNew[INSI]<={fu[3:0],alloc};
                        rTTe[alloc][0]<=1'b1;
                   end
                    data_retFL[INSI]<=1;
