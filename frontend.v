@@ -150,7 +150,7 @@ generate
   wire except;
   wire [1:0][42:0] retIP;
   wire [63:0] retSRCIP;
-
+  wire [31:0] random;
   `define wrreq_size 654
   `define wrAreq_size 122
   wire [1:0][`wrreq_size:0] XH_intf_in[3:0];
