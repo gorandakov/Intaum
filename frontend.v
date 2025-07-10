@@ -23,7 +23,7 @@ no UK tech mogul's money were used to make this project.
 module frontend (
   input clk,
   input irqload,
-  input [36:0] irqaddr
+  input [3:0] irqnum
   );
   reg rst=1;
   reg rst0=1;
@@ -159,6 +159,7 @@ generate
   wire [1:0][`wrAreq_size:0] AXH_intf_out[3:0];
   wire [1:0][`wrAreq_size:0] AXV_intf_out[3:0];
   wire [1:0][59:0] jretire;
+  wire irq_IP={31'b1,irqnum[3:0],7'b0};
       genvar fu,fuB;
       genvar way,way2;
       genvar line;
@@ -167,6 +168,7 @@ generate
       reg [31:0] insn_clopp;
       reg [41:0] IP; //shl 1
       reg [13:0] GHT;
+      wire ccmiss;
       reg [38:0][9:0] rTT;
       reg [38:0][9:0] rTTB;
       reg [63:0][1:0] rTTE;
@@ -226,7 +228,9 @@ generate
           end
           reti_reg<=reti;
       end
-     
+
+      assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
+      
       always @(posedge clk) begin
       if (irqload|ccmiss) begin
           IP<=irqload ? irq_IP : IP_reg4;
