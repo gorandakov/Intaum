@@ -562,7 +562,7 @@ generate
               if (rst) sten<=12'hf; else sten<={sten[7:0],sten[12:8]};
               dataA_reg[63:32]<=dataA[63:32];
             //  dataA_rexx[31:0]<=dataA[31:0];
-              dataA_reg[31:0]<=dataA_rexx[31:0];
+              dataA_reg[31:0]<=dataA[31:0];
               dataA_reg2<=dataA_reg;
               dataA_reg3<=dataA_reg2;
               dataAS_reg3<=dataA_reg2;
@@ -570,7 +570,7 @@ generate
               dataAS_reg4<=dataAS_reg4;
               dataBIX_reg[63:32]<=dataBIX[63:32];
              // dataBIX_rexx[31:0]<=dataBIX[31:0];
-              dataBIX_reg[31:0]<=dataBIX_rexx[31:0];
+              dataBIX_reg[31:0]<=dataBIX[31:0];
               dataBIX_reg2<=dataBIX_reg;
               dataBIX_reg3<=dataBIX_reg2;
               dataBIXS_reg3<=dataBIX_reg2;
