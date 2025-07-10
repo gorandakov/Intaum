@@ -272,6 +272,8 @@ generate
           reg [63:0][4+5:0] rdyFL1;
           reg [63:0][5:0] rdyM; // also used for cloop second condition
           reg [63:0] free;
+          wire isand,chk;
+          reg isand_reg;
           reg [4+5:0] rA;
           reg [4+5:0] rB;
           reg [4+5:0] rBX;
@@ -440,9 +442,9 @@ generate
           assign {c64,s64,res[63:32]}=opcode_reg[7:3]==2 && cond_tru_reg ?
           {dataA_reg[65:64]|{!isand_reg|!chk,1'b0},res_logic[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==1 && cond_tru ?
-            {1'b0,res_sxt[31:0]} : 'z;
+          {1'b0,val_sxt[31:0]} : 'z;
           assign {s64,c64,res[63:32]}=opcode_reg[7:0]==1 && cond_tru_reg ?
-            {res_sxt[63],res_sxt[64:32]} : 'z;
+          {val_sxt[63],val_sxt[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
           assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[32])&& cond_tru_reg ?
@@ -573,6 +575,7 @@ generate
               res_reg2<=res_reg;
               res_reg3<=res_reg2;
               res_mul_reg<=res_mul;
+              isand_reg<=isand;
               if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
               if (except) begin 
                   rTT<=rTTB;
