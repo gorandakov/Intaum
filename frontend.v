@@ -159,85 +159,6 @@ generate
   wire [1:0][`wrAreq_size:0] AXH_intf_out[3:0];
   wire [1:0][`wrAreq_size:0] AXV_intf_out[3:0];
     
-  for(subPHY=0;subPHY<5;subPHY=subPHY+1) begin
-  bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
-    tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
-      clk,rst,
-      XH_intf_in[tile_X], 
-      XH_intf_out[tile_X],
-      AXH_intf_in[tile_X], 
-      AXH_intf_out[tile_X],
-      ~random[0],
-      funit[subPHY*12].expun_data_reg, 
-      funit[subPHY*12].expun_addr_reg,
-      {funit[subPHY*12].expun_addr_reg[38:37],funit[subPHY*12].expun_phy_reg},
-      wrtXH_stall,
-      funit[subPHY*12].insetrh_data,
-      funit[subPHY*12].insetrh_addr,
-      {funit[subPHY*12].insetrh_shared,funit[subPHY*12].insetrh_write,funit[subPHY*12].insetrh_phy},
-      funit[subPHY*12].insetrh_en,
-      missx_en[subPHY*12+2:subPHY*12+0],
-      missx_addr[subPHY*12+2:subPHY*12+0],
-      missx_phy[subPHY*12+2:subPHY*12+0],
-      shareX);
-    tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
-      clk,rst,
-      XV_intf_in[tile_Y], 
-      XV_intf_out[tile_Y],
-      AXV_intf_in[tile_X], 
-      AXV_intf_out[tile_X],
-      random[0],
-      funit[subPHY*12].expun_data_reg, 
-      funit[subPHY*12].expun_addr_reg,
-      {funit[subPHY*12].expun_addr_reg[38:37],funit[subPHY*12].expun_phy_reg},
-      wrtXV_stall,
-      funit[subPHY*12].insetrh_data,
-      funit[subPHY*12].insetrh_addr,
-      {funit[subPHY*12].insetrh_shared,funit[subPHY*12].insetrh_write,funit[subPHY*12].insetrh_phy},
-      funit[subPHY*12].insetrh_en,
-      missx_en[subPHY*12+5:subPHY*12+3],
-      missx_addr[subPHY*12+5:subPHY*12+3],
-      missx_phy[subPHY*12+5:subPHY*12+3],
-      shareX);
-    tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
-      clk,rst,
-      XH_intf_in[tile_X], 
-      XH_intf_out[tile_X],
-      AXH_intf_in[tile_X], 
-      AXH_intf_out[tile_X],
-      ~random[0],
-      funit[subPHY*12].expunh_data_reg, 
-      funit[subPHY*12].expunh_addr_reg,
-      {funit[subPHY*12].expunh_addr_reg[38:37],funit[subPHY*12].expunh_phy_reg},
-      wrtXH_stall,
-      funit[subPHY*12].insetrv_data,
-      funit[subPHY*12].insetrv_addr,
-      {funit[subPHY*12].insetrv_shared,funit[subPHY*12].insetrv_write,funit[subPHY*12].insetrv_phy},
-      funit[subPHY*12].insetrv_en,
-      missx_en[subPHY*12+8:subPHY*12+6],
-      missx_addr[subPHY*12+8:subPHY*12+6],
-      missx_phy[subPHY*12+8:subPHY*12+6],
-      shareX);
-    tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
-      clk,rst,
-      XV_intf_in[tile_Y], 
-      XV_intf_out[tile_Y],
-      AXV_intf_in[tile_X], 
-      AXV_intf_out[tile_X],
-      random[0],
-      funit[subPHY*12].expunv_data_reg, 
-      funit[subPHY*12].expunv_addr_reg,
-      {funit[subPHY*12].expunv_addr_reg[38:37],funit[subPHY*12].expunv_phy_reg},
-      wrtXV_stall,
-      funit[subPHY*12].insetrv_data,
-      funit[subPHY*12].insetrv_addr,
-      {funit[subPHY*12].insetrv_shared,funit[subPHY*12].insetrv_write,funit[subPHY*12].insetrv_phy},
-      funit[subPHY*12].insetrv_en,
-      missx_en[subPHY*12+11:subPHY*12+9],
-      missx_addr[subPHY*12+11:subPHY*12+9],
-      missx_phy[subPHY*12+11:subPHY*12+9],
-      shareX);
-    end
       genvar fu,fuB;
       genvar way,way2;
       genvar line;
@@ -918,6 +839,86 @@ generate
           end
       end
     end
+      for(subPHY=0;subPHY<5;subPHY=subPHY+1) begin
+  bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
+    tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
+      clk,rst,
+      XH_intf_in[tile_X], 
+      XH_intf_out[tile_X],
+      AXH_intf_in[tile_X], 
+      AXH_intf_out[tile_X],
+      ~random[0],
+      funit[subPHY*12].expun_data_reg, 
+      funit[subPHY*12].expun_addr_reg,
+      {funit[subPHY*12].expun_addr_reg[38:37],funit[subPHY*12].expun_phy_reg},
+      wrtXH_stall,
+      funit[subPHY*12].insetrh_data,
+      funit[subPHY*12].insetrh_addr,
+      {funit[subPHY*12].insetrh_shared,funit[subPHY*12].insetrh_write,funit[subPHY*12].insetrh_phy},
+      funit[subPHY*12].insetrh_en,
+      missx_en[subPHY*12+2:subPHY*12+0],
+      missx_addr[subPHY*12+2:subPHY*12+0],
+      missx_phy[subPHY*12+2:subPHY*12+0],
+      shareX);
+    tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
+      clk,rst,
+      XV_intf_in[tile_Y], 
+      XV_intf_out[tile_Y],
+      AXV_intf_in[tile_X], 
+      AXV_intf_out[tile_X],
+      random[0],
+      funit[subPHY*12].expun_data_reg, 
+      funit[subPHY*12].expun_addr_reg,
+      {funit[subPHY*12].expun_addr_reg[38:37],funit[subPHY*12].expun_phy_reg},
+      wrtXV_stall,
+      funit[subPHY*12].insetrh_data,
+      funit[subPHY*12].insetrh_addr,
+      {funit[subPHY*12].insetrh_shared,funit[subPHY*12].insetrh_write,funit[subPHY*12].insetrh_phy},
+      funit[subPHY*12].insetrh_en,
+      missx_en[subPHY*12+5:subPHY*12+3],
+      missx_addr[subPHY*12+5:subPHY*12+3],
+      missx_phy[subPHY*12+5:subPHY*12+3],
+      shareX);
+    tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
+      clk,rst,
+      XH_intf_in[tile_X], 
+      XH_intf_out[tile_X],
+      AXH_intf_in[tile_X], 
+      AXH_intf_out[tile_X],
+      ~random[0],
+      funit[subPHY*12].expunh_data_reg, 
+      funit[subPHY*12].expunh_addr_reg,
+      {funit[subPHY*12].expunh_addr_reg[38:37],funit[subPHY*12].expunh_phy_reg},
+      wrtXH_stall,
+      funit[subPHY*12].insetrv_data,
+      funit[subPHY*12].insetrv_addr,
+      {funit[subPHY*12].insetrv_shared,funit[subPHY*12].insetrv_write,funit[subPHY*12].insetrv_phy},
+      funit[subPHY*12].insetrv_en,
+      missx_en[subPHY*12+8:subPHY*12+6],
+      missx_addr[subPHY*12+8:subPHY*12+6],
+      missx_phy[subPHY*12+8:subPHY*12+6],
+      shareX);
+    tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
+      clk,rst,
+      XV_intf_in[tile_Y], 
+      XV_intf_out[tile_Y],
+      AXV_intf_in[tile_X], 
+      AXV_intf_out[tile_X],
+      random[0],
+      funit[subPHY*12].expunv_data_reg, 
+      funit[subPHY*12].expunv_addr_reg,
+      {funit[subPHY*12].expunv_addr_reg[38:37],funit[subPHY*12].expunv_phy_reg},
+      wrtXV_stall,
+      funit[subPHY*12].insetrv_data,
+      funit[subPHY*12].insetrv_addr,
+      {funit[subPHY*12].insetrv_shared,funit[subPHY*12].insetrv_write,funit[subPHY*12].insetrv_phy},
+      funit[subPHY*12].insetrv_en,
+      missx_en[subPHY*12+11:subPHY*12+9],
+      missx_addr[subPHY*12+11:subPHY*12+9],
+      missx_phy[subPHY*12+11:subPHY*12+9],
+      shareX);
+    end
+
     end //multicore loop
   endgenerate
 endmodule
