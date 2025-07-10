@@ -390,6 +390,7 @@ generate
           reg [63:0][5:0] dreqmort_flags;
           reg [63:0][3:0] dreqdata_flags;
           wire retire;
+          reg retire_reg;
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
           assign missx_en[PHY]=index12m_idx_reg==fu;
@@ -597,6 +598,7 @@ generate
               res_mul_reg<=res_mul;
               isand_reg<=isand;
               c32_reg<=c32;
+              retire_reg<=retire;
               if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
               if (except) begin 
                   rTT<=rTTB;
