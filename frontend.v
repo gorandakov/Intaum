@@ -199,6 +199,12 @@ generate
       wire [1:0] pred_en;
       wire [1:0][85:0] tbuf;
       wire [1:0] jen;
+      reg [63:0][4:0] miss;
+      reg [63:0][11:0] missus;
+      reg [63:0][4:0] miss_reg;
+      reg [63:0][4:0] miss_reg2;
+      reg [63:0][4:0] miss_reg3;
+      reg [63:0][4:0] miss_reg4;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -213,6 +219,10 @@ generate
           if (iscall|irqload) begin
               htlb[sttop++ +1]<={IP_reg4[35:6]+1,5'b0};
           end
+          miss_reg<=miss;
+          miss_reg2<=miss_reg;
+          miss_reg3<=miss_reg2;
+          miss_reg4<=miss_reg3;
       end
      
       always @(posedge clk) begin
@@ -761,11 +771,11 @@ generate
                           lderror[ldi]<=1'b1;
                       if (!anyhitw_reg && is_store_reg && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
-                          missus[resX[18:11]][PHY]=1;
+                          missus[resX[18:11]][PHY%5]=1;
                       end
                       if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
-                          missus[res_reg[18:11]][PHY]=1;
+                          missus[res_reg[18:11]][PHY%5]=1;
                       end
                   end
                   missrs=0;
