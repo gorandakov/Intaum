@@ -204,6 +204,8 @@ generate
       reg [255:0][85:0] tbufl;
       wire [11:0] retire;
       reg [11:0] retire_reg;
+      reg [63:0][3:0] jcondx0;
+      reg [63:0][3:0] jcondx1;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -270,8 +272,6 @@ generate
           reg [63:0][3:0] data_cond;
           reg [63:0][3:0] data_cond2;
           reg [63:0][6:0] cloopbndloff;
-          reg [63:0][3:0] jcondx0;
-          reg [63:0][3:0] jcondx1;
           reg [39:0] insn;
           reg [63:0][5:0] data_imm_phy;
           reg [63:0][5:0] data_loopstop;
