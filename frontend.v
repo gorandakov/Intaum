@@ -347,7 +347,7 @@ generate
       bit_find_index12r fjmp2(isJump, idj1p,idj1,idj1_has);
       for(fu=0;fu<12;fu=fu+1) begin : funit
           reg [63:0][63:0] data_gen;
-          reg [63:0][63:0] ;
+          reg [63:0][63:0] data_fp;
           reg signed [63:0][63:0] data_imm;
           reg [63:0][16:0] data_op;
           reg [63:0][3:0] data_cond;
