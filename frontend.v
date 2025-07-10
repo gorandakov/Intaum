@@ -313,6 +313,18 @@ generate
           reg [4+5:0] rFL_reg3;
           reg [4+5:0] rFL2_reg3;
           reg [4+5:0] rT_reg3;
+          wire [5:0] indexLDU;
+          wire indexLDU_has;
+          wire [5:0] indexLSU_ALU;
+          wire indexLSU_ALU_has;
+          reg [5:0] indexLDU_reg;
+          reg indexLDU_has_reg;
+          reg [5:0] indexLSU_ALU_reg;
+          reg indexLSU_ALU_has_reg;
+          reg [5:0] indexLDU_reg2;
+          reg indexLDU_has_reg2;
+          reg [5:0] indexLSU_ALU_reg2;
+          reg indexLSU_ALU_has_reg2;
           reg rA_en_reg3, rB_en_reg3, rT_en_reg3;
           reg [4+5:0] rA_reg4;
           reg [4+5:0] rB_reg4;
@@ -606,6 +618,14 @@ generate
               miss_reg2<=miss_reg;
               miss_reg3<=miss_reg2;
               miss_reg4<=miss_reg4|miss_reg3;
+              indexLDU_reg<=indexLDU;
+              indexLDU_has_reg<=indexLDU_has;
+              indexLSU_ALU_reg<=indexLSU_ALU;
+              indexLSU_ALU_has_reg<=indexLSU_ALU_has;
+              indexLDU_reg2<=indexLDU_reg;
+              indexLDU_has_reg2<=indexLDU_has_reg;
+              indexLSU_ALU_reg2<=indexLSU_ALU_reg;
+              indexLSU_ALU_has_reg2<=indexLSU_ALU_has_reg;
               if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
               if (except) begin 
                   rTT<=rTTB;
