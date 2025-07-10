@@ -215,8 +215,8 @@ generate
       assign iscall=jen[0] && tbuf[0][83] || jen[1] && tbuf[1][83];
       assign isret=jen[0] && tbuf[0][84] || jen[1] && tbuf[1][84];
       assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
-      assign jretire[0][PHY]=&retire_reg[7:0] && cond(jcondx0[reti_reg],jcc0[reti_reg][4:1]);
-      assign jretire[1][PHY]=&retire_reg[9:0] && cond(jcondx1[reti_reg],jcc1[reti_reg][4:1]);
+      assign jretire[0][PHY]=&retire_reg[7:0] && flcond(jcondx0[reti_reg],jcc0[reti_reg][4:1]);
+      assign jretire[1][PHY]=&retire_reg[9:0] && flcond(jcondx1[reti_reg],jcc1[reti_reg][4:1]);
       always @(posedge clk) begin
           if (isret) sttop--;
           if (iscall|irqload) begin
