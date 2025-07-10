@@ -318,6 +318,8 @@ generate
           wire [65:0] dataB;
           wire [65:0] dataBX;
           wire [65:0] dataBIX;
+          wire [3:0] dataFL;
+          wire [3:0] dataFL2;
           wire signed [65:0] dataBI;
           reg [65:0] dataA_reg;
           reg [65:0] dataB_reg;
