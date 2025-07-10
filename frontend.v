@@ -236,6 +236,8 @@ generate
       reg [3:0] ifu_stage_valid;
       reg [63:0][41:0] jcond0;
       reg [63:0][41:0] jcond1;
+      wire [11:0][63:0] index_miss;
+      wire [11:0] index_miss_has;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -245,6 +247,7 @@ generate
       assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
       assign jretire[0][PHY]=&retire_reg[7:0] && flcond(jcondx0[reti_reg],jcc0[reti_reg][4:1]);
       assign jretire[1][PHY]=&retire_reg[9:0] && flcond(jcondx1[reti_reg],jcc1[reti_reg][4:1]);
+      
       always @(posedge clk) begin
           if (isret) sttop--;
           if (iscall|irqload) begin
