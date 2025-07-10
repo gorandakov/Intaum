@@ -347,7 +347,7 @@ generate
       bit_find_index12r fjmp2(isJump, idj1p,idj1,idj1_has);
       for(fu=0;fu<12;fu=fu+1) begin : funit
           reg [63:0][63:0] data_gen;
-          reg [63:0][63:0] data_fp;
+          reg [63:0][63:0] ;
           reg signed [63:0][63:0] data_imm;
           reg [63:0][16:0] data_op;
           reg [63:0][3:0] data_cond;
@@ -752,9 +752,9 @@ generate
                   {c64_reg2|~chk_reg2,s64_reg2,res_reg2[63],~|res_reg2[63:0]};
               if (rT_en_reg2) data_retFL[LQ_reg][3:0]<=opcode_reg2[7:5]==0 ? {dataAF[65:63],~|dataAF[62:53]} : {c64|~chk,s64,res[63],~|res[63:0],1'b0};
               if (rT_en_reg2 && opcode_reg2[10] && ~|opcode_reg2[7:6]) data_retFL[LQ_reg][3:0]<=opcode_reg2[9]==0 ? {res_loop0,res_loop2,res_loop2,res_loop1,1'b0} : {res_cloop0,res_cloop2,res_cloop2,res_cloop1,1'b0};
-            if (rT_en_reg5 &&(opcode_reg4[7:6]=0 && opcode_reg4[4:0]==1 && dataBI_reg4[20])) data_fpu[rT_reg4[5:0]]<=dataBI_reg4[22] ? dataAF_reg2 : xaddres;
-              if (rT_en_reg6 &&(opcode_reg5[7:6]=0 && opcode_reg5[4:0]==1 && dataBI_reg5[21])) data_fpu[rTMem_reg5[5:0]]<=xmulres;
-            if (rT_en_reg6 &&(opcode_reg5[7] && dataBI_reg5[21])) data_fpu[rTMem_reg5[5:0]]<=flconv(pppoe_reg3,opcode_reg5[8]);
+              if (rT_en_reg4 &&(opcode_reg3[7:6]=0 && opcode_reg3[4:0]==1 && dataBI_reg3[20])) data_fp[rT_reg3[5:0]]<=dataBI_reg3[22] ? dataAF_reg : xaddres;
+              if (rT_en_reg5 &&(opcode_reg4[7:6]=0 && opcode_reg4[4:0]==1 && dataBI_reg4[21])) data_fp[rTMem_reg4[5:0]]<=xmulres;
+              if (rT_en_reg5 &&(opcode_reg4[7] && dataBI_reg4[21])) data_fp[rTMem_reg4[5:0]]<=flconv(pppoe_reg3,opcode_reg4[8]);
               if (rT_en0_reg4 && opcode_reg3[7:3]==3) data_gen[rTMem_reg3[5:0]][65:32]<=res_mul[63:32];
               if (rT_en0_reg4 && opcode_reg3[7]) data_gen[rTMem_reg2[5:0]][65:32]<=pppoe_reg2[65:32];
               if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=fsconv(dataAF_reg,dataBI_reg3[24:23])>>32;
