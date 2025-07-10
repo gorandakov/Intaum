@@ -224,6 +224,8 @@ generate
       reg [11:0] anyhitC_reg;
       reg [11:0] anyhitC_reg2;
       reg [11:0] anyhitC_reg3;
+      wire tbuf_error;
+      reg [3:0] ifu_stage_valid;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -252,6 +254,9 @@ generate
       assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
       
       always @(posedge clk) begin
+        if (rst) ifu_stage_valid<=1;
+        else if (except) ifu_stage_valid<=1;
+        else ifu_stage_valid={ifu_stage_valid[2:0],1'b1};
       if (irqload|ccmiss) begin
           IP<=irqload ? irq_IP : IP_reg4;
       end else if (&jen[1:0]) begin
