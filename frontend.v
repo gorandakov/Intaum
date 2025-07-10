@@ -320,6 +320,9 @@ generate
           wire [65:0] dataBIX;
           wire [3:0] dataFL;
           wire [3:0] dataFL2;
+          wire [63:0] dataAF;
+          wire [63:0] dataBF;
+          reg c32_reg;
           wire signed [65:0] dataBI;
           reg [65:0] dataA_reg;
           reg [65:0] dataB_reg;
@@ -441,6 +444,7 @@ generate
              {1'b0,res_shift[64:32]}&{33{opcode[7:2]==1}}|{33{opcode[7:2]!=1 && res_shift_reg[31]}} : 'z;
           assign {c32,res[31:0]}=opcode[7:3]==2 && cond_tru ?
              {1'b0,res_logic[31:0]} : 'z;
+          assign isand=opcode[7:1]==8;
           assign {c64,s64,res[63:32]}=opcode_reg[7:3]==2 && cond_tru_reg ?
           {dataA_reg[65:64]|{!isand_reg|!chk,1'b0},res_logic[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==1 && cond_tru ?
@@ -491,15 +495,15 @@ generate
           assign val_else[65:32]=opcode[12:11]==3 ? 34'h1_ffff_ffff : 'z;
           assign val_sxt[31:0]=dataBI[25:24]!=3 ? dataA[31:0]<<(8<<dataBI[25:24])>>>(8<<dataBI[25:24]) : {dataA[7:0],dataA[15:8],dataA[23:16],dataA[31:24]};
           assign val_sxt[63:0]=dataBI_reg[25:24]!=3 ? dataA_reg[31:0]<<(8<<dataBI[25:24])>>>(8<<dataBI[25:24])>>>32 : {32{dataA_reg}};
-          assign res_shift[31:0]=opcode[3:1]==2 ? dataA[31:0]<<dataB[5:0] : 'z;
-          assign res_shift[31:0]=opcode[3:1]==3 ? dataA[31:0]<<dataBI[5:0] : 'z;
+          assign res_shift[31:0]=opcode[3] && ~data[0] ? dataA[31:0]<<dataB[5:0] : 'z;
+          assign res_shift[31:0]=opcode[3] && data[0] ? dataA[31:0]<<dataBI[5:0] : 'z;
           assign res_shift[31:0]=opcode[3:0]==8 ? dataA[31:0]>>dataB[5:0] : 'z;
           assign res_shift[31:0]=opcode[3:0]==9 ? dataA[31:0]>>dataBI[5:0] : 'z;
           assign res_shift[31:0]=opcode[3:0]==10 ? dataA[31:0]>>>dataB[5:0] : 'z;
           assign res_shift[31:0]=opcode[3:0]==11 ? dataA[31:0]>>>dataBI[5:0] : 'z;
           assign res_shift[63:32]=opcode[3:0]==4 ? {dataA[63:32],dataA_reg[31:0]}<<dataB_reg[5:0] : 'z;
-          assign res_shift[63:32]=opcode[3:0]==5 ? {32{res_shift_reg[31]}} : 'z;
-          assign res_shift[63:32]=opcode[3:0]==6 ? {dataA[63:32],dataA_reg[31:0]}<<dataBI_reg[5:0] : 'z;
+          assign res_shift[63:32]=opcode[3:0]==6 ? {32{res_shift_reg[31]}} : 'z;
+          assign res_shift[63:32]=opcode[3:0]==5 ? {dataA[63:32],dataA_reg[31:0]}<<dataBI_reg[5:0] : 'z;
           assign res_shift[63:32]=opcode[3:0]>=7 ? {32{res_shift_reg[31]}} : 'z;
           assign cond=data_cond[indexLSU_ALU];
           assign cond2=data_cond2[indexLSU_ALU];
@@ -578,6 +582,7 @@ generate
               res_reg3<=res_reg2;
               res_mul_reg<=res_mul;
               isand_reg<=isand;
+              c32_reg<=c32;
               if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
               if (except) begin 
                   rTT<=rTTB;
