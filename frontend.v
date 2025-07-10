@@ -248,6 +248,10 @@ generate
       reg [11:0] index_miss_has_reg2;
       reg [11:0][3:0] index12m_idx_reg2;
       reg [11:0] index12m_idx_has_reg2;
+      reg [11:0][5:0] index_miss_reg3;
+      reg [11:0] index_miss_has_reg3;
+      reg [11:0][3:0] index12m_idx_reg3;
+      reg [11:0] index12m_idx_has_reg3;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -284,6 +288,10 @@ generate
           index_miss_has_reg2<=index_miss_has_reg;
           index12m_idx_reg2<=index12m_idx_reg;
           index12m_idx_has_reg2<=index12m_idx_has_reg;
+          index_miss_reg3<=index_miss_reg2;
+          index_miss_has_reg3<=index_miss_has_reg2;
+          index12m_idx_reg3<=index12m_idx_reg2;
+          index12m_idx_has_reg3<=index12m_idx_has_reg2;
       end
 
       assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
