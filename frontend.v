@@ -149,6 +149,7 @@ generate
 
   wire except;
   wire [1:0][42:0] retIP;
+  wire [63:0] retSRCIP;
 
   `define wrreq_size 654
   `define wrAreq_size 122
@@ -282,7 +283,7 @@ generate
           IP=IP+32;
       end
       if (|jretire[0] && except) begin
-        tbuf[0][IP[12:4]]={retSRCIP[63:13],retIP[0][63:13]};
+          tbufl[0][IP[12:4]]={retSRCIP[63:13],retIP[0][63:13]};
           if (jmispred) begin
               if (random&3==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b1;
               if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b1;
@@ -292,7 +293,7 @@ generate
               IP<=jmptaken0 ? retIP[0] : retSRCIP + 32;
            end
       end else if (|jretire[1] && except) begin
-        tbuf[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
+          tbufl[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
           if (jmispred) begin
               if (random&3==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b10;
               if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b10;
