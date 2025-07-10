@@ -272,7 +272,7 @@ generate
           reg [63:0][4+5:0] rdyFL1;
           reg [63:0][5:0] rdyM; // also used for cloop second condition
           reg [63:0] free;
-          wire isand,chk;
+          wire chk;
           reg isand_reg;
           reg [4+5:0] rA;
           reg [4+5:0] rB;
