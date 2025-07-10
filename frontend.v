@@ -236,8 +236,18 @@ generate
       reg [3:0] ifu_stage_valid;
       reg [63:0][41:0] jcond0;
       reg [63:0][41:0] jcond1;
-      wire [11:0][63:0] index_miss;
+      wire [11:0][5:0] index_miss;
       wire [11:0] index_miss_has;
+      wire [11:0][3:0] index12m_idx;
+      wire [11:0] index12m_idx_has;
+      reg [11:0][5:0] index_miss_reg;
+      reg [11:0] index_miss_has_reg;
+      reg [11:0][3:0] index12m_idx_reg;
+      reg [11:0] index12m_idx_has_reg;
+      reg [11:0][5:0] index_miss_reg2;
+      reg [11:0] index_miss_has_reg2;
+      reg [11:0][3:0] index12m_idx_reg2;
+      reg [11:0] index12m_idx_has_reg2;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -266,6 +276,14 @@ generate
           IP_reg2<=IP_reg;
           IP_reg3<=IP_reg2;
           IP_reg4<=IP_reg3;
+          index_miss_reg<=index_miss;
+          index_miss_has_reg<=index_miss_has;
+          index12m_idx_reg<=index12m_idx;
+          index12m_idx_has_reg<=index12m_idx_has;
+          index_miss_reg2<=index_miss_reg;
+          index_miss_has_reg2<=index_miss_has_reg;
+          index12m_idx_reg2<=index12m_idx_reg;
+          index12m_idx_has_reg2<=index12m_idx_has_reg;
       end
 
       assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
