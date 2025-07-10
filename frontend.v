@@ -276,6 +276,8 @@ generate
           reg [63:0][3:0] data_cond;
           reg [63:0][3:0] data_cond2;
           reg [63:0][6:0] cloopbndloff;
+          reg [63:0][3:0] jcondx0;
+          reg [63:0][3:0] jcondx1;
           reg [39:0] insn;
           reg [63:0][5:0] data_imm_phy;
           reg [63:0][5:0] data_loopstop;
