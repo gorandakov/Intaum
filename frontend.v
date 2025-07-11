@@ -260,6 +260,7 @@ generate
       wire [11:0] idj1;
       wire idj0_has;
       wire idj1_has;
+      reg [63:0][1:0] data_jpred;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -267,9 +268,12 @@ generate
       assign iscall=jen[0] && tbuf[0][83] || jen[1] && tbuf[1][83];
       assign isret=jen[0] && tbuf[0][84] || jen[1] && tbuf[1][84];
       assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
-      assign jretire[0][PHY]=&retire_reg[7:0] && flcond(jcondx0[reti_reg],jcc0[reti_reg][4:1]);
-      assign jretire[1][PHY]=&retire_reg[9:0] && flcond(jcondx1[reti_reg],jcc1[reti_reg][4:1]);
-      
+      assign jtaken[0][PHY]=&retire_reg[11:0] && flcond(jcondx0[reti_reg],jcc0[reti_reg][4:1]);
+      assign jtaken[1][PHY]=&retire_reg[11:0] && flcond(jcondx1[reti_reg],jcc1[reti_reg][4:1]);
+      assign jmpmispred[0][PHY]=&retire_reg[11:0] && jtaken0^data_jpred[reti_reg][0];
+      assign jmpmispred[1][PHY]=&retire_reg[11:0] && jtaken1^data_jpred[reti_reg][1];
+      assign jretire[0][PHY]=jtaken[0][PHY]|jmpmispred[0][PHY];
+      assign jretire[1][PHY]=jtaken[1][PHY]|jmpmispred[1][PHY];
       always @(posedge clk) begin
           if (isret) sttop--;
           if (iscall|irqload) begin
@@ -325,7 +329,7 @@ generate
       end
       if (|jretire[0] && except) begin
           tbufl[0][IP[12:4]]={retSRCIP[63:13],retIP[0][63:13]};
-          if (jmispred) begin
+          if (jmpmispred[0]) begin
               if (random&3==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b1;
               if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b1;
               if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b1;
@@ -335,7 +339,7 @@ generate
            end
       end else if (|jretire[1] && except) begin
           tbufl[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
-          if (jmispred) begin
+          if (jmpmispred[1]) begin
               if (random&3==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b10;
               if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b10;
               if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b10;
