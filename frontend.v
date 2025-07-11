@@ -822,12 +822,12 @@ generate
                    if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ]+res_reg3;
                    jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataAF_reg3[65:63],~|dataAF_reg3[62:53]} : {c64_reg4|~chk_reg4,s64_reg4,res_reg3[63],~|res_reg3[63:0],1'b0};
                end
-               if (insert_en && (fu>=insn_cloop[13:10] && IP[4:0]==insn_cloop[19:15])|
-                    (fu>=insn_cloop[23:10] && IP[4:0]==insn_cloop[29:25])  ) begin
+               if (insert_en && (fu>=insn_clopp[13:10] && IP[4:0]==insn_clopp[19:15])|
+                    (fu>=insn_clopp[23:10] && IP[4:0]==insn_clopp[29:25])  ) begin
                   data_op[alloc][7:6]=instr[39:38];
                   if (&instr[39:38]) data_op[alloc][7:6]=2'b0;
                  if (instr[39:38]==2'b10 && instr[33]|instr[34]&~instr[12]) begin
-                   data_imm[alloc]=&instr[34:33] ? ret_cookie : {{41{instr[24]}}^{17'b0,insn_cloop[31],13'b0},instr[24:14],instr[11:0]};
+                   data_imm[alloc]=&instr[34:33] ? ret_cookie : {{41{instr[24]}}^{17'b0,insn_clopp[31],13'b0},instr[24:14],instr[11:0]};
                    data_op[alloc][11]<=instr[13]; //1=call 0=jump
                    data_cond[alloc]={instr[37:35],instr[32]};
                    data_cond2[alloc]=instr[31:28];
@@ -865,32 +865,32 @@ generate
                       end
                   end
                   if (instr[39:38]==2) begin
-                    rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14]|(insn_cloop[4]&&~|instr[3:2]),instr[3:0]}]<=alloc2;
-                    rTTOldm[INSI]<=rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14]|(insn_cloop[4]&&~|instr[3:2]),instr[3:0]}];
+                    rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}]<=alloc2;
+                    rTTOldm[INSI]<=rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}];
                     rTTNewm[INSI]<={fu[3:0],alloc2};
                     rTTe[alloc2][0]<=1'b1;
                     if (instr[34]) begin
-                        rTT[{insn_cloop[4]&&~|instr[7:6],1'b0|(insn_cloop[4]&&~|instr[7:6]),instr[7:4]}]<=alloc;
-                        rTTOld[INSI]<=rTT[{insn_cloop[4]&&~|instr[7:6],1'b0,instr[7:4]}];
+                        rTT[{insn_clopp[4]&&~|instr[7:6],1'b0|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}]<=alloc;
+                        rTTOld[INSI]<=rTT[{insn_clopp[4]&&~|instr[7:6],1'b0,instr[7:4]}];
                         rTTNew[INSI]<={fu[3:0],alloc};
                         rTTe[alloc][0]<=1;
                     end
                   end
                   if (~^instr[39:38]) begin
-                       rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14]|(insn_cloop[4]&&~|instr[3:2]),instr[3:0]}]<=alloc;
-                       rTTOld[INSI]<=rTT[{insn_cloop[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]}];
+                       rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}]<=alloc;
+                       rTTOld[INSI]<=rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]}];
                        rTTNew[INSI]<={fu[3:0],alloc};
                        rTTe[alloc][0]<=1'b1;
                   end
                    data_retFL[INSI]<=1;
-                   rdyA[alloc]<=rTT[{insn_cloop[4]&&~|instr[7:6],instr[39:38]==2 ? instr_clopp [24]|(insn_cloop[4]&&~|instr[7:6]) : instr_clopp[14]|(insn_cloop[4]&&~|instr[7:6]),instr[7:4]}];
+                   rdyA[alloc]<=rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? instr_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : instr_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && funit[fuZ].instr[39:38]==2)
                        rdyA<=funit[fuZ].alloc2;
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && ~^funit[fuZ].instr[39:38])
                        rdyA<=funit[fuZ].alloc;
                    end
-                   rdyB[alloc]<=rTT[{insn_cloop[4]&&~|instr[11:10],instr_clopp[14]|(insn_cloop[4]&&~|instr[11:10]),instr[11:8]}];
+                   rdyB[alloc]<=rTT[{insn_clopp[4]&&~|instr[11:10],instr_clopp[14]|(insn_clopp[4]&&~|instr[11:10]),instr[11:8]}];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[11:8] && funit[fuZ].instr[39:38]==2)
                        rdyB<=funit[fuZ].alloc2;
