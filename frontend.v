@@ -512,7 +512,7 @@ generate
           reg res_loop0_reg4,res_loop1_reg4,res_loop2_reg4;
           reg res_cloop0_reg4,res_cloop1_reg4,res_cloop2_reg4;
           reg c64_reg4,s64_reg4,chk_reg4;
-        
+          reg [36:0] missaddr0;
           reg [63:0][63:0] dreqmort;
           reg [63:0][65:0] dreqdata;
           reg [63:0][5:0] dreqmort_flags;
@@ -785,6 +785,7 @@ generate
               indexLDU_has_reg2<=indexLDU_has_reg;
               indexLSU_ALU_reg2<=indexLSU_ALU_reg;
               indexLSU_ALU_has_reg2<=indexLSU_ALU_has_reg;
+              if (missx_en) misaddr0<=missx_addr;
               if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
               if (except) begin 
                   rTT<=rTTB;
