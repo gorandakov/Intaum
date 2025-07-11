@@ -162,7 +162,9 @@ generate
   wire [1:0][`wrAreq_size:0] AXV_intf_in[3:0];
   wire [1:0][`wrAreq_size:0] AXH_intf_out[3:0];
   wire [1:0][`wrAreq_size:0] AXV_intf_out[3:0];
-  wire [1:0][59:0] jretire;
+  wire [1:0][59:0] jretire; 
+  wire [1:0][59:0] jtaken; 
+  wire [1:0][59:0] jmpmispred; 
   wire irq_IP={31'b1,irqnum[3:0],7'b0};
       genvar fu,fuB;
       genvar way,way2;
