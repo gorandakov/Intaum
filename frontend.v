@@ -254,6 +254,12 @@ generate
       reg [11:0] index12m_idx_has_reg3;
       reg [11:0][5:0] index_miss_reg4;
       reg [11:0] index_miss_has_reg4;
+      wire [3:0] idj0p;
+      wire [3:0] idj1p;
+      wire [11:0] idj0;
+      wire [11:0] idj1;
+      wire idj0_has;
+      wire idj1_has;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
