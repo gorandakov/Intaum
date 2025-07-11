@@ -19,6 +19,7 @@ not a exchange token for getting into uni.
 not a physX token.
 not the source code of my person.
 no UK tech mogul's money were used to make this project.
+no UK nobility member owns or has contributed to this project.
 */
 module frontend (
   input clk,
