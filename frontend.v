@@ -381,6 +381,7 @@ generate
           reg [63:0] free;
           wire chk;
           reg isand_reg;
+          integer fuZ;
           reg [4+5:0] rA;
           reg [4+5:0] rB;
           reg [4+5:0] rBX;
