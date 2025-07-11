@@ -977,17 +977,17 @@ generate
                           lderror[ldi]<=1'b1;
                       if (!anyhitW_reg && opcode_reg2[6] && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
-                          missus[resX[18:11]][PHY%5]=1;
+                          missus[funit[fuB].res[18:11]][PHY%5]=1;
                       end
                       if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) begin
-                          mFiss[ldi]=1;
-                          missus[res_reg[18:11]][PHY%5]=1;
+                          miss[ldi]=1;
+                        missus[funit[fuB].res_reg[18:11]][PHY%5]=1;
                       end
                   end
                   missrs=0;
                   for(ldi=0;ldi<64;ldi++) begin
-                    if (!anyhitw_reg && is_store_reg && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[resX[18:11]];
-                    if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[resX[18:11]];
+                    if (!anyhitW_reg && opcode_reg2[6] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[funit[fuB].resX[18:11]];
+                    if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[funit[fuB].resX[18:11]];
                   end
           end
       end
