@@ -405,6 +405,8 @@ generate
           reg [4+5:0] rFL_reg3;
           reg [4+5:0] rFL2_reg3;
           reg [4+5:0] rT_reg3;
+          wire [63:0] alloc;
+          wire [63:0] alloc2;
           wire [5:0] indexLDU;
           wire indexLDU_has;
           wire [5:0] indexLSU_ALU;
@@ -893,19 +895,19 @@ generate
                     rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}]<=alloc2;
                     rTTOldm[INSI]<=rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}];
                     rTTNewm[INSI]<={fu[3:0],alloc2};
-                    rTTe[alloc2][0]<=1'b1;
+                    rTTE[alloc2][0]<=1'b1;
                     if (instr[34]) begin
                         rTT[{insn_clopp[4]&&~|instr[7:6],1'b0|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}]<=alloc;
                         rTTOld[INSI]<=rTT[{insn_clopp[4]&&~|instr[7:6],1'b0,instr[7:4]}];
                         rTTNew[INSI]<={fu[3:0],alloc};
-                        rTTe[alloc][0]<=1;
+                        rTTE[alloc][0]<=1;
                     end
                   end
                   if (~^instr[39:38]) begin
                        rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}]<=alloc;
                        rTTOld[INSI]<=rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]}];
                        rTTNew[INSI]<={fu[3:0],alloc};
-                       rTTe[alloc][0]<=1'b1;
+                       rTTE[alloc][0]<=1'b1;
                   end
                    data_retFL[INSI]<=1;
                    rdyA[alloc]<=rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? instr_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : instr_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}];
