@@ -238,6 +238,7 @@ generate
       reg [11:0] anyhitC_reg3;
       wire tbuf_error;
       reg [3:0] ifu_stage_valid;
+      wire insert_en=ifu_stage_valid[3] && anyhitC_reg3;
       reg [63:0][41:0] jcond0;
       reg [63:0][41:0] jcond1;
       wire [11:0][5:0] index_miss;
