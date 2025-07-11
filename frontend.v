@@ -264,6 +264,8 @@ generate
       wire idj0_has;
       wire idj1_has;
       reg [63:0][1:0] data_jpred;
+      reg [63:0][15:0] data_GHT;
+      wire [15:0] retGHT=data_GHT[reti_reg];
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
