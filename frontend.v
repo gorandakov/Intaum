@@ -163,7 +163,7 @@ generate
   wire [1:0][`wrAreq_size:0] AXH_intf_out[3:0];
   wire [1:0][`wrAreq_size:0] AXV_intf_out[3:0];
   wire [1:0][59:0] jretire; 
-  wire [1:0][59:0] jtaken; 
+  wire [1:0][59:0] ; 
   wire [1:0][59:0] jmpmispred; 
   wire irq_IP={31'b1,irqnum[3:0],7'b0};
       genvar fu,fuB;
@@ -272,8 +272,8 @@ generate
       assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
       assign jtaken[0][PHY]=&retire_reg[11:0] && flcond(jcondx0[reti_reg],jcc0[reti_reg][4:1]);
       assign jtaken[1][PHY]=&retire_reg[11:0] && flcond(jcondx1[reti_reg],jcc1[reti_reg][4:1]);
-      assign jmpmispred[0][PHY]=&retire_reg[11:0] && jtaken0^data_jpred[reti_reg][0];
-      assign jmpmispred[1][PHY]=&retire_reg[11:0] && jtaken1^data_jpred[reti_reg][1];
+      assign jmpmispred[0][PHY]=&retire_reg[11:0] && jtaken[0][PHY]^data_jpred[reti_reg][0];
+      assign jmpmispred[1][PHY]=&retire_reg[11:0] && jtaken[1][PHY]^data_jpred[reti_reg][1];
       assign jretire[0][PHY]=jtaken[0][PHY]|jmpmispred[0][PHY];
       assign jretire[1][PHY]=jtaken[1][PHY]|jmpmispred[1][PHY];
       always @(posedge clk) begin
