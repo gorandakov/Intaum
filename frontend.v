@@ -20,6 +20,7 @@ not a physX token.
 not the source code of my person.
 no UK tech mogul's money were used to make this project.
 no UK nobility member owns or has contributed to this project.
+not accept free hint on debugging in exchange of the entire core.
 */
 module frontend (
   input clk,
