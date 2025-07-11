@@ -337,7 +337,7 @@ generate
               if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b1;
               GHT<=retGHT;
               //tbufl[retSRCIP[13:5]][0]={retJPR0,1'b1,retSRCIP,retIPA};
-              IP<=|jmptaken[0] ? retIP[0] : retSRCIP + 32;
+              IP<=|jtaken[0] ? retIP[0] : retSRCIP + 32;
            end
       end else if (|jretire[1] && except) begin
           tbufl[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
@@ -347,7 +347,7 @@ generate
               if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b10;
               GHT<=retGHT;
             //tbufl[retSRCIP[13:5]][1]={retJPR1,1'b1,retSRCIP,retIPB  };                 
-              IP<=|jmptaken[1] ? retIP[1] : retSRCIP + 32;
+              IP<=|jtaken[1] ? retIP[1] : retSRCIP + 32;
          end
       end
       end
