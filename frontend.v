@@ -166,7 +166,18 @@ generate
   wire [1:0][`wrAreq_size:0] AXV_intf_out[3:0];
   wire [1:0][59:0] jretire; 
   wire [1:0][59:0] jtaken; 
-  wire [1:0][59:0] jmpmispred; 
+  wire [1:0][59:0] jmpmispred;
+  reg [255:0][4:0] missus;
+  reg [255:0][4:0] missus_reg;
+  reg [255:0][4:0] missus_reg2;
+  reg [255:0][4:0] missus_reg3;
+  reg [255:0][4:0] missus_reg4;
+  always @(posedge clk) begin
+    missus_reg<=missus;
+    missus_reg2<=missus_reg;
+    missus_reg3<=missus_reg2;
+    missus_reg4<=missus_reg3;
+  end
   wire irq_IP={31'b1,irqnum[3:0],7'b0};
       genvar fu,fuB;
       genvar way,way2;
@@ -216,8 +227,8 @@ generate
       wire [1:0] pred_en;
       wire [1:0][85:0] tbuf;
       wire [1:0] jen;
-      reg [63:0][59:0] miss;
-      reg [63:0][11:0] missus;
+      //reg [63:0][59:0] miss;
+      //reg [63:0][11:0] missus;
       reg [255:0][85:0] tbufl;
       wire [11:0] retire;
       reg [11:0] retire_reg;
@@ -962,14 +973,14 @@ generate
                   for(ldi=0;ldi<64;ldi++) begin
                       if (is_wconfl(dreqmort[LDI_reg],dreqmort_flags[LDI_reg],dreqmort[ldi],dreqmort_flags[ldi]))
                           wstall[PHY][fu]<=1'b1;
-                      if (is_lconfl(dreqmort[indexLDU],dreqmort_flags[indexLDU],dreqmort[ldi],dreqmort_flags[ldi]))
+                      if (is_lconfl(dreqmort[indexALU_LSU],dreqmort_flags[indexALU_LSU],dreqmort[ldi],dreqmort_flags[ldi]))
                           lderror[ldi]<=1'b1;
-                      if (!anyhitw_reg && is_store_reg && ldi==indexLSU_ALU_reg3) begin
+                      if (!anyhitW_reg && opcode_reg2[6] && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
                           missus[resX[18:11]][PHY%5]=1;
                       end
                       if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) begin
-                          miss[ldi]=1;
+                          mFiss[ldi]=1;
                           missus[res_reg[18:11]][PHY%5]=1;
                       end
                   end
