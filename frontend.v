@@ -526,8 +526,8 @@ generate
           bit_find_index12 pfaff_mod({7'b0,missus_reg4[dreqmort[index_miss_reg4][18:11]],missphyfirst,,);
           assign missx_en[PHY]=index12m_idx_reg==fu;
           assign missx_addr[PHY]= fu==index12m_idx_reg ? funit[index12m_idx_reg].dreqmort[index_miss_reg3[index12m_idx_reg]] : 'z;
-                                      assign interPHY_pfaff=missus_reg4[dreqmort[index_miss_reg4][18:11]] && {5{index12m_idx==fu & (missphyfirst==(PHY%5))}};
-          bit_find_index indexLSU_ALU_mod(rdy[63:0][2]&rdy[63:0][1]&{64{~phy[PHY].funit[(fu+1)%12].is_mul_reg3}},indexLSU_ALU,indexLSU_ALU_has);
+          assign missx_phy[PHY]={missus_reg4[dreqmort[index_miss_reg4][18:11]] && {5{index12m_idx==fu & (missphyfirst==(PHY%5))}},fu[3:0],1'b0};
+          bit_find_index indexLSU_ALU_mod(rdy[63:0][2]&rdy[63:0][1]&{64{~index_miss_has && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
           bit_find_index indexLDU_mod(rdy[63:0][0],indexLDU,indexLDU_has);
           bit_find_index indexAlloc(free,alloc[5:0],rT_en0);
           bit_find_indexR indexAlloc2(free,alloc2[5:0],rTm_en0);
@@ -730,10 +730,10 @@ generate
               isand_reg<=isand;
               c32_reg<=c32;
               retire_reg<=retire;
-              miss_reg<=miss;
-              miss_reg2<=miss_reg;
-              miss_reg3<=miss_reg2;
-              miss_reg4<=miss_reg4|miss_reg3;
+              miss_reg<=miss_reg ? miss_reg && ~{64{miss_recover}} : miss;
+              miss_reg2<=miss_reg && ~{64{miss_recover}};
+              miss_reg3<=miss_reg2 && ~{64{miss_recover}};
+              miss_reg4<=miss_reg4|miss_reg3 && ~{64{miss_recover}};
               res_loop0_reg<=res_loop0;
               res_loop1_reg<=res_loop1;
               res_loop2_reg<=res_loop2;
