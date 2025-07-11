@@ -181,6 +181,9 @@ generate
       reg [41:0] IP_reg4;
       reg [13:0] GHT;
       wire ccmiss;
+      reg [63:0] lderror;
+      integer ldi;
+      integer INSI;
       reg [38:0][9:0] rTT;
       reg [38:0][9:0] rTTB;
       reg [63:0][1:0] rTTE;
