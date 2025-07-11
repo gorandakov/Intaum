@@ -163,7 +163,7 @@ generate
   wire [1:0][`wrAreq_size:0] AXH_intf_out[3:0];
   wire [1:0][`wrAreq_size:0] AXV_intf_out[3:0];
   wire [1:0][59:0] jretire; 
-  wire [1:0][59:0] ; 
+  wire [1:0][59:0] jtaken; 
   wire [1:0][59:0] jmpmispred; 
   wire irq_IP={31'b1,irqnum[3:0],7'b0};
       genvar fu,fuB;
@@ -331,23 +331,23 @@ generate
       end
       if (|jretire[0] && except) begin
           tbufl[0][IP[12:4]]={retSRCIP[63:13],retIP[0][63:13]};
-          if (jmpmispred[0]) begin
+          if (|jmpmispred[0]) begin
               if (random&3==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b1;
               if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b1;
               if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b1;
               GHT<=retGHT;
               //tbufl[retSRCIP[13:5]][0]={retJPR0,1'b1,retSRCIP,retIPA};
-              IP<=jmptaken0 ? retIP[0] : retSRCIP + 32;
+              IP<=|jmptaken[0] ? retIP[0] : retSRCIP + 32;
            end
       end else if (|jretire[1] && except) begin
           tbufl[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
-          if (jmpmispred[1]) begin
+          if (|jmpmispred[1]) begin
               if (random&3==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b10;
               if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b10;
               if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b10;
               GHT<=retGHT;
             //tbufl[retSRCIP[13:5]][1]={retJPR1,1'b1,retSRCIP,retIPB  };                 
-              IP<=jmptaken1 ? retIP[1] : retSRCIP + 32;
+              IP<=|jmptaken[1] ? retIP[1] : retSRCIP + 32;
          end
       end
       end
