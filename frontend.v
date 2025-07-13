@@ -282,6 +282,8 @@ generate
       reg [63:0][1:0] data_jpred;
       reg [63:0][15:0] data_GHT;
       wire [15:0] retGHT=data_GHT[reti_reg];
+      reg [63:0][42:0] srcIPOff;
+      reg [63:0][6:0] data_cloop;
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -372,18 +374,17 @@ generate
       end
       assign retIP[0]=jcond0[reti_reg];
       assign retIP[1]=jcond1[reti_reg];
-      bit_find_index12 fst(indexST_has,ids0p,ids0,ids0_has);
-      bit_find_index12r fstb(indexST_has,ids1p,ids1,ids1_has);
+      bit_find_index12 fst(indexST,ids0p,ids0,ids0_has);
+      bit_find_index12r fstb(indexST,ids1p,ids1,ids1_has);
       bit_find_index12 fjmp(isJump, idj0p,idj0,idj0_has);
       bit_find_index12r fjmp2(isJump, idj1p,idj1,idj1_has);
       for(fu=0;fu<12;fu=fu+1) begin : funit
           reg [63:0][63:0] data_gen;
-          reg [63:0][63:0] data_fp;
+          reg [63:0][65:0] data_fp;
           reg signed [63:0][63:0] data_imm;
           reg [63:0][16:0] data_op;
           reg [63:0][3:0] data_cond;
           reg [63:0][3:0] data_cond2;
-          reg [63:0][6:0] cloopbndloff;
           reg [39:0] insn;
           reg [63:0][5:0] data_imm_phy;
           reg [63:0][5:0] data_loopstop;
@@ -397,6 +398,8 @@ generate
           wire chk;
           reg isand_reg;
           integer fuZ;
+          wire [63:0] xmulres;
+          wire [63:0] xaddres;
           reg [4+5:0] rA;
           reg [4+5:0] rB;
           reg [4+5:0] rBX;
@@ -534,6 +537,11 @@ generate
           reg [63:0][65:0] dreqdata;
           reg [63:0][5:0] dreqmort_flags;
           reg [63:0][3:0] dreqdata_flags;
+          reg [63:0] missrs;
+          reg [63:0] missrs_reg;
+          reg [63:0] missrs_reg2;
+          reg [63:0] missrs_reg3;
+          reg [63:0] missrs_reg4;
           reg [63:0] miss;
           reg [63:0] miss_reg;
           reg [63:0] miss_reg2;
@@ -752,6 +760,10 @@ generate
               miss_reg2<=miss_reg && ~{64{miss_recover}};
               miss_reg3<=miss_reg2 && ~{64{miss_recover}};
               miss_reg4<=miss_reg4|miss_reg3 && ~{64{miss_recover}};
+              missrs_reg<=missrs_reg ? missrs_reg && ~{64{miss_recover}} : missrs;
+              missrs_reg2<=missrs_reg && ~{64{miss_recover}};
+              missrs_reg3<=missrs_reg2 && ~{64{miss_recover}};
+              missrs_reg4<=missrs_reg4|missrs_reg3 && ~{64{miss_recover}};
               res_loop0_reg<=res_loop0;
               res_loop1_reg<=res_loop1;
               res_loop2_reg<=res_loop2;
@@ -813,6 +825,16 @@ generate
                   miss_rvi<=0;
                   opcode[5]<=1'b0;
               end
+              if (ids0_has && ids0p==fu) begin
+                   resX<=dreqmort[ids0p];
+                   resWD<=dreqmort_data[ids0p];
+                   write_size<=dreqmort_flags[ids0p][1:0];
+              end
+              if (ids1_has && ids1p==fu) begin
+                   resX<=dreqmort[ids1p];
+                   resWD<=dreqmort_data[ids1p];
+                   write_size<=dreqmort_flags[ids1p][1:0];
+              end
               if (except) begin 
                   rTT<=rTTB;
                   rTTE<='1;
@@ -824,7 +846,7 @@ generate
               end
               if (rT_en0_reg | rT_en_reg && |opcode_reg[7:6]) begin
                   dreqmort[LQ][31:0]<=res[31:0];
-                  dreqmort_flags[LQ]<={~chk,1'b0,opcode_reg[7:6],opcode_reg[1:0]};
+                  dreqmort_flags[LQ]<={~chk,1'b0,opcode_reg[7:6],opcode_reg[9:8]};
               end
               if (rT_en0_reg2 | rT_en_reg2 && |opcode_reg2[7:6]) begin
                   dreqmort[LQ][63:32]<=res[63:32];
@@ -996,8 +1018,8 @@ generate
                   end
                   missrs=0;
                   for(ldi=0;ldi<64;ldi++) begin
-                    if (!anyhitW_reg && opcode_reg2[6] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[funit[fuB].resX[18:11]];
-                    if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[funit[fuB].resX[18:11]];
+                    if (!anyhitW_reg && opcode_reg2[6] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[resX_reg[18:11]];
+                    if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[res_reg[18:11]];
                   end
           end
       end
