@@ -658,7 +658,7 @@ generate
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 'z;
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 'z;
           assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==1 ? {32{res_mul_reg[31]}} : 'z;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==1 ? dataA_reg4[31:0]*dataBIX_reg4[31:0]>>32 : 'z;
           assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
           assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 'z;
           assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 'z;
