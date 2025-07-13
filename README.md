@@ -9,3 +9,8 @@ increase of tile size beyond 25 rapidly reduces performance in my estimated metr
 as of msi algorithm choice the core would not run at 50% with 25 tiles but at 45%. note that this is metric for running with significant cache miss rate.
 as for 2nm I can't promise it is possible to beat or match this 3nm cpu
 note: with 5 gold layer matter rather than 4 the frequency can be 22GHz on 3nm depletion mode 7 phase dynamic logic.
+note 2: with 6 gold layer matter rather than 5 or 4, in addition to 22GHz operation,
+one conditional branch disambiguiation should be possible such as executing a loop
+in parallel with a return based on condition and cancelling computing one of the 
+branches earlier than the other completes.
+

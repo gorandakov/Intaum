@@ -437,6 +437,7 @@ generate
           reg [5:0] indexLDU_reg2;
           reg indexLDU_has_reg2;
           reg [5:0] indexLSU_ALU_reg2;
+          reg [5:0] indexLSU_ALU_reg3;
           reg indexLSU_ALU_has_reg2;
           reg rA_en_reg3, rB_en_reg3, rT_en_reg3;
           reg [4+5:0] rA_reg4;
@@ -599,16 +600,16 @@ generate
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==0 && cond_tru_reg ?
            {dataA[63],dataA[63:32]}+{dataB[63],dataB[63:32]}^
           {32{dataBI_reg[33]}}+(c32_reg) : 'z;
-          assign {c32,res[31:0]}=(opcode[7:2]==1 || opcode[7:3]==1) 
+          assign {c32,res[31:0]}=(opcode[7:2]==1 || opcode[4:3]==1) 
                && cond_tru  ?
              res_shift[32:0] : 'z;
-          assign {s64,c64,res[63:32]}=(opcode_reg[7:2]==1 || opcode_reg[7:3]==1) 
+          assign {s64,c64,res[63:32]}=(opcode_reg[7:2]==1 || opcode_reg[4:3]==1) 
               && cond_tru_reg ?
              {1'b0,res_shift[64:32]}&{33{opcode[7:2]==1}}|{33{opcode[7:2]!=1 && res_shift_reg[31]}} : 'z;
-          assign {c32,res[31:0]}=opcode[7:3]==2 && cond_tru ?
+          assign {c32,res[31:0]}=opcode[4:3]==2 && cond_tru ?
              {1'b0,res_logic[31:0]} : 'z;
           assign isand=opcode[7:1]==8;
-          assign {c64,s64,res[63:32]}=opcode_reg[7:3]==2 && cond_tru_reg ?
+          assign {c64,s64,res[63:32]}=opcode_reg[4:3]==2 && cond_tru_reg ?
           {dataA_reg[65:64]|{!isand_reg|!chk,1'b0},res_logic[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==1 && cond_tru ?
           {1'b0,val_sxt[31:0]} : 'z;
@@ -639,15 +640,15 @@ generate
           assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? {dataB_reg[63:43],dataA[42:32]} : 'z;
           assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? dataA[63:32] : 'z;
 
-          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg2[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
-          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg2[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
-          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg2[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 'z;
-          assign res_mul[31:0]=opcode_reg2[7:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 'z;
-          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg3[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg3[2:1]==1 ? {32{res_mul_reg[31]}} : 'z;
-          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg3[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg3[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[7:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 'z;
+          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
+          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
+          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 'z;
+          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 'z;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==1 ? {32{res_mul_reg[31]}} : 'z;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 'z;
           assign val_else[31:0]=opcode[12:11]==0 ? dataA[31:0] : 'z;
           assign val_else[31:0]=opcode[12:11]==1 ? 1 : 'z;
           assign val_else[31:0]=opcode[12:11]==2 ? 0: 'z;
@@ -800,9 +801,18 @@ generate
               indexLDU_reg2<=indexLDU_reg;
               indexLDU_has_reg2<=indexLDU_has_reg;
               indexLSU_ALU_reg2<=indexLSU_ALU_reg;
+              indexLSU_ALU_reg3<=indexLSU_ALU_reg2;
               indexLSU_ALU_has_reg2<=indexLSU_ALU_has_reg;
               if (missx_en) misaddr0<=missx_addr;
-              if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
+            //  if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
+              if (insetr_addr==missaddr0 && insetr_en || insetrh_addr==missaddr0 && insetrh_en || insetrv_addr==missaddr0 && insetrv_en) begin
+                  miss_rvi<=miss_reg4;
+                  miss_reg4<=0;
+              end
+              if (1<<indexLSU_ALU==miss_rvi) begin
+                  miss_rvi<=0;
+                  opcode[5]<=1'b0;
+              end
               if (except) begin 
                   rTT<=rTTB;
                   rTTE<='1;
