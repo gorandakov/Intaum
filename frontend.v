@@ -606,7 +606,7 @@ generate
           assign {c32,res[31:0]}=opcode[7:0]==0 && cond_tru && !dataBI[32] ?
           dataA[31:0]+dataB[31:0]^{32{dataBI[33]}}+dataBI[33] : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==0 && cond_tru_reg ?
-           {dataA[63],dataA[63:32]}+{dataB[63],dataB[63:32]}^
+             {dataA[63],dataA[63:32]}+{dataB[63]&dataBI_reg[34],dataB[63:32]}^
           {32{dataBI_reg[33]}}+(c32_reg) : 'z;
           assign {c32,res[31:0]}=(opcode[7:2]==1 || opcode[4:3]==1) 
                && cond_tru  ?
@@ -938,7 +938,7 @@ generate
                     data_op[alloc][4:0]={instr[37:34],instr[12]};
                       data_op[alloc][5]=1'b1;
                       data_cond[alloc][3:0]=instr[32:27];
-                    data_imm[alloc]={{20{instr[26]}},instr[26:14],instr[11:9],18'b0};
+                    data_imm[alloc]={{20{instr[26]}},instr[26:14],instr[11:8],18'b0};
                       if ({instr[37:34],instr[14]}==19) begin
                         data_imm[alloc]={{30{instr[26]}},instr[26:25],{20{instr[24]}},instr[24:14]};
                         data_op[alloc][4:0]=2;
