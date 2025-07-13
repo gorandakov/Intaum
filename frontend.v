@@ -553,7 +553,8 @@ generate
           assign missx_en[PHY]=index12m_idx_reg==fu;
           assign missx_addr[PHY]= fu==index12m_idx_reg ? funit[index12m_idx_reg].dreqmort[index_miss_reg3[index12m_idx_reg]] : 'z;
           assign missx_phy[PHY]={missus_reg4[dreqmort[index_miss_reg4][18:11]] && {5{index12m_idx==fu & (missphyfirst==(PHY%5))}},fu[3:0],1'b0};
-          bit_find_index indexLSU_ALU_mod(rdy[63:0][2]&rdy[63:0][1]&{64{~index_miss_has && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
+          bit_find_index indexLSU_ALU_mod(rdy[63:0][2]&rdy[63:0][1]&rdy[63:0][6]&rdy[63:0][7]&{64{~index_miss_has && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
+          bit_find_index indexFLG_mod(rdy[6]&{64{~index_miss_has && ~|miss_reg}},indexFLG,indexFLG_has);
           bit_find_index indexLDU_mod(rdy[63:0][0],indexLDU,indexLDU_has);
           bit_find_index indexAlloc(free,alloc[5:0],rT_en0);
           bit_find_indexR indexAlloc2(free,alloc2[5:0],rTm_en0);
@@ -627,12 +628,16 @@ generate
             dataA[31:0]+dataBI[31:0] : 'z;
           assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[32])&& cond_tru_reg ?
             {dataA[63]|~chk,dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[31] :c32_reg) : 'z;
-          assign {c32,res[31:0]}=opcode[7:0]==3 && cond_tru ?
+          assign {c32,res[31:0]}=opcode[7:0]==3 && opcode[8] && cond_tru ?
             dataBI[31:0] : 'z;
+          assign {c32,res[31:0]}=opcode[7:0]==3 && ~opcode[8] && cond_tru ?
+            dataB[31:0] : 'z;
           assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand)
              || ~dataA_reg[65] || ^dataA_reg[64:63];
-          assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && cond_tru_reg ?
-          {1'b0,dataBI_reg[63]^opcode_reg[8],dataBI_reg[63:32]} : 'z;
+          assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && opcode_reg[8] && cond_tru_reg ?
+          {1'b0,dataBI_reg[63],dataBI_reg[63:32]} : 'z;
+          assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && ~opcode_reg[8] && cond_tru_reg ?
+          {1'b0,dataB_reg[63],dataB_reg[63:32]} : 'z;
           assign res_logic[31:0]=opcode[2:1]==0 &~foo ? dataA[31:0]&dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==1 &~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==3 &~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
@@ -677,8 +682,9 @@ generate
           assign res_shift[63:32]=opcode[3:0]==6 ? {32{res_shift_reg[31]}} : 'z;
           assign res_shift[63:32]=opcode[3:0]==5 ? {dataA[63:32],dataA_reg[31:0]}<<dataBI_reg[5:0] : 'z;
           assign res_shift[63:32]=opcode[3:0]>=7 ? {32{res_shift_reg[31]}} : 'z;
-          assign cond=data_cond[indexLSU_ALU];
-          assign cond2=data_cond2[indexLSU_ALU];
+          assign cond=data_cond[indexLSU_ALU_reg];
+          assign cond2=data_cond2[indexLSU_ALU_reg];
+          assign cond_early=data_cond[indexFLG_reg];
           assign isJump[fu]=opcode[7:5]==0 && opcode[8];
           always @(posedge clk) begin
               if (rst) sten<=12'hf; else sten<={sten[7:0],sten[12:8]};
@@ -835,6 +841,13 @@ generate
                    resWD<=dreqmort_data[ids1p];
                    write_size<=dreqmort_flags[ids1p][1:0];
               end
+              if (indexFLG_has_reg) begin
+                  if (flcond(cond_early,data_cond[indexFLG_reg])) begin
+                      if (data_op[indexFLG_reg][4:0]==3) rdy[indexFLG_reg[1]]=1'b1;
+                  end else begin
+                      rdy[indexFLG_reg][2]=1'b1;
+                  end
+              end
               if (except) begin 
                   rTT<=rTTB;
                   rTTE<='1;
@@ -929,10 +942,11 @@ generate
                       data_op[alloc][5]=1'b1;
                     data_cond[alloc][3:0]=instr[12:9];
                     data_imm[alloc]={{46{instr[32]}},instr[32:15]};
-                    data_op[alloc][8]=flagi;
-                    if (flagi)
+                    data_op[alloc][8]=1'b1;
+                    if (!instr_clextra[fu]) begin
                       data_imm[alloc]={spgcookie,6'b0,instr[32:15],instr[8:4],15'b0};
-                      
+                      data_op[alloc][8]=1'b0;
+                    end  
                   end
                   if (!|instr[39:38]) begin
                     data_op[alloc][4:0]={instr[37:34],instr[12]};
@@ -994,7 +1008,7 @@ generate
                   rdy[alloc]<={1'b1,instr[39],1'b1,instr[32:27]==3,instr[39]};  
                   data_op[alloc][12:11]=instr[13:12];
                   data_op[alloc][19:14]=insi++;
-                  data_op[alloc][20]=instr_clextra[fu];
+                  data_op[alloc][20]=instr_clextra[fu] && data_op[alloc][4:0]!=3;
               end
           end
           always @* begin
