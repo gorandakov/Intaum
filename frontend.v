@@ -174,7 +174,7 @@ generate
   reg [255:0][4:0] missus_reg4;
   wire [11:0][59:0] ret0;
   wire [11:0][59:0] mret0;
-  wire [11:0][59:0] mxret1;
+  wire [11:0][59:0] mxret0;
   always @(posedge clk) begin
     missus_reg<=missus;
     missus_reg2<=missus_reg;
@@ -578,7 +578,7 @@ generate
           bit_find_index indexLDU_mod(rdy[63:0][0],indexLDU,indexLDU_has);
           bit_find_index indexAlloc(free,alloc[5:0],alloc_en);
           bit_find_indexR indexAlloc2(free,alloc2[5:0],alloc2_en);
-          bit_find_index indexST(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] && {64{sten[fu]}},indexST,indexST_has);
+          bit_find_index indexST_mod(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] && {64{sten[fu]}},indexST,indexST_has);
           fpuadd64 Xadd(clk,rst,dataMF,dataBF,rnd,xaddres);
           fpuprod64 Xmul(clk,rst,dataMF,dataBF,rnd,xmulres);
           assign ret0[fu][PHY]=!data_retFL[RETI][0];
@@ -588,7 +588,7 @@ generate
           assign mxret0[fu][PHY]=^dreqmort_flags[RETI][5:4];
           assign mxret1[fu]=&mxret0[fu];
           assign rT[9:6]=fu;
-          assign instr_clextra={instr_clopp[31:30],instr_clopp[24],instr_clopp[9:5],instr_clopp[3:0]};
+          assign instr_clextra={insn_clopp[31:30],insn_clopp[24],insn_clopp[9:5],insn_clopp[3:0]};
           assign clres={dataA_reg[63:32],dataA_reg2[31:0]}<{dataB_reg[63:32],dataB_reg2[31:0]}-1;
           assign clres2={dataA_reg[63:32],dataA_reg2[31:0]}<{dataB_reg[63:32],dataB_reg2[31:0]};
           assign clres3={dataA_reg[63:32],dataA_reg2[31:0]}<={dataB_reg[63:32],dataB_reg2[31:0]};
@@ -918,7 +918,7 @@ generate
                 dreqmort_flags[LDI_reg][4]<=1'b1;
               end
               instr<=poo_c_reg2;
-              instr_clopp<=poo_c2_reg2;
+              insn_clopp<=poo_c2_reg2;
               if (rT_en_reg && opcode[10] | opcode[5]) data_gen[rT_reg[5:0]][31:0]<=res[31:0];
               if (rT_en0_reg3 && opcode_reg2[7]) data_gen[rTMem_reg2[5:0]][31:0]<=pppoe_reg[31:0];
               if (rT_en0_reg3 && opcode_reg2[7:3]==3) data_gen[rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
@@ -992,8 +992,8 @@ generate
                       end
                   end
                   if (instr[39:38]==2) begin
-                    rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}]<=alloc2;
-                    rTTOldm[INSI]<=rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}];
+                    rTT[{insn_clopp[4]&&~|instr[3:2],insn_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}]<=alloc2;
+                    rTTOldm[INSI]<=rTT[{insn_clopp[4]&&~|instr[3:2],insn_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}];
                     rTTNewm[INSI]<={fu[3:0],alloc2};
                     rTTE[alloc2][0]<=1'b1;
                     if (instr[34]) begin
@@ -1004,20 +1004,20 @@ generate
                     end
                   end
                   if (~^instr[39:38]) begin
-                       rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}]<=alloc;
-                       rTTOld[INSI]<=rTT[{insn_clopp[4]&&~|instr[3:2],instr_clopp[14],instr[3:0]}];
+                       rTT[{insn_clopp[4]&&~|instr[3:2],insn_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}]<=alloc;
+                       rTTOld[INSI]<=rTT[{insn_clopp[4]&&~|instr[3:2],insn_clopp[14],instr[3:0]}];
                        rTTNew[INSI]<={fu[3:0],alloc};
                        rTTE[alloc][0]<=1'b1;
                   end
                    data_retFL[INSI]<=1;
-                   rdyA[alloc]<=rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? instr_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : instr_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}];
+                   rdyA[alloc]<=rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? insn_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : insn_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && funit[fuZ].instr[39:38]==2)
                        rdyA<=funit[fuZ].alloc2;
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && ~^funit[fuZ].instr[39:38])
                        rdyA<=funit[fuZ].alloc;
                    end
-                   rdyB[alloc]<=rTT[{insn_clopp[4]&&~|instr[11:10],instr_clopp[14]|(insn_clopp[4]&&~|instr[11:10]),instr[11:8]}];
+                   rdyB[alloc]<=rTT[{insn_clopp[4]&&~|instr[11:10],insn_clopp[14]|(insn_clopp[4]&&~|instr[11:10]),instr[11:8]}];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && funit[fuZ].instr[3:0]==instr[11:8] && funit[fuZ].instr[39:38]==2)
                        rdyB<=funit[fuZ].alloc2;
@@ -1069,6 +1069,83 @@ generate
                     if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[res_reg[18:11]];
                   end
           end
+  bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
+    tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
+      clk,rst,
+      XH_intf_in[tile_X], 
+      XH_intf_out[tile_X],
+      AXH_intf_in[tile_X], 
+      AXH_intf_out[tile_X],
+      ~random[0],
+      expun_data_reg, 
+      expun_addr_reg,
+      {expun_addr_reg[38:37],expun_phy_reg},
+      wrtXH_stall,
+      insetrh_data,
+      insetrh_addr,
+      {insetrh_shared,insetrh_write,insetrh_phy},
+      insetrh_en,
+      missx_en[2:0],
+      missx_addr[2:0],
+      missx_phy[2:0],
+      shareX);
+    tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
+      clk,rst,
+      XV_intf_in[tile_Y], 
+      XV_intf_out[tile_Y],
+      AXV_intf_in[tile_X], 
+      AXV_intf_out[tile_X],
+      random[0],
+      expun_data_reg, 
+      expun_addr_reg,
+      {expun_addr_reg[38:37],expun_phy_reg},
+      wrtXV_stall,
+      insetrh_data,
+      insetrh_addr,
+      {insetrh_shared,insetrh_write,insetrh_phy},
+      insetrh_en,
+      missx_en[5:3],
+      missx_addr[5:3],
+      missx_phy[5:3],
+      shareX);
+    tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
+      clk,rst,
+      XH_intf_in[tile_X], 
+      XH_intf_out[tile_X],
+      AXH_intf_in[tile_X], 
+      AXH_intf_out[tile_X],
+      ~random[0],
+      expunh_data_reg, 
+      expunh_addr_reg,
+      {expunh_addr_reg[38:37],expunh_phy_reg},
+      wrtXH_stall,
+      insetrv_data,
+      insetrv_addr,
+      {insetrv_shared,insetrv_write,insetrv_phy},
+      insetrv_en,
+      missx_en[8:6],
+      missx_addr[8:6],
+      missx_phy[8:6],
+      shareX);
+    tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
+      clk,rst,
+      XV_intf_in[tile_Y], 
+      XV_intf_out[tile_Y],
+      AXV_intf_in[tile_X], 
+      AXV_intf_out[tile_X],
+      random[0],
+      expunv_data_reg, 
+      expunv_addr_reg,
+      {expunv_addr_reg[38:37],expunv_phy_reg},
+      wrtXV_stall,
+      insetrv_data,
+      insetrv_addr,
+      {insetrv_shared,insetrv_write,insetrv_phy},
+      insetrv_en,
+      missx_en[11:9],
+      missx_addr[11:9],
+      missx_phy[11:9],
+      shareX);
       end
       reg [9:0][38:0] tr;
       reg wway,hway,vway;
@@ -1100,23 +1177,23 @@ generate
                    if (way==random && insetr_en && !wway) begin
                    if (line==insetr_addr[5:0]) begin
                        tag[insetr_addr[6]]<={insetr_wrtable,1'b1,insetr_addr[36:7]};
-                       line_data[8*insetr_addr[6]+:8]<=insetr_daata;
+                       line_data[8*insetr_addr[6]+:8]<=insetr_data;
                        expun_data<=line_data[8*insetr_addrh[6]+:8];
                        expun_tag<=tag[insetrh_addr[6]];
                    end
                  end
                 if (way==random && insetrh_en && !hway) begin
                   if (line==insetrh_addr[5:0] && instetrh_phy[PHY]) begin
-                      tag[insetrh_addr[6]]<={insetr_wrtableh,1'b1,inser_addrh[36:7]};
+                      tag[insetrh_addr[6]]<={insetr_wrtableh,1'b1,insetrh_addr[36:7]};
                       expunH_data<=line_data[8*insetr_addrh[6]+:8];
                       expunH_tag<=tag[insetrh_addr[6]];
-                      line_data[8*insetr_addrh[6]+:8]<=insetr_daatah;
+                      line_data[8*insetr_addrh[6]+:8]<=insetr_datah;
                   end
                 end
                 if (way==random && insertv_en && !vway) begin
                   if (line==insetr_addrv[5:0] && instetrv_phy[PHY]) begin
-                      tag[insetr_addrv[6]]<={insetr_wrtablev,1'b1,inser_addrv[36:7]};
-                      line_data[8*insetr_addrv[6]+:8]<=insetr_daatav;
+                      tag[insetr_addrv[6]]<={insetr_wrtablev,1'b1,insetrv_addr[36:7]};
+                      line_data[8*insetr_addrv[6]+:8]<=insetr_datav;
                       expunV_data<=line_data[8*insetr_addrh[6]+:8];
                       expunV_tag<=tag[insetrh_addr[6]];
                  end
@@ -1148,85 +1225,6 @@ generate
              end
           end
       end
-    end
-      for(subPHY=0;subPHY<5;subPHY=subPHY+1) begin
-  bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
-    tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
-      clk,rst,
-      XH_intf_in[tile_X], 
-      XH_intf_out[tile_X],
-      AXH_intf_in[tile_X], 
-      AXH_intf_out[tile_X],
-      ~random[0],
-      funit[subPHY*12].expun_data_reg, 
-      funit[subPHY*12].expun_addr_reg,
-      {funit[subPHY*12].expun_addr_reg[38:37],funit[subPHY*12].expun_phy_reg},
-      wrtXH_stall,
-      funit[subPHY*12].insetrh_data,
-      funit[subPHY*12].insetrh_addr,
-      {funit[subPHY*12].insetrh_shared,funit[subPHY*12].insetrh_write,funit[subPHY*12].insetrh_phy},
-      funit[subPHY*12].insetrh_en,
-      missx_en[subPHY*12+2:subPHY*12+0],
-      missx_addr[subPHY*12+2:subPHY*12+0],
-      missx_phy[subPHY*12+2:subPHY*12+0],
-      shareX);
-    tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
-      clk,rst,
-      XV_intf_in[tile_Y], 
-      XV_intf_out[tile_Y],
-      AXV_intf_in[tile_X], 
-      AXV_intf_out[tile_X],
-      random[0],
-      funit[subPHY*12].expun_data_reg, 
-      funit[subPHY*12].expun_addr_reg,
-      {funit[subPHY*12].expun_addr_reg[38:37],funit[subPHY*12].expun_phy_reg},
-      wrtXV_stall,
-      funit[subPHY*12].insetrh_data,
-      funit[subPHY*12].insetrh_addr,
-      {funit[subPHY*12].insetrh_shared,funit[subPHY*12].insetrh_write,funit[subPHY*12].insetrh_phy},
-      funit[subPHY*12].insetrh_en,
-      missx_en[subPHY*12+5:subPHY*12+3],
-      missx_addr[subPHY*12+5:subPHY*12+3],
-      missx_phy[subPHY*12+5:subPHY*12+3],
-      shareX);
-    tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
-      clk,rst,
-      XH_intf_in[tile_X], 
-      XH_intf_out[tile_X],
-      AXH_intf_in[tile_X], 
-      AXH_intf_out[tile_X],
-      ~random[0],
-      funit[subPHY*12].expunh_data_reg, 
-      funit[subPHY*12].expunh_addr_reg,
-      {funit[subPHY*12].expunh_addr_reg[38:37],funit[subPHY*12].expunh_phy_reg},
-      wrtXH_stall,
-      funit[subPHY*12].insetrv_data,
-      funit[subPHY*12].insetrv_addr,
-      {funit[subPHY*12].insetrv_shared,funit[subPHY*12].insetrv_write,funit[subPHY*12].insetrv_phy},
-      funit[subPHY*12].insetrv_en,
-      missx_en[subPHY*12+8:subPHY*12+6],
-      missx_addr[subPHY*12+8:subPHY*12+6],
-      missx_phy[subPHY*12+8:subPHY*12+6],
-      shareX);
-    tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
-      clk,rst,
-      XV_intf_in[tile_Y], 
-      XV_intf_out[tile_Y],
-      AXV_intf_in[tile_X], 
-      AXV_intf_out[tile_X],
-      random[0],
-      funit[subPHY*12].expunv_data_reg, 
-      funit[subPHY*12].expunv_addr_reg,
-      {funit[subPHY*12].expunv_addr_reg[38:37],funit[subPHY*12].expunv_phy_reg},
-      wrtXV_stall,
-      funit[subPHY*12].insetrv_data,
-      funit[subPHY*12].insetrv_addr,
-      {funit[subPHY*12].insetrv_shared,funit[subPHY*12].insetrv_write,funit[subPHY*12].insetrv_phy},
-      funit[subPHY*12].insetrv_en,
-      missx_en[subPHY*12+11:subPHY*12+9],
-      missx_addr[subPHY*12+11:subPHY*12+9],
-      missx_phy[subPHY*12+11:subPHY*12+9],
-      shareX);
     end
 
     end //multicore loop
