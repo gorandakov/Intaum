@@ -452,6 +452,8 @@ generate
           reg [4+5:0] rT_reg4;
           reg rA_en_reg4, rB_en_reg4, rT_en_reg4;
           reg rA_en_reg5, rB_en_reg5, rT_en_reg5;
+          reg rT_en0_reg,rT_en0_reg2,rT_en0_reg3,rT_en0_reg4,rT_en0_reg5;
+          wire rT_en0;
           reg [4+5:0] rTMem;
           reg [4+5:0] rTMem_reg;
           reg [4+5:0] rTMem_reg2;
@@ -562,8 +564,8 @@ generate
           bit_find_index indexLSU_ALU_mod(rdy[63:0][2]&rdy[63:0][1]&rdy[63:0][6]&rdy[63:0][7]&{64{~index_miss_has && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
           bit_find_index indexFLG_mod(rdy[6]&{64{~index_miss_has && ~|miss_reg}},indexFLG,indexFLG_has);
           bit_find_index indexLDU_mod(rdy[63:0][0],indexLDU,indexLDU_has);
-          bit_find_index indexAlloc(free,alloc[5:0],rT_en0);
-          bit_find_indexR indexAlloc2(free,alloc2[5:0],rTm_en0);
+          bit_find_index indexAlloc(free,alloc[5:0],alloc_en);
+          bit_find_indexR indexAlloc2(free,alloc2[5:0],alloc2_en);
           bit_find_index indexST(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] && {64{sten[fu]}},indexST,indexST_has);
           fpuadd64 Xadd(clk,rst,dataMF,dataBF,rnd,xaddres);
           fpuprod64 Xmul(clk,rst,dataMF,dataBF,rnd,xmulres);
@@ -585,6 +587,7 @@ generate
           assign res_loop1=clres2;
           assign res_loop2=clres3;
 
+          assign rT_en0=indexLSU_ALU_has;
           assign rT_en=opcode[5] && rT_en0;
           assign ldsize=1<<opcode[9:8]-1;
           assign ldsizes=ldsize & {3{opcode[10]}};
@@ -773,6 +776,11 @@ generate
               rT_en_reg3<=rT_en_reg2;
               rT_en_reg4<=rT_en_reg3;
               rT_en_reg5<=rT_en_reg4;
+              rT_en0_reg<=rT_en0;
+              rT_en0_reg2<=rT_en0_reg;
+              rT_en0_reg3<=rT_en0_reg2;
+              rT_en0_reg4<=rT_en0_reg3;
+              rT_en0_reg5<=rT_en0_reg4;
               miss_reg<=miss_reg ? miss_reg && ~{64{miss_recover}} : miss;
               miss_reg2<=miss_reg && ~{64{miss_recover}};
               miss_reg3<=miss_reg2 && ~{64{miss_recover}};
