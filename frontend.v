@@ -451,6 +451,7 @@ generate
           reg [4+5:0] rFL2_reg4;
           reg [4+5:0] rT_reg4;
           reg rA_en_reg4, rB_en_reg4, rT_en_reg4;
+          reg rA_en_reg5, rB_en_reg5, rT_en_reg5;
           reg [4+5:0] rTMem;
           reg [4+5:0] rTMem_reg;
           reg [4+5:0] rTMem_reg2;
@@ -767,6 +768,11 @@ generate
               isand_reg<=isand;
               c32_reg<=c32;
               retire_reg<=retire;
+              rT_en_reg<=rT_en;
+              rT_en_reg2<=rT_en_reg;
+              rT_en_reg3<=rT_en_reg2;
+              rT_en_reg4<=rT_en_reg3;
+              rT_en_reg5<=rT_en_reg4;
               miss_reg<=miss_reg ? miss_reg && ~{64{miss_recover}} : miss;
               miss_reg2<=miss_reg && ~{64{miss_recover}};
               miss_reg3<=miss_reg2 && ~{64{miss_recover}};
