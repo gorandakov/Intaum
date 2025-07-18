@@ -209,6 +209,7 @@ generate
       reg [63:0][9:0] rTTNewm;
       reg [63:0][9:0] rTTOldm;
       wire [11:0] isJump;
+      reg [63:0][5:0] data_loopstop;
       wire [36:0] insetr_addr;
       wire [36:0] insetrh_addr;
       wire [36:0] insetrv_addr;
@@ -242,8 +243,8 @@ generate
       reg [63:0][3:0] jcondx1;
       reg [63:0][4:0] jcc0;
       reg [63:0][4:0] jcc1;
-      reg reti;
-      reg reti_reg;
+      //reg reti;
+      //reg reti_reg;
       wire [11:0][65:0] pppoe;
       reg [11:0][65:0] pppoe_reg;
       reg [11:0][65:0] pppoe_reg2;
@@ -283,6 +284,9 @@ generate
       wire [3:0] idj1p;
       wire [11:0] idj0;
       wire [11:0] idj1;
+      wire[11:0] instr_clextra;
+      reg [5:0] RETI;
+      reg [5:0] reti_reg;
       wire idj0_has;
       wire idj1_has;
       reg [63:0][1:0] data_jpred;
@@ -290,6 +294,8 @@ generate
       wire [15:0] retGHT=data_GHT[reti_reg];
       reg [63:0][42:0] srcIPOff;
       reg [63:0][6:0] data_cloop;
+      bit_find_index j0pred(~pred_en_reg2[59:0][0],idxpreda,hasidxpreda);
+      bit_find_index j1pred(~pred_en_reg2[59:0][1],idxpredb,hasidxpredb);
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -340,6 +346,18 @@ generate
       assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
       
       always @(posedge clk) begin
+        idxpreda_reg<=idxpreda;
+        idxpreda_reg2<=idxpreda_reg;
+        idxpreda_reg3<=idxpreda_reg2;
+        idxpreda_has_reg<=idxpreda_has;
+        idxpreda_has_reg2<=idxpreda_has_reg;
+        idxpreda_has_reg3<=idxpreda_has_reg2;
+        idxpredb_reg<=idxpredb;
+        idxpredb_reg2<=idxpredb_reg;
+        idxpredb_reg3<=idxpredb_reg2;
+        idxpredb_has_reg<=idxpredb_has;
+        idxpredb_has_reg2<=idxpredb_has_reg;
+        idxpredb_has_reg3<=idxpredb_has_reg2;
         if (rst) ifu_stage_valid<=1;
         else if (except) ifu_stage_valid<=1;
         else ifu_stage_valid={ifu_stage_valid[2:0],1'b1};
@@ -388,6 +406,7 @@ generate
           reg [63:0][63:0] data_gen;
           reg [63:0][65:0] data_fp;
           reg [63:0][4:0] data_genFL;
+          reg [63:0][5:0] data_retFL;
           reg signed [63:0][63:0] data_imm;
           reg [63:0][16:0] data_op;
           reg [63:0][3:0] data_cond;
@@ -525,8 +544,10 @@ generate
           reg [17:0] opcodex_reg4;
           wire [4:0] cond;
           wire cond_tru;
+          reg cond_tru_reg;
           wire [4:0] cond2;
           wire cond_xtru;
+          reg cond_xtru_reg;
           integer fu3;
           integer sch;
           wire isand,op_anx,c32,c64,s64,foo,clres,clres2,clres3,res_cloop0,res_cloop1,res_cloop2,res_loop0,res_loop1,res_loop2;
@@ -567,6 +588,10 @@ generate
           wire [5:0] LQX;
           reg [5:0] LQ_reg;
           reg [5:0] LQX_reg;
+          wire opand;
+          reg opand_reg;
+          wire [2:0] ldsize;
+          wire [2:0] ldsizes;
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
           bit_find_index12 pfaff_mod({7'b0,missus_reg4[dreqmort[index_miss_reg4][18:11]]},missphyfirst,,);
@@ -578,7 +603,7 @@ generate
           bit_find_index indexLDU_mod(rdy[63:0][0],indexLDU,indexLDU_has);
           bit_find_index indexAlloc(free,alloc[5:0],alloc_en);
           bit_find_indexR indexAlloc2(free,alloc2[5:0],alloc2_en);
-          bit_find_index indexST_mod(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] && {64{sten[fu]}},indexST,indexST_has);
+          bit_find_index indexST_mod(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] ,indexST,indexST_has);
           fpuadd64 Xadd(clk,rst,dataMF,dataBF,rnd,xaddres);
           fpuprod64 Xmul(clk,rst,dataMF,dataBF,rnd,xmulres);
           assign ret0[fu][PHY]=!data_retFL[RETI][0];
@@ -621,8 +646,8 @@ generate
           assign dataBI[63:32]=phy[PHY].funit[rT_reg[9:6]].data_imm[rT_reg[5:0]][57:0]*(data_phy+1)>>32;
           assign dataBX[63:32]=phy[PHY].funit[rBX_reg[9:6]].data_gen[rBX_reg[5:0]][63:32];
           assign dataBIX[63:32]=opcode_reg[0] || opcode_reg[7:0]==2 ? dataBI[63:32] : dataBX[63:32];
-          assign dataFL=phy[PHY].funit[rFL[9:6]].data_fl[rFL[5:0]][3:0];
-          assign dataFL2=phy[PHY].funit[rFL2[9:6]].data_fl[rFL2[5:0]][3:0];
+          assign dataFL=phy[PHY].funit[rFL[9:6]].data_genFL[rFL[5:0]][3:0];
+          assign dataFL2=phy[PHY].funit[rFL2[9:6]].data_genFL[rFL2[5:0]][3:0];
           assign cond_tru=flcond(cond[3:0],dataFL);
           assign cond_xtru=flcond(cond2[3:0],dataFL2);
           assign {c32,res[31:0]}=opcode[7:0]==0 && cond_tru && !dataBI[32] ?
@@ -708,7 +733,6 @@ generate
           assign cond_early=data_cond[indexFLG_reg];
           assign isJump[fu]=opcode[7:5]==0 && opcode[8];
           always @(posedge clk) begin
-              if (rst) sten<=12'hf; else sten<={sten[7:0],sten[12:8]};
               dataA_reg[63:32]<=dataA[63:32];
             //  dataA_rexx[31:0]<=dataA[31:0];
               dataA_reg[31:0]<=dataA[31:0];
@@ -845,6 +869,8 @@ generate
               dataBF_reg3<=dataBF_reg2;
               LQ_reg<=LQ;
               LQX_reg<=LQX;
+              cond_tru_reg<=cond_tru;
+              cond_xtru_reg<=cond_xtru;
               indexLDU_reg<=indexLDU;
               indexLDU_has_reg<=indexLDU_has;
               indexLSU_ALU_reg<=indexLSU_ALU;
@@ -961,6 +987,7 @@ generate
                    if (instr[34:33]==2 && !instr[25]) data_imm[alloc]<=instr[1:0];
                    if (instr[25]) data_imm[alloc]<=0;
                    data_op[7:0] = instr[25] || instr[34:33]==2 ? 0 : op_movi;
+                   if (instr[27]) data_loopstop=idxpreda_has_reg3 ? idxpreda_reg3 : idxpredb_reg3;
                   end else if (^instr[39:38]) begin
                       data_op[alloc][10:8]=instr[37:35];
                       data_op[alloc][5]=instr[34];
