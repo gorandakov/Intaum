@@ -172,6 +172,9 @@ generate
   reg [255:0][4:0] missus_reg2;
   reg [255:0][4:0] missus_reg3;
   reg [255:0][4:0] missus_reg4;
+  wire [11:0][59:0] ret0;
+  wire [11:0][59:0] mret0;
+  wire [11:0][59:0] mxret1;
   always @(posedge clk) begin
     missus_reg<=missus;
     missus_reg2<=missus_reg;
@@ -195,6 +198,9 @@ generate
       reg [63:0] lderror;
       integer ldi;
       integer INSI;
+      wire [11:0] ret1;
+      wire [11:0] mret1;
+      wire [11:0] mxret1;
       reg [38:0][9:0] rTT;
       reg [38:0][9:0] rTTB;
       reg [63:0][1:0] rTTE;
@@ -551,6 +557,12 @@ generate
           reg [63:0] miss_reg2;
           reg [63:0] miss_reg3;
           reg [63:0] miss_reg4;
+          wire [5:0] indexFLG;
+          wire indexFLG_has;
+          wire [3:0] missphyfirst;
+          wire [5:0] indexST;
+          wire indexST_has;
+          wire alloc_en,alloc2_en;
           wire [5:0] LQ;
           wire [5:0] LQX;
           reg [5:0] LQ_reg;
