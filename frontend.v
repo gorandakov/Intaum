@@ -381,6 +381,7 @@ generate
       for(fu=0;fu<12;fu=fu+1) begin : funit
           reg [63:0][63:0] data_gen;
           reg [63:0][65:0] data_fp;
+          reg [63:0][4:0] data_genFL;
           reg signed [63:0][63:0] data_imm;
           reg [63:0][16:0] data_op;
           reg [63:0][3:0] data_cond;

@@ -195,8 +195,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign wrAreq[`wrAreq_data]=missue0[missue_idx_first];
   assign wrAreq[`wrAreq_XDONE]=IDX<2;
   assign wrAreq[`wrAreq_YDONE]=IDX>=2;
-  assign wrAreq[`wrAreq_TX]=missue0[missue_idx_first][1:0];
-  assign wrAreq[`wrAreq_TY]=missue0[missue_idx_first][3:2];
+  assign wrAreq[`wrAreq_TX]=~|missue0[36:4] ? tile_X[1:0] : missue0[missue_idx_first][1:0];
+  assign wrAreq[`wrAreq_TY]=~|missue0[36:4] ? tile_Y[1:0] : missue0[missue_idx_first][3:2];
  // assign wrAreq[`wrAreq_addr]=in_addr_reg[32:0];
   assign wrAreq[`wrAreq_sz]=missue0_phy[missue_idx_first];
 
