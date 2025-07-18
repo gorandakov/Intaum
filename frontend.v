@@ -548,6 +548,10 @@ generate
           reg [63:0] miss_reg2;
           reg [63:0] miss_reg3;
           reg [63:0] miss_reg4;
+          wire [5:0] LQ;
+          wire [5:0] LQX;
+          reg [5:0] LQ_reg;
+          reg [5:0] LQX_reg;
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
           bit_find_index12 pfaff_mod({7'b0,missus_reg4[dreqmort[index_miss_reg4][18:11]]},missphyfirst,,);
@@ -813,6 +817,8 @@ generate
               dataBF_reg2<=dataBF_reg;
               dataMF_reg3<=dataMF_reg2;
               dataBF_reg3<=dataBF_reg2;
+              LQ_reg<=LQ;
+              LQX_reg<=LQX;
               indexLDU_reg<=indexLDU;
               indexLDU_has_reg<=indexLDU_has;
               indexLSU_ALU_reg<=indexLSU_ALU;
