@@ -210,6 +210,9 @@ generate
       reg [63:0][9:0] rTTOldm;
       wire [11:0] isJump;
       reg [63:0][5:0] data_loopstop;
+      wire insetr_en;
+      wire insetrh_en;
+      wire insetrv_en;
       wire [36:0] insetr_addr;
       wire [36:0] insetrh_addr;
       wire [36:0] insetrv_addr;
@@ -285,7 +288,7 @@ generate
       wire [11:0] idj0;
       wire [11:0] idj1;
       wire[11:0] instr_clextra;
-      reg [5:0] RETI;
+      reg [5:0] reti;
       reg [5:0] reti_reg;
       wire idj0_has;
       wire idj1_has;
@@ -294,8 +297,21 @@ generate
       wire [15:0] retGHT=data_GHT[reti_reg];
       reg [63:0][42:0] srcIPOff;
       reg [63:0][6:0] data_cloop;
-      bit_find_index j0pred(~pred_en_reg2[59:0][0],idxpreda,hasidxpreda);
-      bit_find_index j1pred(~pred_en_reg2[59:0][1],idxpredb,hasidxpredb);
+      wire [5:0] idxpreda;
+      wire idxpreda_has;
+      wire [5:0] idxpredb;
+      wire idxpredb_has;
+      reg [5:0] idxpreda_reg;
+      reg [5:0] idxpreda_reg2;
+      reg [5:0] idxpreda_reg3;
+      reg [5:0] idxpredb_reg;
+      reg [5:0] idxpredb_reg2;
+      reg [5:0] idxpredb_reg3;
+      reg idxpreda_has_reg,idxpreda_has_reg2,idxpreda_has_reg3;
+      reg idxpredb_has_reg,idxpredb_has_reg2,idxpredb_has_reg3;
+
+      bit_find_index j0pred(~pred_en_reg2[59:0][0],idxpreda,idxpreda_has);
+      bit_find_index j1pred(~pred_en_reg2[59:0][1],idxpredb,idxpredb_has);
       assign pred_en=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
@@ -364,11 +380,11 @@ generate
       if (irqload|ccmiss) begin
           IP<=irqload ? irq_IP : IP_reg4;
       end else if (&jen[1:0]) begin
-        if (pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
-        else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; if (tbuf[1][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
+        if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
+        else if (&pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; if (tbuf[1][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+32; end
       end else if (^jen[1:0]) begin
-        if (pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
+        if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
         //else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+32; end
       end else begin
@@ -542,6 +558,7 @@ generate
           reg [17:0] opcodex_reg3;
           reg [17:0] opcode_reg4;
           reg [17:0] opcodex_reg4;
+          reg [17:0] opcode_reg5;
           wire [4:0] cond;
           wire cond_tru;
           reg cond_tru_reg;
@@ -563,7 +580,13 @@ generate
           reg res_loop0_reg4,res_loop1_reg4,res_loop2_reg4;
           reg res_cloop0_reg4,res_cloop1_reg4,res_cloop2_reg4;
           reg c64_reg4,s64_reg4,chk_reg4;
-          reg [36:0] missaddr0;
+          reg [36:0] misaddr0;
+          wire [3:0] ids0p;
+          wire [3:0] ids1p;
+          wire ids0_has;
+          wire ids1_has;
+          reg [65:0] resX;
+          reg [65:0] resWD;
           reg [63:0][63:0] dreqmort;
           reg [63:0][65:0] dreqdata;
           reg [63:0][5:0] dreqmort_flags;
@@ -580,6 +603,8 @@ generate
           reg [63:0] miss_reg4;
           wire [5:0] indexFLG;
           wire indexFLG_has;
+          reg [5:0] indexFLG_reg;
+          reg indexFLG_has_reg;
           wire [3:0] missphyfirst;
           wire [5:0] indexST;
           wire indexST_has;
@@ -590,8 +615,13 @@ generate
           reg [5:0] LQX_reg;
           wire opand;
           reg opand_reg;
+          reg [36:0] missaddr0;
           wire [2:0] ldsize;
           wire [2:0] ldsizes;
+          wire [5:0] loopstop;
+          reg [5:0] loopstop_save;
+          reg foo_reg;
+          wire [3:0] cond_early;
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
           bit_find_index12 pfaff_mod({7'b0,missus_reg4[dreqmort[index_miss_reg4][18:11]]},missphyfirst,,);
@@ -606,11 +636,11 @@ generate
           bit_find_index indexST_mod(dreqmort_flags[63:0][4] && dreqmort_flags[63:0][2] ,indexST,indexST_has);
           fpuadd64 Xadd(clk,rst,dataMF,dataBF,rnd,xaddres);
           fpuprod64 Xmul(clk,rst,dataMF,dataBF,rnd,xmulres);
-          assign ret0[fu][PHY]=!data_retFL[RETI][0];
+          assign ret0[fu][PHY]=!data_retFL[reti][0];
           assign ret1[fu]=&ret0[fu];
-          assign mret0[fu][PHY]=&dreqmort_flags[RETI][5:4];
+          assign mret0[fu][PHY]=&dreqmort_flags[reti][5:4];
           assign mret1[fu]=&mret0[fu];
-          assign mxret0[fu][PHY]=^dreqmort_flags[RETI][5:4];
+          assign mxret0[fu][PHY]=^dreqmort_flags[reti][5:4];
           assign mxret1[fu]=&mxret0[fu];
           assign rT[9:6]=fu;
           assign instr_clextra={insn_clopp[31:30],insn_clopp[24],insn_clopp[9:5],insn_clopp[3:0]};
@@ -687,14 +717,14 @@ generate
           assign res_logic[31:0]=opcode[2:1]==0 &~foo ? dataA[31:0]&dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==1 &~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==3 &~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
-          assign res_logic[31:0]=opcode[2:1]==2 &~foo ? phy[(LOOPSTOP[6:0]+dataBIX[5:0])%60].funit[fu].dataA[31:0] 
+          assign res_logic[31:0]=opcode[2:1]==2 &~foo ? phy[({1'b0,loopstop[5:0]}+{1'b0,dataBIX[5:0]})%60].funit[fu].dataA[31:0] 
               : 'z;
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
 
           assign res_logic[63:32]=opcode_reg[2:1]==0 &~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 &~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==3 &~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
-          assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? phy[(LOOPSTOP[6:0]+dataBIX_reg[5:0])%60].funit[fu].dataA[63:32] 
+          assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? phy[({1'b0,loopstop[5:0]}+{1'b0,dataBIX_reg[5:0]})%60].funit[fu].dataA[63:32] 
               : 'z;
           assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? {dataB_reg[63:43],dataA[42:32]} : 'z;
           assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? dataA[63:32] : 'z;
@@ -718,8 +748,8 @@ generate
           assign val_else[65:32]=opcode[12:11]==3 ? 34'h1_ffff_ffff : 'z;
           assign val_sxt[31:0]=dataBI[25:24]!=3 ? dataA[31:0]<<(8<<dataBI[25:24])>>>(8<<dataBI[25:24]) : {dataA[7:0],dataA[15:8],dataA[23:16],dataA[31:24]};
           assign val_sxt[63:0]=dataBI_reg[25:24]!=3 ? dataA_reg[31:0]<<(8<<dataBI[25:24])>>>(8<<dataBI[25:24])>>>32 : {32{dataA_reg}};
-          assign res_shift[31:0]=opcode[3] && ~data[0] ? dataA[31:0]<<dataB[5:0] : 'z;
-          assign res_shift[31:0]=opcode[3] && data[0] ? dataA[31:0]<<dataBI[5:0] : 'z;
+          assign res_shift[31:0]=opcode[3:1]==2 ? dataA[31:0]<<dataB[5:0] : 'z;
+          assign res_shift[31:0]=opcode[3:1]==3 ? dataA[31:0]<<dataBI[5:0] : 'z;
           assign res_shift[31:0]=opcode[3:0]==8 ? dataA[31:0]>>dataB[5:0] : 'z;
           assign res_shift[31:0]=opcode[3:0]==9 ? dataA[31:0]>>dataBI[5:0] : 'z;
           assign res_shift[31:0]=opcode[3:0]==10 ? dataA[31:0]>>>dataB[5:0] : 'z;
@@ -732,7 +762,9 @@ generate
           assign cond2=data_cond2[indexLSU_ALU_reg];
           assign cond_early=data_cond[indexFLG_reg];
           assign isJump[fu]=opcode[7:5]==0 && opcode[8];
+          assign loopstop=data_loopstop[indexLSU_ALU_reg]==63 ? loopstop_save : data_loopstop[indexLSU_ALU_reg];
           always @(posedge clk) begin
+              loopstop_save<=loopstop;
               dataA_reg[63:32]<=dataA[63:32];
             //  dataA_rexx[31:0]<=dataA[31:0];
               dataA_reg[31:0]<=dataA[31:0];
@@ -754,6 +786,7 @@ generate
               opcode_reg3<=opcode_reg2;
               opcode_reg4<=opcode_reg3;
               opcode_reg5<=opcode_reg4;
+              foo_reg<=foo;
               rA<=rdyA[indexLSU_ALU];
               rB<=rdyB[indexLSU_ALU];
               rBX<=rdyB[indexLDU];
@@ -880,6 +913,8 @@ generate
               indexLSU_ALU_reg2<=indexLSU_ALU_reg;
               indexLSU_ALU_reg3<=indexLSU_ALU_reg2;
               indexLSU_ALU_has_reg2<=indexLSU_ALU_has_reg;
+              indexFLG_reg<=indexFLG;
+              indexFLG_has_reg<=indexFLG_has;
               if (missx_en) misaddr0<=missx_addr;
             //  if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
               if (insetr_addr==missaddr0 && insetr_en || insetrh_addr==missaddr0 && insetrh_en || insetrv_addr==missaddr0 && insetrv_en) begin
@@ -892,12 +927,12 @@ generate
               end
               if (ids0_has && ids0p==fu) begin
                    resX<=dreqmort[ids0p];
-                   resWD<=dreqmort_data[ids0p];
+                   resWD<=dreqdata[ids0p];
                    write_size<=dreqmort_flags[ids0p][1:0];
               end
               if (ids1_has && ids1p==fu) begin
                    resX<=dreqmort[ids1p];
-                   resWD<=dreqmort_data[ids1p];
+                   resWD<=dreqdata[ids1p];
                    write_size<=dreqmort_flags[ids1p][1:0];
               end
               if (indexFLG_has_reg) begin
@@ -987,7 +1022,7 @@ generate
                    if (instr[34:33]==2 && !instr[25]) data_imm[alloc]<=instr[1:0];
                    if (instr[25]) data_imm[alloc]<=0;
                    data_op[7:0] = instr[25] || instr[34:33]==2 ? 0 : op_movi;
-                   if (instr[27]) data_loopstop=idxpreda_has_reg3 ? idxpreda_reg3 : idxpredb_reg3;
+                   if (instr[27]) data_loopstop=idxpreda_has_reg3 ? idxpreda_reg3 : idxpredb_has_reg3 ? idxpredb_reg3 : 63;
                   end else if (^instr[39:38]) begin
                       data_op[alloc][10:8]=instr[37:35];
                       data_op[alloc][5]=instr[34];
