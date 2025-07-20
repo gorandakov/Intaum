@@ -621,6 +621,8 @@ generate
           wire [5:0] loopstop;
           reg [5:0] loopstop_save;
           reg foo_reg;
+          wire retire_bndl;
+          wire retire_ret;
           wire [3:0] cond_early;
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
@@ -642,6 +644,8 @@ generate
           assign mret1[fu]=&mret0[fu];
           assign mxret0[fu][PHY]=^dreqmort_flags[reti][5:4];
           assign mxret1[fu]=&mxret0[fu];
+          assign retire_bndl=insi!=reti;
+          assign retire_ret=&retire;
           assign rT[9:6]=fu;
           assign instr_clextra={insn_clopp[31:30],insn_clopp[24],insn_clopp[9:5],insn_clopp[3:0]};
           assign clres={dataA_reg[63:32],dataA_reg2[31:0]}<{dataB_reg[63:32],dataB_reg2[31:0]}-1;
