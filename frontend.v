@@ -630,7 +630,7 @@ generate
           assign missx_en[PHY]=index12m_idx_reg==fu;
           assign missx_addr[PHY]= fu==index12m_idx_reg ? funit[index12m_idx_reg].dreqmort[index_miss_reg3[index12m_idx_reg]] : 'z;
           assign missx_phy[PHY]={missus_reg4[dreqmort[index_miss_reg4][18:11]] && {5{index12m_idx==fu & (missphyfirst==(PHY%5))}},fu[3:0],1'b0};
-          bit_find_index indexLSU_ALU_mod(~wstall & wstall_reg & is_flg_ldi ? 1<<ldi : rdy[63:0][2]&rdy[63:0][1]&rdy[63:0][6]&rdy[63:0][7]&{64{~index_miss_has && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
+          bit_find_index indexLSU_ALU_mod(~wstall & is_flg_ldi ? 1<<ldi2reg[LDI] : rdy[63:0][2]&rdy[63:0][1]&rdy[63:0][6]&rdy[63:0][7]&{64{~index_miss_has && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
           bit_find_index indexFLG_mod(rdy[6]&{64{~index_miss_has && ~|miss_reg}},indexFLG,indexFLG_has);
           bit_find_index indexLDU_mod(rdy[63:0][0],indexLDU,indexLDU_has);
           bit_find_index indexAlloc(free,alloc[5:0],alloc_en);
@@ -957,7 +957,7 @@ generate
               end
               if (rT_en0_reg | rT_en_reg && |opcode_reg[7:6]) begin
                   dreqmort[LQ][31:0]<=res[31:0];
-                  dreqmort_flags[LQ]<={~chk,1'b0,opcode_reg[7:6],opcode_reg[9:8]};
+                  dreqmort_flags[LQ]<={~opcode_reg[20],~chk,1'b0,opcode_reg[7:6],opcode_reg[9:8]};
               end
               if (rT_en0_reg2 | rT_en_reg2 && |opcode_reg2[7:6]) begin
                   dreqmort[LQ][63:32]<=res[63:32];
@@ -979,9 +979,14 @@ generate
                   if (rT_en && funit[fu3].rdyFL1[sch]==rT && funit[fu3].rdy[sch[8]]) funit[fu3].rdy[sch[9]]=1'b1;
               end
               aligned[PHY][fu]<=|dreqmort_flags[LDI][4:3];
-              if (&aligned) begin
+              if (&aligned && !wstall && !wstall_reg) begin
                 dreqmort_flags[LDI_reg][4]<=1'b1;
+                dreqmort_flags[LDI_reg][7]<=ldconfl;
+                LDI_reg<=LDI;
+                LDI<=LDI+1;
+                is_flg_ldi<=dreqmort_flags[6];
               end
+              wstall_reg<=wstall;
               instr<=poo_c_reg2;
               insn_clopp<=poo_c2_reg2;
               if (rT_en_reg && opcode[10] | opcode[5]) data_gen[rT_reg[5:0]][31:0]<=res[31:0];
