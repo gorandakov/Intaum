@@ -83,6 +83,25 @@ module frontend (
       end
   endfunction
 
+  function [4:0] fee_undex;
+//{insn_clopp[31:30],insn_clopp[24],insn_clopp[9:5],insn_clopp[3:0]}
+      input [3:0] inp;
+      case(inp)
+          0: fee_undex=32;
+          1: fee_undex=33;
+          2: fee_undex=34;
+          3: fee_undex=35;
+          4: fee_undex=36;
+          5: fee_undex=37;
+          6: fee_undex=38;
+          7: fee_undex=39;
+          8: fee_undex=40;
+          9: fee_undex=32+24;
+          10: fee_undex=62;
+default:
+             fee_undex=63;         
+      endcase
+   endfunction
   function is_lconfl;
       input [63:0] addr_aligned;
       input [4:0] flag_aligned;
@@ -1279,8 +1298,8 @@ generate
                 assign pppoe[fuB]=tag[51]&&tag[18:0][phy[PHY].funit[fuB].res[6]]=={res[31:26],res[25:13]}&& line==res[12:7]  ? poo_e_reg && poo_mask_reg[65:0] : 'z;
                 if (line==1) assign anyhit[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].res[6]]==phy[PHY].funit[fuB].res[37:6];
                 if (line==3) assign anyhitW[fuB][way]=tag[52]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
-              //  if (line==4) assign anyhitcc[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]=={7'h7f,IP_reg[37],IP_reg[27:5]} && {1'b1,IP_reg[37:28]}=={poo_c_reg[224+30],poo_c_reg[224+8:224+5],poo_c_reg[224+3:224+0]};
-                if (line==5) assign anyhitC[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==IP_reg[36:5];
+                if (line==4) assign anyhitE[fuB][way]=tag[52]&&tag[50:19][srcIPOff[reti_reg][6]]==srcIPOff[reti_reg][37:6];
+                 if (line==5) assign anyhitC[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==IP_reg[36:5];
               //  if (line==4) assign tlbhit=tr_reg[phy[PHY].funit[fuB].resX[31:22]][37:6]==phy[PHY].funit[fuB].resX[63:37] && tr_reg[phy[PHY].funit[fuB].resX[31:22]][38];
                 assign pppoc[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+:64] : 'z;
                 assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
@@ -1289,6 +1308,8 @@ generate
                     for (byte_=0;byte_<8;byte_=byte_+1)
                       if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[12:7]==line[5:0] && byte_<phy[PHY].funit[fuB].is_write_size_reg); 
                   line_data[phy[PHY].funit[fuB].resW[6:3]][8*(byte_+phy[PHY].funit[fuB].resW[2:0])+:8]<=phy[PHY].funit[fuB].resWX[8*byte_+:8];
+                      if (anyhitE_reg[fuB][way] && srcIPOff[reti_reg2][12:7]==line[5:0] && funit[fuB].dreqmort_flags[reti_reg2][7]); 
+                  line_data[{srcIPOff[reti_reg2][6],3'b111}][fee_undex(fuB)]<=1'b0;
                 //        if (][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte_<phy[PHY].funit[fuB].is_write_size_reg &&
                 //            phy[PHY].funit[fuB].resX[63:9]=='1); 
                 //            line_data[line][phy[PHY].funit[fuB].resW[6:3]]<=phy[PHY].funit[fuB].resW[8*phy[PHY].funit[fuB].resW[2:0]+:8];
