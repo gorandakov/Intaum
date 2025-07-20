@@ -396,8 +396,8 @@ generate
         if (rst) ifu_stage_valid<=1;
         else if (except) ifu_stage_valid<=1;
         else ifu_stage_valid={ifu_stage_valid[2:0],1'b1};
-      if (irqload|ccmiss) begin
-          IP<=irqload ? irq_IP : IP_reg4;
+      if (irqload|ccmiss|except_ldconfl) begin
+          IP<=irqload ? irq_IP : except_ldconfl ? retSRCIP_reg : IP_reg4;
       end else if (&jen[1:0]) begin
         if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
         else if (&pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; if (tbuf[1][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
