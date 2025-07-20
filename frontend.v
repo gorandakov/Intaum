@@ -688,7 +688,7 @@ generate
           assign jindir=fu!=10 && !opcode[10];
           assign dataA[31:0]=phy[PHY].funit[rA[9:6]].data_gen[rA[5:0]][31:0] & {32{opand}};
           assign dataB[31:0]=phy[PHY].funit[rB[9:6]].data_gen[rB[5:0]][31:0];
-          assign dataBI[31:0]=opcode[11] ?phy[PHY].funit[rT[9:6]].data_imm[rT[5:0]][9:0]*(data_phy): phy[PHY].funit[rT[9:6]].data_imm[rT[5:0]][31:0]*(data_phy+1);
+          assign dataBI[31:0]=opcode[11] ?phy[PHY].funit[rT[9:6]].data_imm2[rT[5:0]][9:0]*(data_phy): phy[PHY].funit[rT[9:6]].data_imm[rT[5:0]][31:0];
           assign data_phy[31:0]=phy[PHY].funit[rT[9:6]].data_imm_phy[rT[5:0]][31:0];
           assign dataBX[31:0]=phy[PHY].funit[rBX[9:6]].data_gen[rBX[5:0]][31:0];
           assign dataBIX[31:0]=opcode[0] || opcode[7:0]==2 ? dataBI[31:0] : dataBX[31:0];
@@ -696,7 +696,7 @@ generate
           assign dataB[63:32]=phy[PHY].funit[rB_reg[9:6]].data_gen[rB_reg[5:0]][63:32];
           assign dataMF[63:0]=phy[PHY].funit[rA_reg3[9:6]].data_gen[rA_reg2[5:0]][63:0];
           assign dataBF[63:0]=phy[PHY].funit[rB_reg3[9:6]].data_gen[rB_reg2[5:0]][63:0];
-          assign dataBI[63:32]=phy[PHY].funit[rT_reg[9:6]].data_imm[rT_reg[5:0]][57:0]*(data_phy+1)>>32;
+          assign dataBI[63:32]=phy[PHY].funit[rT_reg[9:6]].data_imm[rT_reg[5:0]][57:0]*(data_phy)>>32;
           assign dataBX[63:32]=phy[PHY].funit[rBX_reg[9:6]].data_gen[rBX_reg[5:0]][63:32];
           assign dataBIX[63:32]=opcode_reg[0] || opcode_reg[7:0]==2 ? dataBI[63:32] : dataBX[63:32];
           assign dataFL=phy[PHY].funit[rFL[9:6]].data_genFL[rFL[5:0]][3:0];
@@ -725,6 +725,8 @@ generate
           {val_sxt[63],val_sxt[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
+          assign {c32a,resA[31:0]}=dataA[31:0]+dataBI[31:0]+({32{opcode[11]}}&phy[PHY].funit[rT[9:6]].data_imm[rT[5:0]][31:0]);
+          assign resA[63:32]=dataA_reg[63:32]+{32{resA_reg[31]}}+c32a;
           assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[32])&& cond_tru_reg ?
             {dataA[63]|~chk,dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[31] :c32_reg) : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && opcode[8] && cond_tru ?
@@ -1056,8 +1058,10 @@ generate
                       data_op[alloc][5]=instr[34];
                       data_op[alloc][4:0]=5'b1;
                       data_op[alloc][11]=instr[34];
-                      data_imm[alloc]={{44{instr[32]}},instr[32:13]};
-                      if (instr[12]) data_phy[alloc]=vec ? PHYCNT-1 : PHY;
+                      data_imm[alloc]={{52{instr[24]}},instr[24:13]};
+                      data_imm2[alloc]=instr[32:25];
+                      if (!instr[12]) data_imm[alloc]={{44{instr[32]}},instr[32:13]};
+                      if (instr[12]) data_phy[alloc]=vec ? 60 : PHY;
                       else data_phy[alloc]=1;
                   end
                   if (&instr[39:38]) begin
@@ -1292,11 +1296,11 @@ generate
              for(fuB=0;fuB<12;fuB=fuB+1) begin : funit2
                 wire [65:-64] poo_mask;
                 integer byte_;
-                assign poo_e[fuB]=line_data[phy[PHY].funit[fuB].res[6:3]]>>(phy[PHY].funit[fuB].res[2:0]*8)<<(56-phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(56-phy[PHY].funit[fuB].ldsizes[2:0]*8);
+                assign poo_e[fuB]=line_data[phy[PHY].funit[fuB].resA_reg[6:3]]>>(phy[PHY].funit[fuB].resA_reg[2:0]*8)<<(56-phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(56-phy[PHY].funit[fuB].ldsizes[2:0]*8);
                 assign poo_c[66*fuB+:66]=line_data[IP[8:5]];
-                assign poo_mask=(130'h3ffff_ffff_ffff_ffff<<(phy[PHY].funit[fuB].ldsize_reg[2:0]*8))&{phy[PHY].funit[fuB].resX[65],65'h1ffff_ffff_ffff_ffff};
-                assign pppoe[fuB]=tag[51]&&tag[18:0][phy[PHY].funit[fuB].res[6]]=={res[31:26],res[25:13]}&& line==res[12:7]  ? poo_e_reg && poo_mask_reg[65:0] : 'z;
-                if (line==1) assign anyhit[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].res[6]]==phy[PHY].funit[fuB].res[37:6];
+                assign poo_mask=(130'h3ffff_ffff_ffff_ffff<<(phy[PHY].funit[fuB].ldsize_reg[2:0]*8))&{66'h3ffff_ffff_ffff_ffff};
+                assign pppoe[fuB]=tag[51]&&tag[18:0][phy[PHY].funit[fuB].resA_reg[6]]=={resA_reg[31:26],resA_reg[25:13]}&& line==resA_reg[12:7]  ? poo_e_reg && poo_mask_reg[65:0] : 'z;
+                if (line==1) assign anyhit[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resA_reg2[6]]=={phy[PHY].funit[fuB].resA_reg[37:32],phy[PHY].funit[fuB].resA_reg2[31:6]};
                 if (line==3) assign anyhitW[fuB][way]=tag[52]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
                 if (line==4) assign anyhitE[fuB][way]=tag[52]&&tag[50:19][srcIPOff[reti_reg][6]]==srcIPOff[reti_reg][37:6];
                  if (line==5) assign anyhitC[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==IP_reg[36:5];
