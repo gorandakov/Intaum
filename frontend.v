@@ -205,7 +205,7 @@ generate
       genvar way,way2;
       genvar line;
       genvar PHY;
-    for(PHY=0;PHY<60;PHY=PHY+1) begin : phy
+    for(PHY=0;PHY<36;PHY=PHY+1) begin : phy
       reg [31:0] insn_clopp;
       reg [41:0] IP; //shl 1
       reg [41:0] IP_reg;
@@ -742,14 +742,14 @@ generate
           assign res_logic[31:0]=opcode[2:1]==0 &~foo ? dataA[31:0]&dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==1 &~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==3 &~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
-          assign res_logic[31:0]=opcode[2:1]==2 &~foo ? phy[({1'b0,loopstop[5:0]}+{1'b0,dataBIX[5:0]})%60].funit[fu].dataA[31:0] 
+          assign res_logic[31:0]=opcode[2:1]==2 &~foo ? phy[({1'b0,loopstop[5:0]}+{1'b0,dataBIX[5:0]})%36].funit[fu].dataA[31:0] 
               : 'z;
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
 
           assign res_logic[63:32]=opcode_reg[2:1]==0 &~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 &~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==3 &~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
-          assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? phy[({1'b0,loopstop[5:0]}+{1'b0,dataBIX_reg[5:0]})%60].funit[fu].dataA[63:32] 
+          assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? phy[({1'b0,loopstop[5:0]}+{1'b0,dataBIX_reg[5:0]})%36].funit[fu].dataA[63:32] 
               : 'z;
           assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? {dataB_reg[63:43],dataA[42:32]} : 'z;
           assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? dataA[63:32] : 'z;
@@ -1060,9 +1060,9 @@ generate
                       data_op[alloc][11]=instr[34];
                       data_imm[alloc]={{52{instr[24]}},instr[24:13]};
                       data_imm2[alloc]=instr[32:25];
-                      if (!instr[12]) data_imm[alloc]={{44{instr[32]}},instr[32:13]};
-                      if (instr[12]) data_phy[alloc]=vec ? 60 : PHY;
-                      else data_phy[alloc]=1;
+                    if (!instr[12]) data_imm[alloc]={{44{instr[32]}},instr[32:13]};
+                      if (instr[12]) data_phy[alloc]=vec ? 36 : PHY;
+                      else data_phy[alloc]=0;
                   end
                   if (&instr[39:38]) begin
                     data_op[alloc][4:0]={instr[37:34],instr[14]};
