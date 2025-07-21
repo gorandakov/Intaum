@@ -328,6 +328,12 @@ generate
       reg [5:0] idxpredb_reg3;
       reg idxpreda_has_reg,idxpreda_has_reg2,idxpreda_has_reg3;
       reg idxpredb_has_reg,idxpredb_has_reg2,idxpredb_has_reg3;
+      reg [3:0] ids0_reg;
+      reg [3:0] ids1_reg;
+      wire [3:0] ids0p;
+      wire [3:0] ids1p;
+      wire ids0_has;
+      wire ids1_has;
 
       bit_find_index j0pred(~pred_en_reg2[59:0][0],idxpreda,idxpreda_has);
       bit_find_index j1pred(~pred_en_reg2[59:0][1],idxpredb,idxpredb_has);
@@ -381,6 +387,8 @@ generate
       assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
       
       always @(posedge clk) begin
+        ids0_reg<=ids0p;
+        ids1_reg<=ids1p;
         idxpreda_reg<=idxpreda;
         idxpreda_reg2<=idxpreda_reg;
         idxpreda_reg3<=idxpreda_reg2;
@@ -600,10 +608,6 @@ generate
           reg res_cloop0_reg4,res_cloop1_reg4,res_cloop2_reg4;
           reg c64_reg4,s64_reg4,chk_reg4;
           reg [36:0] misaddr0;
-          wire [3:0] ids0p;
-          wire [3:0] ids1p;
-          wire ids0_has;
-          wire ids1_has;
           reg [65:0] resX;
           reg [65:0] resWD;
           reg [63:0][63:0] dreqmort;
@@ -787,6 +791,10 @@ generate
           assign cond2=data_cond2[indexLSU_ALU_reg];
           assign cond_early=data_cond[indexFLG_reg];
           assign isJump[fu]=opcode[7:5]==0 && opcode[8];
+          reg [4:0] write_size;
+          reg[4:0] write_size_reg;
+          reg [63:0] resA_reg;
+          reg [63:0] resA_reg2;
           assign loopstop=data_loopstop[indexLSU_ALU_reg]==63 ? loopstop_save : data_loopstop[indexLSU_ALU_reg];
           always @(posedge clk) begin
               loopstop_save<=loopstop;
@@ -798,6 +806,9 @@ generate
               dataAS_reg3<=dataA_reg2;
               dataA_reg4<=dataA_reg3;
               dataAS_reg4<=dataAS_reg4;
+              resA_reg<=resA;
+              resA_reg2<=resA_reg;
+              write_size_reg<=write_size;
               dataBIX_reg[63:32]<=dataBIX[63:32];
              // dataBIX_rexx[31:0]<=dataBIX[31:0];
               dataBIX_reg[31:0]<=dataBIX[31:0];
@@ -1177,7 +1188,7 @@ generate
       wrtXH_stall,
       insetrh_data,
       insetrh_addr,
-      {insetrh_shared,insetrh_write,insetrh_phy},
+      {insetrh_shared,insetrh_exclusive,insetrh_phy},
       insetrh_en,
       missx_en[2:0],
       missx_addr[2:0],
@@ -1196,7 +1207,7 @@ generate
       wrtXV_stall,
       insetrh_data,
       insetrh_addr,
-      {insetrh_shared,insetrh_write,insetrh_phy},
+      {insetrh_shared,insetrh_exclusive,insetrh_phy},
       insetrh_en,
       missx_en[5:3],
       missx_addr[5:3],
@@ -1215,7 +1226,7 @@ generate
       wrtXH_stall,
       insetrv_data,
       insetrv_addr,
-      {insetrv_shared,insetrv_write,insetrv_phy},
+      {insetrv_shared,insetrv_exclusive,insetrv_phy},
       insetrv_en,
       missx_en[8:6],
       missx_addr[8:6],
@@ -1234,7 +1245,7 @@ generate
       wrtXV_stall,
       insetrv_data,
       insetrv_addr,
-      {insetrv_shared,insetrv_write,insetrv_phy},
+      {insetrv_shared,insetrv_exclusive,insetrv_phy},
       insetrv_en,
       missx_en[11:9],
       missx_addr[11:9],
@@ -1310,9 +1321,9 @@ generate
                 always @(posedge clk) begin
                   if (fuB==ids0_reg || fuB==ids1_reg)
                     for (byte_=0;byte_<8;byte_=byte_+1)
-                      if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[12:7]==line[5:0] && byte_<phy[PHY].funit[fuB].is_write_size_reg); 
-                  line_data[phy[PHY].funit[fuB].resW[6:3]][8*(byte_+phy[PHY].funit[fuB].resW[2:0])+:8]<=phy[PHY].funit[fuB].resWX[8*byte_+:8];
-                      if (anyhitE_reg[fuB][way] && srcIPOff[reti_reg2][12:7]==line[5:0] && funit[fuB].dreqmort_flags[reti_reg2][7]); 
+                      if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resX[12:7]==line[5:0] && byte_<phy[PHY].funit[fuB].is_write_size_reg); 
+                  line_data[phy[PHY].funit[fuB].resX[6:3]][8*(byte_+phy[PHY].funit[fuB].resX[2:0])+:8]<=phy[PHY].funit[fuB].resWD[8*byte_+:8];
+                    if (anyhitE_reg[fuB][way] && srcIPOff[reti_reg2][12:7]==line[5:0] && funit[fuB].dreqmort_flags[reti_reg2][7]); 
                   line_data[{srcIPOff[reti_reg2][6],3'b111}][fee_undex(fuB)]<=1'b0;
                 //        if (][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte_<phy[PHY].funit[fuB].is_write_size_reg &&
                 //            phy[PHY].funit[fuB].resX[63:9]=='1); 
