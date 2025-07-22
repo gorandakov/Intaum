@@ -253,6 +253,18 @@ generate
       reg [9:0] expunh_phy_reg;
       reg [36:0] expunv_addr_reg;
       reg [9:0] expunv_phy_reg;
+      reg [36:0] expun_addr;
+      reg [9:0] expun_phy;
+      reg [36:0] expunh_addr;
+      reg [9:0] expunh_phy;
+      reg [36:0] expunv_addr;
+      reg [9:0] expunv_phy;
+      reg [8*66-1:0] expun_data_reg;
+      reg [8*66-1:0] expunv_data_reg;
+      reg [8*66-1:0] expunh_data_reg;
+      reg [8*66-1:0] expun_data;
+      reg [8*66-1:0] expunv_data;
+      reg [8*66-1:0] expunh_data;
       wire [1:0] pred_en;
       wire [1:0][85:0] tbuf;
       wire [1:0] jen;
@@ -309,6 +321,7 @@ generate
       wire[11:0] instr_clextra;
       reg [5:0] reti;
       reg [5:0] reti_reg;
+      reg [5:0] reti_reg2;
       wire idj0_has;
       wire idj1_has;
       reg [63:0][1:0] data_jpred;
@@ -355,7 +368,20 @@ generate
           if (iscall|irqload) begin
               htlb[sttop++ +1]<={IP_reg4[35:6]+1,5'b0};
           end
+          if (rst) reti<=0;
+          else if (except|except_ldconfl) reti<=insi;
+          else if (retire_bndl) reti<=reti+1;
           reti_reg<=reti;
+          reti_reg2<=reti_reg;
+          expun_addr_reg<=expun_addr;
+          expun_data_reg<=expun_data;
+          expun_phy_reg<= expun_phy;
+          expunh_addr_reg<=expunh_addr;
+          expunh_data_reg<=expunh_data;
+          expunh_phy_reg<= expunh_phy;
+          expunv_addr_reg<=expunv_addr;
+          expunv_data_reg<=expunv_data;
+          expunv_phy_reg<= expunv_phy;
           pppoe_reg<=pppoe;
           pppoe_reg2<=pppoe_reg;
           pppoe_reg3<=pppoe_reg2;
@@ -793,6 +819,8 @@ generate
           assign isJump[fu]=opcode[7:5]==0 && opcode[8];
           reg [4:0] write_size;
           reg[4:0] write_size_reg;
+          reg is_write;
+          reg is_write_reg;
           reg [63:0] resA_reg;
           reg [63:0] resA_reg2;
           assign loopstop=data_loopstop[indexLSU_ALU_reg]==63 ? loopstop_save : data_loopstop[indexLSU_ALU_reg];
@@ -961,15 +989,19 @@ generate
                   miss_rvi<=0;
                   opcode[5]<=1'b0;
               end
+              is_write<=1'b0;
+              is_write_reg<=is_write;
               if (ids0_has && ids0p==fu) begin
                    resX<=dreqmort[ids0p];
                    resWD<=dreqdata[ids0p];
-                   write_size<=dreqmort_flags[ids0p][1:0];
+                   write_size<=1<<dreqmort_flags[ids0p][1:0];
+                   is_write<=1'b1;
               end
               if (ids1_has && ids1p==fu) begin
                    resX<=dreqmort[ids1p];
                    resWD<=dreqdata[ids1p];
-                   write_size<=dreqmort_flags[ids1p][1:0];
+                   write_size<=1<<dreqmort_flags[ids1p][1:0];
+                   is_write<=1'b1;
               end
               if (indexFLG_has_reg) begin
                   if (flcond(cond_early,data_cond[indexFLG_reg])) begin
@@ -1157,7 +1189,7 @@ generate
                   for(ldi=0;ldi<64;ldi++) begin
                       if (is_wconfl(dreqmort[LDI_reg],dreqmort_flags[LDI_reg],dreqmort[ldi],dreqmort_flags[ldi]))
                           wstall[PHY][fu]<=1'b1;
-                      if (is_lconfl(dreqmort[indexALU_LSU],dreqmort_flags[indexALU_LSU],dreqmort[ldi],dreqmort_flags[ldi]))
+                      if (is_lconfl(dreqmort[indexLSU_ALU],dreqmort_flags[indexLSU_ALU],dreqmort[ldi],dreqmort_flags[ldi]))
                           lderror[ldi]<=1'b1;
                       if (!anyhitW_reg && opcode_reg2[6] && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
@@ -1277,40 +1309,49 @@ generate
              assign poo_c2[2*fuB+:2]=poo_c[fuB*66+64+:2];
              always @(posedge clk) begin
                 if (way==0) wway=0;
-                if (line==expaddr[5:0] && expen)
-                  tag[expaddr[6]][67:66]<=0;
-                   if (way==random && insetr_en && !wway) begin
+                if (line==insetr_addr[5:0] && insetr_expen)
+                  tag[insetr_addr[6]][67:66]<=0;
+                if (line==insetrh_addr[5:0] && insetrh_expen)
+                  tag[insetrh_addr[6]][67:66]<=0;
+                if (line==insetrv_addr[5:0] && insetrv_expen)
+                  tag[insetrv_addr[6]][67:66]<=0;
+                if (way==random && insetr_phy[PHY] && !wway) begin
                    if (line==insetr_addr[5:0]) begin
-                       tag[insetr_addr[6]]<={insetr_wrtable,1'b1,insetr_addr[36:7]};
+                       tag[insetr_addr[6]]<={insetr_exclusive,1'b1,insetr_addr[36:7]};
                        line_data[8*insetr_addr[6]+:8]<=insetr_data;
-                       expun_data<=line_data[8*insetr_addrh[6]+:8];
-                       expun_tag<=tag[insetrh_addr[6]];
+                       expun_data<=line_data[8*insetr_addr[6]+:8];
+                       expun_addr<=tag[insetr_addr[6]][36:0];
+                       expun_phy<=1;
                    end
                  end
-                if (way==random && insetrh_en && !hway) begin
-                  if (line==insetrh_addr[5:0] && instetrh_phy[PHY]) begin
-                      tag[insetrh_addr[6]]<={insetr_wrtableh,1'b1,insetrh_addr[36:7]};
-                      expunH_data<=line_data[8*insetr_addrh[6]+:8];
-                      expunH_tag<=tag[insetrh_addr[6]];
-                      line_data[8*insetr_addrh[6]+:8]<=insetr_datah;
+                if (way==random && insetrh_phy[PHY] && !hway) begin
+                  if (line==insetrh_addr[5:0] && insetrh_phy[PHY]) begin
+                      tag[insetrh_addr[6]]<={insetrh_exclusive,1'b1,insetrh_addr[36:7]};
+                      expunh_data<=line_data[8*insetrh_addr[6]+:8];
+                      expunh_addr<=tag[insetrh_addr[6]][36:0];
+                      expunh_phy<=1;
+                      line_data[8*insetrh_addr[6]+:8]<=insetrh_data;
                   end
                 end
-                if (way==random && insertv_en && !vway) begin
-                  if (line==insetr_addrv[5:0] && instetrv_phy[PHY]) begin
-                      tag[insetr_addrv[6]]<={insetr_wrtablev,1'b1,insetrv_addr[36:7]};
-                      line_data[8*insetr_addrv[6]+:8]<=insetr_datav;
-                      expunV_data<=line_data[8*insetr_addrh[6]+:8];
-                      expunV_tag<=tag[insetrh_addr[6]];
+                if (way==random && insetrv_phy[PHY] && !vway) begin
+                  if (line==insetrv_addr[5:0] && insetrv_phy[PHY]) begin
+                      tag[insetrv_addr[6]]<={insetrv_exclusive,1'b1,insetrv_addr[36:7]};
+                      line_data[8*insetrv_addr[6]+:8]<=insetrv_data;
+                      expunv_data<=line_data[8*insetrv_addr[6]+:8];
+                      expunv_addr<=tag[insetrv_addr[6]][36:0];
+                      expunv_phy<=1;
                  end
              end
              end
              for(fuB=0;fuB<12;fuB=fuB+1) begin : funit2
                 wire [65:-64] poo_mask;
+                reg [65:0] poo_mask_reg;
                 integer byte_;
                 assign poo_e[fuB]=line_data[phy[PHY].funit[fuB].resA_reg[6:3]]>>(phy[PHY].funit[fuB].resA_reg[2:0]*8)<<(56-phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(56-phy[PHY].funit[fuB].ldsizes[2:0]*8);
                 assign poo_c[66*fuB+:66]=line_data[IP[8:5]];
                 assign poo_mask=(130'h3ffff_ffff_ffff_ffff<<(phy[PHY].funit[fuB].ldsize_reg[2:0]*8))&{66'h3ffff_ffff_ffff_ffff};
-                assign pppoe[fuB]=tag[51]&&tag[18:0][phy[PHY].funit[fuB].resA_reg[6]]=={resA_reg[31:26],resA_reg[25:13]}&& line==resA_reg[12:7]  ? poo_e_reg && poo_mask_reg[65:0] : 'z;
+                assign pppoe[fuB]=tag[51]&&tag[18:0][phy[PHY].funit[fuB].resA_reg[6]]=={phy[PHY].funit[fuB].resA_reg[31:26],phy[PHY].funit[fuB].resA_reg[25:13]}&& line==phy[PHY].funit[fuB].resA_reg[12:7]  ? 
+                   poo_e_reg && poo_mask_reg[65:0] : 'z;
                 if (line==1) assign anyhit[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resA_reg2[6]]=={phy[PHY].funit[fuB].resA_reg[37:32],phy[PHY].funit[fuB].resA_reg2[31:6]};
                 if (line==3) assign anyhitW[fuB][way]=tag[52]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
                 if (line==4) assign anyhitE[fuB][way]=tag[52]&&tag[50:19][srcIPOff[reti_reg][6]]==srcIPOff[reti_reg][37:6];
@@ -1319,13 +1360,14 @@ generate
                 assign pppoc[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+:64] : 'z;
                 assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
                 always @(posedge clk) begin
+                  poo_mask_reg<=poo_mask[65:0];
                   if (fuB==ids0_reg || fuB==ids1_reg)
                     for (byte_=0;byte_<8;byte_=byte_+1)
-                      if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resX[12:7]==line[5:0] && byte_<phy[PHY].funit[fuB].is_write_size_reg); 
+                      if (anyhitW[fuB][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resX[12:7]==line[5:0] && byte_<phy[PHY].funit[fuB].write_size_reg); 
                   line_data[phy[PHY].funit[fuB].resX[6:3]][8*(byte_+phy[PHY].funit[fuB].resX[2:0])+:8]<=phy[PHY].funit[fuB].resWD[8*byte_+:8];
                     if (anyhitE_reg[fuB][way] && srcIPOff[reti_reg2][12:7]==line[5:0] && funit[fuB].dreqmort_flags[reti_reg2][7]); 
                   line_data[{srcIPOff[reti_reg2][6],3'b111}][fee_undex(fuB)]<=1'b0;
-                //        if (][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte_<phy[PHY].funit[fuB].is_write_size_reg &&
+                //        if (][way] && phy[PHY].funit[fuB].is_write_reg && phy[PHY].funit[fuB].resW[2:0]==line[5:3] && byte_<phy[PHY].funit[fuB].write_size_reg &&
                 //            phy[PHY].funit[fuB].resX[63:9]=='1); 
                 //            line_data[line][phy[PHY].funit[fuB].resW[6:3]]<=phy[PHY].funit[fuB].resW[8*phy[PHY].funit[fuB].resW[2:0]+:8];
                 end
