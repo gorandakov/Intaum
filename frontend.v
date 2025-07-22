@@ -169,8 +169,10 @@ generate
   wire [59:0][59:0] missx_phy;
 
   wire except;
+  wire except_ldconfl;
   wire [1:0][42:0] retIP;
-  wire [63:0] retSRCIP;
+  wire [41:0] retSRCIP;
+  reg [41:0] retSRCIP_reg; 
   wire [31:0] random;
   `define wrreq_size 654
   `define wrAreq_size 122
@@ -199,6 +201,7 @@ generate
     missus_reg2<=missus_reg;
     missus_reg3<=missus_reg2;
     missus_reg4<=missus_reg3;
+    retSRCIP_reg<=retSRCIP;
   end
   wire irq_IP={31'b1,irqnum[3:0],7'b0};
       genvar fu,fuB;
@@ -216,7 +219,7 @@ generate
       wire ccmiss;
       reg [63:0] lderror;
       integer ldi;
-      integer INSI;
+      integer insi;
       wire [11:0] ret1;
       wire [11:0] mret1;
       wire [11:0] mxret1;
@@ -266,6 +269,8 @@ generate
       reg [8*66-1:0] expunv_data;
       reg [8*66-1:0] expunh_data;
       wire [1:0] pred_en;
+      reg [1:0] pred_en_reg;
+      reg [1:0] pred_en_reg2;
       wire [1:0][85:0] tbuf;
       wire [1:0] jen;
       //reg [63:0][59:0] miss;
@@ -373,6 +378,8 @@ generate
           else if (retire_bndl) reti<=reti+1;
           reti_reg<=reti;
           reti_reg2<=reti_reg;
+          pred_en_reg<=pred_en;
+          pred_en_reg2<=pred_en_reg;
           expun_addr_reg<=expun_addr;
           expun_data_reg<=expun_data;
           expun_phy_reg<= expun_phy;
