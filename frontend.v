@@ -329,6 +329,7 @@ generate
       reg [5:0] reti_reg2;
       wire idj0_has;
       wire idj1_has;
+      wire retire_bndl;
       reg [63:0][1:0] data_jpred;
       reg [63:0][15:0] data_GHT;
       wire [15:0] retGHT=data_GHT[reti_reg];
@@ -474,6 +475,7 @@ generate
       end
       assign retIP[0]=jcond0[reti_reg];
       assign retIP[1]=jcond1[reti_reg];
+      assign retire_bndl=insi!=reti;
       bit_find_index12 fst(indexST,ids0p,ids0,ids0_has);
       bit_find_index12r fstb(indexST,ids1p,ids1,ids1_has);
       bit_find_index12 fjmp(isJump, idj0p,idj0,idj0_has);
@@ -677,7 +679,6 @@ generate
           wire [5:0] loopstop;
           reg [5:0] loopstop_save;
           reg foo_reg;
-          wire retire_bndl;
           wire retire_ret;
           wire [3:0] cond_early;
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
@@ -700,7 +701,6 @@ generate
           assign mret1[fu]=&mret0[fu];
           assign mxret0[fu][PHY]=^dreqmort_flags[reti][5:4];
           assign mxret1[fu]=&mxret0[fu];
-          assign retire_bndl=insi!=reti;
           assign retire_ret=&retire;
           assign rT[9:6]=fu;
           assign instr_clextra={insn_clopp[31:30],insn_clopp[24],insn_clopp[9:5],insn_clopp[3:0]};
