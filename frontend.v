@@ -502,8 +502,8 @@ generate
           reg [63:0][4:0] data_genFL;
           reg [63:0][5:0] data_retFL;
           reg signed [63:0][63:0] data_imm;
-          reg [63:0][6:0] data_imm2;
-          reg [63:0][16:0] data_op;
+          reg [63:0][19:0] data_imm2;
+          reg [63:0][20:0] data_op;
           reg [63:0][3:0] data_cond;
           reg [63:0][3:0] data_cond2;
           reg [63:0][5:0] ldi2reg;
@@ -750,6 +750,7 @@ generate
           assign data_phy[31:0]=phy[PHY].funit[rT[9:6]].data_imm_phy[rT[5:0]][31:0];
           assign dataBX[31:0]=phy[PHY].funit[rBX[9:6]].data_gen[rBX[5:0]][31:0];
           assign dataBIX[31:0]=opcode[0] || opcode[7:0]==2 ? dataBI[31:0] : dataBX[31:0];
+          assign {c32h,dataBIXH[31:0]}=dataBI_reg[31:0]+({32{opcode[11]}}&phy[PHY].funit[rT[9:6]].data_imm[rT[5:0]][31:0]);
           assign dataA[63:32]=phy[PHY].funit[rA_reg[9:6]].data_gen[rA_reg[5:0]][63:32] & {34{opand_reg}};
           assign dataB[63:32]=phy[PHY].funit[rB_reg[9:6]].data_gen[rB_reg[5:0]][63:32];
           assign dataMF[63:0]=phy[PHY].funit[rA_reg3[9:6]].data_gen[rA_reg2[5:0]][63:0];
@@ -757,6 +758,7 @@ generate
           assign dataBI[63:32]=phy[PHY].funit[rT_reg[9:6]].data_imm[rT_reg[5:0]][57:0]*(data_phy)>>32;
           assign dataBX[63:32]=phy[PHY].funit[rBX_reg[9:6]].data_gen[rBX_reg[5:0]][63:32];
           assign dataBIX[63:32]=opcode_reg[0] || opcode_reg[7:0]==2 ? dataBI[63:32] : dataBX[63:32];
+          assign dataBIXH[63:32]=dataBI[63:32]+{32{dataBIXH[31]}}+c32h;
           assign dataFL=phy[PHY].funit[rFL[9:6]].data_genFL[rFL[5:0]][3:0];
           assign dataFL2=phy[PHY].funit[rFL2[9:6]].data_genFL[rFL2[5:0]][3:0];
           assign cond_tru=flcond(cond[3:0],dataFL);
@@ -792,6 +794,8 @@ generate
           assign {c32,res[31:0]}=opcode[7:0]==3 && ~opcode[8] && cond_tru ?
             dataB[31:0] : 'z;
           assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand)
+             || ~dataA_reg[65] || ^dataA_reg[64:63];
+          assign chkA=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIXH[42:32],dataBIXH_reg[31:0]},opcode_reg[11],isand)
              || ~dataA_reg[65] || ^dataA_reg[64:63];
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && opcode_reg[8] && cond_tru_reg ?
           {1'b0,dataBI_reg[63],dataBI_reg[63:32]} : 'z;
@@ -883,6 +887,7 @@ generate
               opcode_reg4<=opcode_reg3;
               opcode_reg5<=opcode_reg4;
               foo_reg<=foo;
+              dataBIXH_reg<=dataBIXH;
               rA<=rdyA[indexLSU_ALU];
               rB<=rdyB[indexLSU_ALU];
               rBX<=rdyB[indexLDU];
@@ -1061,7 +1066,7 @@ generate
               end
               if (rT_en0_reg | rT_en_reg && |opcode_reg[7:6]) begin
                   dreqmort[LQ][31:0]<=res[31:0];
-                  dreqmort_flags[LQ]<={~opcode_reg[20],~chk,1'b0,opcode_reg[7:6],opcode_reg[9:8]};
+                  dreqmort_flags[LQ]<={~opcode_reg[20],~chk&~opcode_reg[5]||~chkA,1'b0,opcode_reg[7:6],opcode_reg[9:8]};
               end
               if (rT_en0_reg2 | rT_en_reg2 && |opcode_reg2[7:6]) begin
                   dreqmort[LQ][63:32]<=res[63:32];
@@ -1146,6 +1151,11 @@ generate
                     if (!instr[12]) data_imm[alloc]={{44{instr[32]}},instr[32:13]};
                       if (instr[12]) data_phy[alloc]=vec ? 36 : PHY;
                       else data_phy[alloc]=0;
+                    if (!instr[34]) begin
+                        data_imm[alloc]=- 64'b1<<instr[36:35];
+                        data_imm2[alloc]=instr[32:13];
+                        data_phy[alloc]=1;
+                    end
                   end
                   if (&instr[39:38]) begin
                     data_op[alloc][4:0]={instr[37:34],instr[14]};
@@ -1335,6 +1345,7 @@ generate
       end
       reg [9:0][38:0] tr;
       reg wway,hway,vway;
+      assign insetr_en=1'b0; //tile ccNUMA within die/package cut in favour of unaligned load
       for(way2=0;way2<8;way2=way2+1) always @* begin
         if (insetr_en && cache_way[way2].cache_line[insetr_addr[5:0]].tag[insetr_addr[6]]==insetr_addr[36:6]) 
                   wway=1;
@@ -1395,16 +1406,20 @@ generate
              for(fuB=0;fuB<12;fuB=fuB+1) begin : funit2
                 wire [65:-64] poo_mask;
                 reg [65:0] poo_mask_reg;
+                wire [63:0] dummy64;
                 integer byte_;
-                assign poo_e[fuB]=line_data[phy[PHY].funit[fuB].resA_reg[6:3]]>>(phy[PHY].funit[fuB].resA_reg[2:0]*8)<<(56-phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(56-phy[PHY].funit[fuB].ldsizes[2:0]*8);
+                assign poo_e[fuB][63:0]={poo_u[63:0],line_data[phy[PHY].funit[fuB].resA_reg[6:3]][63:0]}>>(phy[PHY].funit[fuB].resA_reg[2:0]*8)<<(56-phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(56-phy[PHY].funit[fuB].ldsizes[2:0]*8);
+                assign {poo_e[fuB][65:64],dummy64}=line_data[phy[PHY].funit[fuB].resA_reg[6:3]]>>(phy[PHY].funit[fuB].resA_reg[2:0]*8)<<(56-phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(56-phy[PHY].funit[fuB].ldsizes[2:0]*8);
+                assign poo_u[fuB]=opcode_reg[5] ? 0 : line_data[phy[PHY].funit[fuB].res_reg[6:3]];
                 assign poo_c[64*fuB+:64]=line_data[IP[8:5]][63:0];
                 assign poo_mask=(130'h3ffff_ffff_ffff_ffff<<(phy[PHY].funit[fuB].ldsize_reg[2:0]*8))&{66'h3ffff_ffff_ffff_ffff};
                 assign pppoe[fuB]=tag[51]&&tag[18:0][phy[PHY].funit[fuB].resA_reg[6]]=={phy[PHY].funit[fuB].resA_reg[31:26],phy[PHY].funit[fuB].resA_reg[25:13]}&& line==phy[PHY].funit[fuB].resA_reg[12:7]  ? 
                    poo_e_reg && poo_mask_reg[65:0] : 'z;
+                if (line==0) assign anyhitU[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].res_reg2[6]]=={phy[PHY].funit[fuB].res_reg[37:32],phy[PHY].funit[fuB].res_reg2[31:6]};
                 if (line==1) assign anyhit[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resA_reg2[6]]=={phy[PHY].funit[fuB].resA_reg[37:32],phy[PHY].funit[fuB].resA_reg2[31:6]};
                 if (line==3) assign anyhitW[fuB][way]=tag[52]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==phy[PHY].funit[fuB].resX[37:6];
                 if (line==4) assign anyhitE[fuB][way]=tag[52]&&tag[50:19][srcIPOff[reti_reg][6]]==srcIPOff[reti_reg][37:6];
-                 if (line==5) assign anyhitC[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==IP_reg[36:5];
+                if (line==5) assign anyhitC[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==IP_reg[36:5];
               //  if (line==4) assign tlbhit=tr_reg[phy[PHY].funit[fuB].resX[31:22]][37:6]==phy[PHY].funit[fuB].resX[63:37] && tr_reg[phy[PHY].funit[fuB].resX[31:22]][38];
                 assign pppoc[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[64*fuB+:64] : 'z;
               //  assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
