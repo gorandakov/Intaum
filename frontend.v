@@ -360,6 +360,11 @@ generate
       wire [3:0] ids1p;
       wire ids0_has;
       wire ids1_has;
+      wire [511:0] pppoc;
+      reg [511:0] poo_c_reg;
+      reg [511:0] pppoc_reg;
+      reg [511:0] pppoc_reg2;
+      wire [511:0] poo_c;
 
       bit_find_index j0pred(~pred_en_reg2[59:0][0],idxpreda,idxpreda_has);
       bit_find_index j1pred(~pred_en_reg2[59:0][1],idxpredb,idxpredb_has);
@@ -423,6 +428,10 @@ generate
           index12m_idx_has_reg3<=index12m_idx_has_reg2;
           index_miss_reg4<=index_miss_reg3;
           index_miss_has_reg4<=index_miss_has_reg3;
+          poo_c_reg<=poo_c;
+          //poo_c_reg2<=poo_c_reg;
+          pppoc_reg<=pppoc;
+          pppoc_reg2<=pppoc_reg;
       end
 
       assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
@@ -844,6 +853,8 @@ generate
           reg [63:0] resA_reg2;
           reg [5:0] LDI;
           reg [5:0] LDI_reg;
+          reg [5:0] miss_rvi;
+          reg [39:0] instr;
           assign loopstop=data_loopstop[indexLSU_ALU_reg]==63 ? loopstop_save : data_loopstop[indexLSU_ALU_reg];
           always @(posedge clk) begin
               loopstop_save<=loopstop;
@@ -1080,8 +1091,8 @@ generate
                 is_flg_ldi<=dreqmort_flags[6];
               end
               wstall_reg<=wstall;
-              instr<=poo_c_reg2;
-              insn_clopp<=poo_c2_reg2;
+              instr<=pppoc_reg2[fu*40+:40];
+              insn_clopp<=pppoc_reg2[255-32+:32];
               if (rT_en_reg && opcode[10] | opcode[5]) data_gen[rT_reg[5:0]][31:0]<=res[31:0];
               if (rT_en0_reg3 && opcode_reg2[7]) data_gen[rTMem_reg2[5:0]][31:0]<=pppoe_reg[31:0];
               if (rT_en0_reg3 && opcode_reg2[7:3]==3) data_gen[rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
@@ -1334,7 +1345,7 @@ generate
       end
       for(way=0;way<8;way=way+1) begin : cache_way
           wire [11:0][65:0] poo_e;
-          wire [66*8-1:0] poo_c;
+         // wire [66*8-1:0] poo_c;
           reg [66*8-1:0] poo_c_reg;
           reg [11:0][65:0] poo_e_reg;
           always @(posedge clk) begin
@@ -1386,7 +1397,7 @@ generate
                 reg [65:0] poo_mask_reg;
                 integer byte_;
                 assign poo_e[fuB]=line_data[phy[PHY].funit[fuB].resA_reg[6:3]]>>(phy[PHY].funit[fuB].resA_reg[2:0]*8)<<(56-phy[PHY].funit[fuB].ldsizes[2:0]*8)>>>(56-phy[PHY].funit[fuB].ldsizes[2:0]*8);
-                assign poo_c[66*fuB+:66]=line_data[IP[8:5]];
+                assign poo_c[64*fuB+:64]=line_data[IP[8:5]][63:0];
                 assign poo_mask=(130'h3ffff_ffff_ffff_ffff<<(phy[PHY].funit[fuB].ldsize_reg[2:0]*8))&{66'h3ffff_ffff_ffff_ffff};
                 assign pppoe[fuB]=tag[51]&&tag[18:0][phy[PHY].funit[fuB].resA_reg[6]]=={phy[PHY].funit[fuB].resA_reg[31:26],phy[PHY].funit[fuB].resA_reg[25:13]}&& line==phy[PHY].funit[fuB].resA_reg[12:7]  ? 
                    poo_e_reg && poo_mask_reg[65:0] : 'z;
@@ -1395,8 +1406,8 @@ generate
                 if (line==4) assign anyhitE[fuB][way]=tag[52]&&tag[50:19][srcIPOff[reti_reg][6]]==srcIPOff[reti_reg][37:6];
                  if (line==5) assign anyhitC[fuB][way]=tag[51]&&tag[50:19][phy[PHY].funit[fuB].resX[6]]==IP_reg[36:5];
               //  if (line==4) assign tlbhit=tr_reg[phy[PHY].funit[fuB].resX[31:22]][37:6]==phy[PHY].funit[fuB].resX[63:37] && tr_reg[phy[PHY].funit[fuB].resX[31:22]][38];
-                assign pppoc[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+:64] : 'z;
-                assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
+                assign pppoc[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[64*fuB+:64] : 'z;
+              //  assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
                 always @(posedge clk) begin
                   poo_mask_reg<=poo_mask[65:0];
                   if (fuB==ids0_reg || fuB==ids1_reg)
