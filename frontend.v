@@ -196,6 +196,7 @@ generate
   wire [11:0][59:0] ret0;
   wire [11:0][59:0] mret0;
   wire [11:0][59:0] mxret0;
+  reg [35:0][11:0] wstall;
   always @(posedge clk) begin
     missus_reg<=missus;
     missus_reg2<=missus_reg;
@@ -678,6 +679,7 @@ generate
           wire [2:0] ldsizes;
           wire [5:0] loopstop;
           reg [5:0] loopstop_save;
+          reg is_flg_ldi;
           reg foo_reg;
           wire retire_ret;
           wire [3:0] cond_early;
