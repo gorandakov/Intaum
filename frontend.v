@@ -197,6 +197,8 @@ generate
   wire [11:0][59:0] mret0;
   wire [11:0][59:0] mxret0;
   reg [35:0][11:0] wstall;
+  reg [35:0][11:0] wstall_reg;
+  reg [35:0][11:0] aligned;
   always @(posedge clk) begin
     missus_reg<=missus;
     missus_reg2<=missus_reg;
@@ -840,6 +842,8 @@ generate
           reg is_write_reg;
           reg [63:0] resA_reg;
           reg [63:0] resA_reg2;
+          reg [5:0] LDI;
+          reg [5:0] LDI_reg;
           assign loopstop=data_loopstop[indexLSU_ALU_reg]==63 ? loopstop_save : data_loopstop[indexLSU_ALU_reg];
           always @(posedge clk) begin
               loopstop_save<=loopstop;
@@ -1070,7 +1074,7 @@ generate
               aligned[PHY][fu]<=|dreqmort_flags[LDI][4:3];
               if (&aligned && !wstall && !wstall_reg) begin
                 dreqmort_flags[LDI_reg][4]<=1'b1;
-                dreqmort_flags[LDI_reg][7]<=ldconfl;
+                dreqmort_flags[LDI_reg][7]<=lderror;
                 LDI_reg<=LDI;
                 LDI<=LDI+1;
                 is_flg_ldi<=dreqmort_flags[6];
