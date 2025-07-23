@@ -487,9 +487,11 @@ generate
           reg [63:0][4:0] data_genFL;
           reg [63:0][5:0] data_retFL;
           reg signed [63:0][63:0] data_imm;
+          reg [63:0][6:0] data_imm2;
           reg [63:0][16:0] data_op;
           reg [63:0][3:0] data_cond;
           reg [63:0][3:0] data_cond2;
+          reg [63:0][5:0] ldi2reg;
           reg [39:0] insn;
           reg [63:0][5:0] data_imm_phy;
           reg [63:0][5:0] data_loopstop;
@@ -1188,6 +1190,7 @@ generate
                   data_op[alloc][12:11]=instr[13:12];
                   data_op[alloc][19:14]=insi++;
                   data_op[alloc][20]=instr_clextra[fu] && data_op[alloc][4:0]!=3;
+                  ldi2reg[insi]<=alloc;
               end
           end
           always @* begin
