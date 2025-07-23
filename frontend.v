@@ -233,6 +233,8 @@ generate
       reg [63:0][9:0] rTTOldm;
       reg [63:0][5:0] rTT_arch;
       reg [63:0][5:0] rTT_archm;
+      reg [63:0] ret_is_alu;
+      reg [63:0] ret_is_load;
       wire [11:0] isJump;
       reg [63:0][5:0] data_loopstop;
       wire insetr_en;
@@ -1151,26 +1153,31 @@ generate
                         data_op[alloc][4:0]=2;
                       end
                   end
+                  ret_is_load[insi]<=1'b0;
+                  ret_is_alu[insi]<=1'b0;
                   if (instr[39:38]==2) begin
                     rTT[{insn_clopp[4]&&~|instr[3:2],insn_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}]<=alloc2;
                     rTTOldm[insi]<=rTT[{insn_clopp[4]&&~|instr[3:2],insn_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}];
                     rTTNewm[insi]<={fu[3:0],alloc2};
                     rTTE[alloc2][0]<=1'b1;
                     rTT_archm[insi]<={insn_clopp[4]&&~|instr[3:2],insn_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]};
+                    ret_is_load[insi]<=1'b1;
                     if (instr[34]) begin
                         rTT[{insn_clopp[4]&&~|instr[7:6],1'b0|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}]<=alloc;
                         rTTOld[insi]<=rTT[{insn_clopp[4]&&~|instr[7:6],1'b0,instr[7:4]}];
                         rTTNew[insi]<={fu[3:0],alloc};
                         rTTE[alloc][0]<=1;
                         rTT_arch[insi]<={insn_clopp[4]&&~|instr[7:6],1'b0,instr[7:4]};
+                        ret_is_alu[insi]<=1'b1;
                     end
                   end
-                  if (~^instr[39:38]) begin
+                  if (~^instr[39:38] || instr[39:38]==1 && instr[34]) begin
                        rTT[{insn_clopp[4]&&~|instr[3:2],insn_clopp[14]|(insn_clopp[4]&&~|instr[3:2]),instr[3:0]}]<=alloc;
                        rTTOld[insi]<=rTT[{insn_clopp[4]&&~|instr[3:2],insn_clopp[14],instr[3:0]}];
                        rTTNew[insi]<={fu[3:0],alloc};
                        rTTE[alloc][0]<=1'b1;
                        rTT_arch[insi]<={insn_clopp[4]&&~|instr[3:2],insn_clopp[14],instr[3:0]};
+                       ret_is_alu[insi]<=1'b1;
                   end
                    data_retFL[insi]<=1;
                    rdyA[alloc]<=rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? insn_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : insn_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}];
