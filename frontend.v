@@ -472,12 +472,12 @@ generate
           IP<=irqload ? irq_IP : except_ldconfl ? retSRCIP_reg : IP_reg4;
       end else if (&jen[1:0]) begin
         if (iscloop[1:0]) vec<=1'b1;
-        if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=is_ret[0] ? ret_cookie : tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
-        else if (&pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=is_ret[1] ? ret_cookie : tbuf[1][IP[12:4]][42:0]; if (tbuf[1][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
+        if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret[0] ? ret_cookie : tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
+        else if (&pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=isret[1] ? ret_cookie : tbuf[1][IP[12:4]][42:0]; if (tbuf[1][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+32;  vec<=1'b0; end
       end else if (^jen[1:0]) begin
         if (iscloop[0]) vec<=1'b1;
-        if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=is_reg[0] ? ret_cookie : tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
+        if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret[0] ? ret_cookie : tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
         //else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+32; vec<=1'b0; end
       end else begin
