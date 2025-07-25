@@ -22,6 +22,8 @@ no UK tech mogul's money were used to make this project.
 no UK nobility member owns or has contributed to this project.
 not accept free hint on debugging in exchange of the entire core.
 */
+
+//verilator lint_off WIDTHEXPAND
 module frontend (
   input clk,
   input irqload,
@@ -158,8 +160,8 @@ default:
   endfunction
 generate
   genvar tile_X,tile_Y,subPHY;
-  for(tile_X=0;tile_X<4;tile_X=tile_X+1) 
-  for(tile_Y=0;tile_Y<4;tile_Y=tile_Y+1) begin : HV
+  for(tile_X=0;tile_X<1;tile_X=tile_X+1) 
+  for(tile_Y=0;tile_Y<1;tile_Y=tile_Y+1) begin : HV
   wire iscall,isret,ucjmp;
   reg [7:0] sttop;
   reg [65535:0][1:0] predA;
@@ -1405,14 +1407,6 @@ generate
       reg [9:0][38:0] tr;
       reg wway,hway,vway;
       assign insetr_en=1'b0; //tile ccNUMA within die/package cut in favour of unaligned load
-      for(way2=0;way2<8;way2=way2+1) always @* begin
-        if (insetr_en && cache_way[way2].cache_line[insetr_addr[5:0]].tag[insetr_addr[6]]==insetr_addr[36:6]) 
-                  wway=1;
-        if (insetrh_en && cache_way[way2].cache_line[insetrh_addr[5:0]].tag[insetrh_addr[6]]==insetrh_addr[36:6]) 
-                  hway=1;
-     //   if (insertv_en && cache_way[way2].cache_line[insetrv_addr[5:0]].tag[insetrv_addr[6]]==insetrv_addr[36:6]) 
-     //             vway=1;
-      end
       for(way=0;way<8;way=way+1) begin : cache_way
           wire [11:0][65:0] poo_e;
           wire [11:0][65:0] poo_u;
@@ -1426,6 +1420,14 @@ generate
         for(line=0;line<64;line=line+1) begin : cache_line
           reg [15:0][65:0] line_data;
           reg [1:0][52:0] tag;
+          always @* begin
+              if (insetr_en && insetr_addr[5:0]==line && tag[insetr_addr[6]]==insetr_addr[36:6]) 
+                  wway=1;
+              if (insetrh_en && insetrh_addr[5:0]==line && tag[insetrh_addr[6]]==insetrh_addr[36:6]) 
+                  hway=1;
+     //   if (insertv_en && cache_way[way2].cache_line[insetrv_addr[5:0]].tag[insetrv_addr[6]]==insetrv_addr[36:6]) 
+     //             vway=1;
+          end
             // assign poo_c2[2*fuB+:2]=poo_c[fuB*66+64+:2];
              always @(posedge clk) begin
                 if (way==0) wway=0;
