@@ -177,7 +177,7 @@ generate
   wire [41:0] retSRCIP;
   reg [41:0] retSRCIP_reg; 
   wire [31:0] random;
-  `define wrreq_size 654
+  `define wrreq_size 655
   `define wrAreq_size 122
   wire [1:0][`wrreq_size:0] XH_intf_in[3:0];
   wire [1:0][`wrreq_size:0] XV_intf_in[3:0];
@@ -245,6 +245,9 @@ generate
       wire insetr_en;
       wire insetrh_en;
       wire insetrv_en;
+      wire insetr_expen;
+      wire insetrh_expen;
+      wire insetrv_expen;
       wire [36:0] insetr_addr;
       wire [36:0] insetrh_addr;
       wire [36:0] insetrv_addr;
@@ -299,6 +302,8 @@ generate
       reg [11:0][65:0] pppoe_reg2;
       reg [11:0][65:0] pppoe_reg3;
       reg [11:0] anyhit;
+      reg [11:0] anyhitU;
+      reg [11:0] anyhitE;
       reg [11:0] anyhitW;
       reg [11:0] anyhitC;
       reg [11:0] anyhit_reg;
@@ -444,9 +449,11 @@ generate
           pppoc_reg<=pppoc;
           pppoc_reg2<=pppoc_reg;
       end
-
+      wire [1:0] is_cloop;
       assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
-      
+      assign is_cloop[0]=tbuf[0][IP[12:4]][44];
+      assign is_cloop[1]=tbuf[1][IP[12:4]][44];
+
       always @(posedge clk) begin
         ids0_reg<=ids0p;
         ids1_reg<=ids1p;
@@ -471,12 +478,12 @@ generate
       if (irqload|ccmiss|except_ldconfl) begin
           IP<=irqload ? irq_IP : except_ldconfl ? retSRCIP_reg : IP_reg4;
       end else if (&jen[1:0]) begin
-        if (iscloop[1:0]) vec<=1'b1;
+        if (is_cloop[1:0]) vec<=1'b1;
         if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret[0] ? ret_cookie : tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
         else if (&pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=isret[1] ? ret_cookie : tbuf[1][IP[12:4]][42:0]; if (tbuf[1][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+32;  vec<=1'b0; end
       end else if (^jen[1:0]) begin
-        if (iscloop[0]) vec<=1'b1;
+        if (is_cloop[0]) vec<=1'b1;
         if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret[0] ? ret_cookie : tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
         //else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+32; vec<=1'b0; end
@@ -1290,6 +1297,7 @@ generate
                     if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[res_reg[18:11]];
                   end
           end
+  wire [5:0] shareX;
   bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
     tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
       clk,rst,
@@ -1301,7 +1309,7 @@ generate
       expun_data_reg, 
       expun_addr_reg,
       {expun_addr_reg[38:37],expun_phy_reg},
-      wrtXH_stall,
+      insetrh_expen,
       insetrh_data,
       insetrh_addr,
       {insetrh_shared,insetrh_exclusive,insetrh_phy},
@@ -1320,7 +1328,7 @@ generate
       expun_data_reg, 
       expun_addr_reg,
       {expun_addr_reg[38:37],expun_phy_reg},
-      wrtXV_stall,
+      insetrh_expen,
       insetrh_data,
       insetrh_addr,
       {insetrh_shared,insetrh_exclusive,insetrh_phy},
@@ -1339,7 +1347,7 @@ generate
       expunh_data_reg, 
       expunh_addr_reg,
       {expunh_addr_reg[38:37],expunh_phy_reg},
-      wrtXH_stall,
+      insetrv_expen,
       insetrv_data,
       insetrv_addr,
       {insetrv_shared,insetrv_exclusive,insetrv_phy},
@@ -1358,7 +1366,7 @@ generate
       expunv_data_reg, 
       expunv_addr_reg,
       {expunv_addr_reg[38:37],expunv_phy_reg},
-      wrtXV_stall,
+      insetrv_expen,
       insetrv_data,
       insetrv_addr,
       {insetrv_shared,insetrv_exclusive,insetrv_phy},
@@ -1381,6 +1389,7 @@ generate
       end
       for(way=0;way<8;way=way+1) begin : cache_way
           wire [11:0][65:0] poo_e;
+          wire [11:0][65:0] poo_u;
          // wire [66*8-1:0] poo_c;
           reg [66*8-1:0] poo_c_reg;
           reg [11:0][65:0] poo_e_reg;
@@ -1391,7 +1400,7 @@ generate
         for(line=0;line<64;line=line+1) begin : cache_line
           reg [15:0][65:0] line_data;
           reg [1:0][52:0] tag;
-             assign poo_c2[2*fuB+:2]=poo_c[fuB*66+64+:2];
+            // assign poo_c2[2*fuB+:2]=poo_c[fuB*66+64+:2];
              always @(posedge clk) begin
                 if (way==0) wway=0;
                 if (line==insetr_addr[5:0] && insetr_expen)

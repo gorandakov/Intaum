@@ -6,7 +6,8 @@
 `define wrreq_sz 615:604
 `define wrreq_addr 652:616
 `define wrreq_snd 653
-`define wrreq_size 654
+`define wrreq_expun 654
+`define wrreq_size 655
 `define wrreq_extra 655
 
 `define wrAreq_data 73:0
@@ -31,7 +32,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   input [66*8-1:0] in_datum, 
   input [36:0] in_addr,
   input [11:0] insize,//{shared,exclusive,phymsk}
-  output wrt_stall,
+  output reqmort_expun,
   output [66*8-1:0] reqmort_data,
   output [36:0] reqmortaddr,
   output [11:0] reqmort_size,
@@ -96,6 +97,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign wrreq[`wrreq_TY]=in_addr_reg[3:2];
   assign wrreq[`wrreq_addr]=in_addr_reg[36:0];
   assign wrreq[`wrreq_sz]=in_size_reg;
+  assign wrreq[`wrreq_expun]=1'b0;
 
   assign XA_intf_in_chg[0][`wrreq_addr]=XA_intf_in[0][`wrAreq_addr];
   assign XA_intf_in_chg[0][`wrreq_sz]={2'b11,XA_intf_in[0][-2+`wrAreq_sz]};
@@ -117,6 +119,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign reqmort_data=|odata_in[0] ? oqueue[0][qrpos0][`wrreq_data] : oqueue[1][qrpos1][`wrreq_data];
   assign reqmortaddr=|odata_in[0] ? {tile_Y[4:0],tile_X[4:0],oqueue[0][qrpos0][`wrreq_addr]} : {tile_Y[4:0],tile_X[4:0],oqueue[1][qrpos1][`wrreq_addr]};
   assign reqmort_size=|odata_in[0] ? oqueue[0][qrpos0][`wrreq_sz] : oqueue[1][qrpos1][`wrreq_sz];
+  assign reqmort_expun=|odata_in[0] ? oqueue[0][qrpos0][`wrreq_expun] : oqueue[1][qrpos1][`wrreq_expun];
 
   popcnt12 pa(data_in[0],datacnt0);
   popcnt12 pb(data_in[1],datacnt1);
