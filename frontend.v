@@ -386,7 +386,7 @@ generate
           reg [11:0][63:0][3:0] data_cond2;
           reg [11:0][63:0][5:0] ldi2reg;
           reg [11:0][63:0][5:0] data_imm_phy;
-          reg [11:0][63:0][5:0] data_loopstop;
+        //  reg [11:0][63:0][5:0] data_loopstop;
           reg [11:0][63:0][5:0] rdy; //port lsu/alu=bits 2:1 a,b; port store data=bit 0,A,B; upper 3 bits=needed bits
           reg [11:0][63:0][4+5:0] rdyA;
           reg [11:0][63:0][4+5:0] rdyB;
@@ -394,6 +394,24 @@ generate
           reg [11:0][63:0][4+5:0] rdyFL1;
           reg [11:0][63:0][5:0] rdyM; // also used for cloop second condition
           reg [11:0][63:0] free;
+          reg [11:0][65:0] resX;
+          reg [11:0][65:0] resX_reg;
+          reg [11:0][65:0] resWD;
+          reg [11:0] write_upper;
+          reg [11:0][4:0] write_size;
+          wire [11:0][2:0] ldsize;
+          wire [11:0][2:0] ldsizes;
+          reg [11:0] is_write;
+          wire [11:0][63:0] resA;
+          reg [11:0][4:0] write_size_reg;
+          reg [11:0] is_write_reg;
+          reg [11:0][63:0] resA_reg;
+          reg [11:0][63:0] resA_reg2;
+          reg [11:0][63:0] res_reg;
+          reg [11:0][63:0] res_reg2;
+          reg [11:0][63:0] res_reg3;
+          reg [11:0][2:0] ldsize_reg;
+          wire [11:0][20:0] opcode_reg;
       wire [41:0] ret_cookie;
       reg [41:0] ret_cookie_reg;
       reg [41:0] ret_cookie_reg2;
@@ -653,21 +671,18 @@ generate
           wire [63:0] val_else;
           wire [63:0] res_mul;
           reg  [63:0] res_shift_reg;
-          reg [63:0] res_reg;
-          reg [63:0] res_reg2;
-          reg [63:0] res_reg3;
           reg [63:0] res_mul_reg;
-          reg [17:0] opcode;
-          reg [17:0] opcodex;
-          reg [17:0] opcode_reg;
-          reg [17:0] opcodex_reg;
-          reg [17:0] opcode_reg2;
-          reg [17:0] opcodex_reg2;
-          reg [17:0] opcode_reg3;
-          reg [17:0] opcodex_reg3;
-          reg [17:0] opcode_reg4;
-          reg [17:0] opcodex_reg4;
-          reg [17:0] opcode_reg5;
+          reg [20:0] opcode;
+          reg [20:0] opcodex;
+          reg [20:0] opcode_reg;
+          reg [20:0] opcodex_reg;
+          reg [20:0] opcode_reg2;
+          reg [20:0] opcodex_reg2;
+          reg [20:0] opcode_reg3;
+          reg [20:0] opcodex_reg3;
+          reg [20:0] opcode_reg4;
+          reg [20:0] opcodex_reg4;
+          reg [20:0] opcode_reg5;
           wire [4:0] cond;
           wire cond_tru;
           reg cond_tru_reg;
@@ -690,9 +705,6 @@ generate
           reg res_cloop0_reg4,res_cloop1_reg4,res_cloop2_reg4;
           reg c64_reg4,s64_reg4,chk_reg4;
           reg [36:0] misaddr0;
-          reg [65:0] resX;
-          reg [65:0] resX_reg;
-          reg [65:0] resWD;
           reg [63:0][63:0] dreqmort;
           reg [63:0][65:0] dreqdata;
           reg [63:0][5:0] dreqmort_flags;
@@ -708,7 +720,6 @@ generate
           reg [63:0] miss_reg3;
           reg [63:0] miss_reg4;
           reg miss_recover;
-          reg  write_upper;
           reg write_upper_reg;
           wire [5:0] indexFLG;
           wire indexFLG_has;
@@ -722,14 +733,10 @@ generate
           wire [5:0] LQX;
           reg [5:0] LQ_reg;
           reg [5:0] LQX_reg;
-          wire [63:0] resA;
           wire c32a;
           wire opand;
           reg opand_reg;
           reg [36:0] missaddr0;
-          wire [2:0] ldsize;
-          wire [2:0] ldsizes;
-          reg [2:0] ldsize_reg;
           wire [5:0] loopstop;
           reg [5:0] loopstop_save;
           reg is_flg_ldi;
@@ -819,8 +826,8 @@ generate
           {val_sxt[63],val_sxt[64:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
-          assign {c32a,resA[31:0]}=dataA[31:0]+dataBI[31:0]+({32{opcode[11]}}&data_imm[rT[9:6]][rT[5:0]][31:0]);
-          assign resA[63:32]=dataA_reg[63:32]+{32{resA_reg[31]}}+c32a;
+          assign {c32a,resA[fu][31:0]}=dataA[31:0]+dataBI[31:0]+({32{opcode[11]}}&data_imm[rT[9:6]][rT[5:0]][31:0]);
+          assign resA[fu][63:32]=dataA_reg[63:32]+{32{resA_reg[fu][31]}}+c32a;
           assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[32])&& cond_tru_reg ?
             {dataA[63]|~chk,dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[31] :c32_reg) : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && opcode[8] && cond_tru ?
@@ -841,6 +848,8 @@ generate
           assign res_logic[31:0]=opcode[2:1]==2 &~foo ? phy[({1'b0,loopstop[5:0]}+{1'b0,dataBIX[5:0]})%36].funit[fu].dataA[31:0] 
               : 'z;
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
+
+          assign phy[PHY].opcode_reg[fu]=opcode_reg;
 
           assign res_logic[63:32]=opcode_reg[2:1]==0 &~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 &~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
@@ -883,12 +892,6 @@ generate
           assign cond2=data_cond2[indexLSU_ALU_reg];
           assign cond_early=data_cond[indexFLG_reg];
           assign isJump[fu]=opcode[7:5]==0 && opcode[8];
-          reg [4:0] write_size;
-          reg[4:0] write_size_reg;
-          reg is_write;
-          reg is_write_reg;
-          reg [63:0] resA_reg;
-          reg [63:0] resA_reg2;
           reg [5:0] LDI;
           reg [5:0] LDI_reg;
           reg [5:0] miss_rvi;
@@ -1068,18 +1071,18 @@ generate
               is_write<=1'b0;
               is_write_reg<=is_write;
               if (ids0_has && ids0p==fu) begin
-                   resX<=dreqmort[ids0p];
-                   resWD<=dreqdata[ids0p];
-                   write_size<=1<<dreqmort_flags[ids0p][1:0];
-                   is_write<=1'b1;
-                   write_upper<=dreqmort_flags[ids0p][6];
+                   resX[fu]<=dreqmort[ids0p];
+                   resWD[fu]<=dreqdata[ids0p];
+                   write_size[fu]<=1<<dreqmort_flags[ids0p][1:0];
+                   is_write[fu]<=1'b1;
+                   write_upper[fu]<=dreqmort_flags[ids0p][6];
               end
               if (ids1_has && ids1p==fu) begin
-                   resX<=dreqmort[ids1p];
-                   resWD<=dreqdata[ids1p];
-                   write_size<=1<<dreqmort_flags[ids1p][1:0];
-                   is_write<=1'b1;
-                   write_upper<=dreqmort_flags[ids0p][6];
+                   resX[fu]<=dreqmort[ids1p];
+                   resWD[fu]<=dreqdata[ids1p];
+                   write_size[fu]<=1<<dreqmort_flags[ids1p][1:0];
+                   is_write[fu]<=1'b1;
+                   write_upper[fu]<=dreqmort_flags[ids0p][6];
               end
               if (indexFLG_has_reg) begin
                   if (flcond(cond_early,data_cond[indexFLG_reg])) begin
