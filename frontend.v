@@ -202,6 +202,8 @@ generate
   reg [35:0][11:0] wstall;
   reg [35:0][11:0] wstall_reg;
   reg [35:0][11:0] aligned;
+  wire [35:0][11:0][65:0] xdataA;
+
   always @(posedge clk) begin
     missus_reg<=missus;
     missus_reg2<=missus_reg;
@@ -415,7 +417,8 @@ generate
           wire [11:0][39:0] inssr;
           wire [11:0][5:0] xalloc;
           wire [11:0][5:0] xalloc2;
-          wire [11:0][63:0][7:0] dreqmort_flags; 
+          wire [11:0][63:0][7:0] dreqmort_flags;
+          wire [11:0][63:0][63:0] xdreqmort; 
       wire [41:0] ret_cookie;
       reg [41:0] ret_cookie_reg;
       reg [41:0] ret_cookie_reg2;
@@ -751,7 +754,7 @@ generate
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
           bit_find_index12 pfaff_mod({7'b0,missus_reg4[dreqmort[index_miss_reg4][18:11]]},missphyfirst,,);
           assign missx_en[PHY]=index12m_idx_reg==fu;
-          assign missx_addr[PHY]= fu==index12m_idx_reg ? funit[index12m_idx_reg].dreqmort[index_miss_reg3[index12m_idx_reg]] : 'z;
+          assign missx_addr[PHY]= fu==index12m_idx_reg ? xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]] : 'z;
           assign missx_phy[PHY]={missus_reg4[dreqmort[index_miss_reg4][18:11]] && {5{index12m_idx==fu & (missphyfirst==(PHY%5))}},fu[3:0],1'b0};
           bit_find_index indexLSU_ALU_mod(~wstall & is_flg_ldi ? 1<<ldi2reg[ldi] : rdy[63:0][2]&rdy[63:0][1]&rdy[63:0][6]&rdy[63:0][7]&{64{~index_miss_has && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
           bit_find_index indexFLG_mod(rdy[6]&{64{~index_miss_has && ~|miss_reg}},indexFLG,indexFLG_has);
@@ -849,7 +852,7 @@ generate
           assign res_logic[31:0]=opcode[2:1]==0 &~foo ? dataA[31:0]&dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==1 &~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==3 &~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
-          assign res_logic[31:0]=opcode[2:1]==2 &~foo ? phy[({1'b0,loopstop[5:0]}+{1'b0,dataBIX[5:0]})%36].funit[fu].dataA[31:0] 
+          assign res_logic[31:0]=opcode[2:1]==2 &~foo ? xdataA[({1'b0,loopstop[5:0]}+{1'b0,dataBIX[5:0]})%36][fu][31:0] 
               : 'z;
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
 
@@ -859,7 +862,7 @@ generate
           assign res_logic[63:32]=opcode_reg[2:1]==0 &~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 &~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==3 &~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
-          assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? phy[({1'b0,loopstop[5:0]}+{1'b0,dataBIX_reg[5:0]})%36].funit[fu].dataA[63:32] 
+          assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? xdataA[({1'b0,loopstop[5:0]}+{1'b0,dataBIX_reg[5:0]})%36][fu][63:32] 
               : 'z;
           assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? {dataB_reg[63:43],dataA[42:32]} : 'z;
           assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? dataA[63:32] : 'z;
@@ -900,6 +903,9 @@ generate
           assign inssr[fu]=instr;
           assign xalloc[fu]=alloc;
           assign xalloc2[fu]=alloc2;
+          assign xdataA[PHY][fu]=dataA;
+          assign phy[PHY].xdreqmort=dreqmort;
+
           reg [5:0] LDI;
           reg [5:0] LDI_reg;
           reg [5:0] miss_rvi;
