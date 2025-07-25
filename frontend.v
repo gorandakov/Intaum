@@ -412,6 +412,10 @@ generate
           reg [11:0][63:0] res_reg3;
           reg [11:0][2:0] ldsize_reg;
           wire [11:0][20:0] opcode_reg;
+          wire [11:0][39:0] inssr;
+          wire [11:0][5:0] xalloc;
+          wire [11:0][5:0] xalloc2;
+          wire [11:0][63:0][7:0] dreqmort_flags; 
       wire [41:0] ret_cookie;
       reg [41:0] ret_cookie_reg;
       reg [41:0] ret_cookie_reg2;
@@ -707,7 +711,7 @@ generate
           reg [36:0] misaddr0;
           reg [63:0][63:0] dreqmort;
           reg [63:0][65:0] dreqdata;
-          reg [63:0][5:0] dreqmort_flags;
+          reg [63:0][7:0] dreqmort_flags;
           reg [63:0][3:0] dreqdata_flags;
           reg [63:0] missrs;
           reg [63:0] missrs_reg;
@@ -850,6 +854,7 @@ generate
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
 
           assign phy[PHY].opcode_reg[fu]=opcode_reg;
+          assign phy[PHY].dreqmort_flags[fu]=dreqmort_flags;
 
           assign res_logic[63:32]=opcode_reg[2:1]==0 &~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 &~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
@@ -892,6 +897,9 @@ generate
           assign cond2=data_cond2[indexLSU_ALU_reg];
           assign cond_early=data_cond[indexFLG_reg];
           assign isJump[fu]=opcode[7:5]==0 && opcode[8];
+          assign inssr[fu]=instr;
+          assign xalloc[fu]=alloc;
+          assign xalloc2[fu]=alloc2;
           reg [5:0] LDI;
           reg [5:0] LDI_reg;
           reg [5:0] miss_rvi;
@@ -1125,11 +1133,11 @@ generate
                   //dreqdata_flags[LQX]<={2'b01,2'b0};
               end
               for(fu3=0;fu3<12;fu3++) for(sch=0;sch<64;sch=sch+1) begin
-                  if (rT_en && funit[fu3].rdyB[sch]==rT && funit[fu3].rdy[sch][5]) funit[fu3].rdy[sch][2]=1'b1; 
-                  if (rT_en && funit[fu3].rdyB[sch]==rT && funit[fu3].rdy[sch][3]) funit[fu3].rdy[sch][0]=1'b1;
-                  if (rT_en && funit[fu3].rdyA[sch]==rT && funit[fu3].rdy[sch][4]) funit[fu3].rdy[sch][1]=1'b1;
-                  if (rT_en && funit[fu3].rdyFL0[sch]==rT && funit[fu3].rdy[sch][6]) funit[fu3].rdy[sch[7]]=1'b1;
-                  if (rT_en && funit[fu3].rdyFL1[sch]==rT && funit[fu3].rdy[sch[8]]) funit[fu3].rdy[sch[9]]=1'b1;
+                  if (rT_en && rdyB[fu3][sch]==rT && rdy[fu3][sch][5]) rdy[fu3][sch][2]=1'b1; 
+                  if (rT_en && rdyB[fu3][sch]==rT && rdy[fu3][sch][3]) rdy[fu3][sch][0]=1'b1;
+                  if (rT_en && rdyA[fu3][sch]==rT && rdy[fu3][sch][4]) rdy[fu3][sch][1]=1'b1;
+                  if (rT_en && rdyFL0[fu3][sch]==rT && rdy[fu3][sch][6]) rdy[fu3][sch[7]]=1'b1;
+                  if (rT_en && rdyFL1[fu3][sch]==rT && rdy[fu3][sch[8]]) rdy[fu3][sch[9]]=1'b1;
               end
               aligned[PHY][fu]<=|dreqmort_flags[LDI][4:3];
               if (&aligned && !wstall && !wstall_reg) begin
@@ -1251,31 +1259,31 @@ generate
                    data_retFL[insi]<=1;
                    rdyA[alloc]<=rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? insn_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : insn_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}];
                    for(fuZ=0;fuZ<12;fuZ++) begin
-                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && funit[fuZ].instr[39:38]==2)
-                       rdyA<=funit[fuZ].alloc2;
-                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[7:4] && ~^funit[fuZ].instr[39:38])
-                       rdyA<=funit[fuZ].alloc;
+                     if(fuZ<fu && inssr[fuZ][3:0]==instr[7:4] && inssr[fuZ][39:38]==2)
+                       rdyA<=xalloc2[fuZ];
+                     if(fuZ<fu && inssr[fuZ][3:0]==instr[7:4] && ~^inssr[fuZ][39:38])
+                       rdyA<=xalloc[fuZ];
                    end
                    rdyB[alloc]<=rTT[{insn_clopp[4]&&~|instr[11:10],insn_clopp[14]|(insn_clopp[4]&&~|instr[11:10]),instr[11:8]}];
                    for(fuZ=0;fuZ<12;fuZ++) begin
-                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[11:8] && funit[fuZ].instr[39:38]==2)
-                       rdyB<=funit[fuZ].alloc2;
-                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[11:8] && ~^funit[fuZ].instr[39:38])
-                       rdyB<=funit[fuZ].alloc;
+                     if(fuZ<fu && inssr[fuZ][3:0]==instr[11:8] && inssr[fuZ][39:38]==2)
+                       rdyB<=xalloc2[fuZ];
+                     if(fuZ<fu && inssr[fuZ][3:0]==instr[11:8] && ~^inssr[fuZ][39:38])
+                       rdyB<=xalloc[fuZ];
                    end
                    rdyFL0[alloc]<=rTT[instr[33]];
                    for(fuZ=0;fuZ<12;fuZ++) begin
-                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[33] && funit[fuZ].instr[39:32]==2)
-                       rdyFL0<=funit[fuZ].alloc2;
-                     if(fuZ<fu && funit[fuZ].instr[3:0]==instr[33] && ~^funit[fuZ].instr[39:38])
-                       rdyFL0<=funit[fuZ].alloc;
+                     if(fuZ<fu && inssr[fuZ][3:0]==instr[33] && inssr[fuZ][39:32]==2)
+                       rdyFL0<=xalloc2[fuZ];
+                     if(fuZ<fu && inssr[fuZ][3:0]==instr[33] && ~^inssr[fuZ][39:38])
+                       rdyFL0<=xalloc[fuZ];
                    end
                    rdyFL1[alloc]<=rTT[2];
                    for(fuZ=0;fuZ<12;fuZ++) begin
-                     if(fuZ<fu && funit[fuZ].instr[3:0]==2 && funit[fuZ].instr[39:32]==2)
-                       rdyFL1<=funit[fuZ].alloc2;
-                     if(fuZ<fu && funit[fuZ].instr[3:0]==2 && ~^funit[fuZ].instr[39:38])
-                       rdyFL1<=funit[fuZ].alloc;
+                     if(fuZ<fu && inssr[fuZ][3:0]==2 && inssr[fuZ][39:32]==2)
+                       rdyFL1<=xalloc2[fuZ];
+                     if(fuZ<fu && inssr[fuZ][3:0]==2 && ~^inssr[fuZ][39:38])
+                       rdyFL1<=xalloc[fuZ];
                    end
                   rdy[alloc]<={1'b1,instr[39],1'b1,instr[32:27]==3,instr[39]};  
                   data_op[alloc][12:11]=instr[13:12];
@@ -1296,11 +1304,11 @@ generate
                           lderror[ldi]<=1'b1;
                       if (!anyhitW_reg && opcode_reg2[6] && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
-                          missus[funit[fuB].res[18:11]][PHY%5]=1;
+                          missus[res[fuB][18:11]][PHY%5]=1;
                       end
                       if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
-                        missus[funit[fuB].res_reg[18:11]][PHY%5]=1;
+                        missus[res_reg[fuB][18:11]][PHY%5]=1;
                       end
                   end
                   missrs=0;
@@ -1476,7 +1484,7 @@ generate
                     for (byte_=0;byte_<8;byte_=byte_+1)
                       if (anyhitW[fuB][way] && is_write_reg[fuB] && resX[fuB][12:7]==line[5:0] && byte_<write_size_reg[fuB]); 
                   line_data[resX[fuB][6:3]][8*(byte_+resX[fuB][2:0]-8*write_upper[fuB])+:8]<=resWD[fuB][8*byte_+:8];
-                    if (anyhitE_reg[fuB][way] && srcIPOff[reti_reg2][12:7]==line[5:0] && funit[fuB].dreqmort_flags[reti_reg2][7]); 
+                    if (anyhitE_reg[fuB][way] && srcIPOff[reti_reg2][12:7]==line[5:0] && dreqmort_flags[fuB][reti_reg2][7]); 
                   line_data[{srcIPOff[reti_reg2][6],3'b111}][fee_undex(fuB)]<=1'b0;
                 //        if (][way] && is_write_reg[fuB] && resW[fuB][2:0]==line[5:3] && byte_<write_size_reg[fuB] &&
                 //            resX[fuB][63:9]=='1); 
