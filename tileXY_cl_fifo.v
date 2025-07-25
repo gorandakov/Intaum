@@ -37,7 +37,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   output [36:0] reqmortaddr,
   output [11:0] reqmort_size,
 //  output reqmort_flush_only,
-  input outen,
+  output outen,
   input [2:0] missue_en,
   input [2:0][38:0] missue_addr,
   input [2:0][11:0] missue_phy,
@@ -110,8 +110,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign fwd=IDX<2 ? in_addr_reg[1:0]>tile_X : in_addr_reg[3:2]>tile_Y;
   assign back=IDX<2 ? in_addr_reg[1:0]<=tile_X : in_addr_reg[3:2]<=tile_Y;
 
-  assign X_intf_in[0][`wrreq_extra]=|datacnt0[8:4];
-  assign X_intf_in[1][`wrreq_extra]=|datacnt1[8:4];
+  assign X_intf_out[0][`wrreq_extra]=|datacnt0[8:4];
+  assign X_intf_out[1][`wrreq_extra]=|datacnt1[8:4];
  
   assign match[0]=IDX<3 ? X_intf_in[0][`wrreq_TX]==tile_X : X_intf_in[0][`wrreq_TY]==tile_Y;
   assign match[1]=IDX<3 ? X_intf_in[1][`wrreq_TX]==tile_X : X_intf_in[1][`wrreq_TY]==tile_Y;
@@ -226,8 +226,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign fwdA=IDX<2 ? inA_addr_reg[1:0]>tile_X : inA_addr_reg[3:2]>tile_Y;
   assign backA=IDX<2 ? inA_addr_reg[1:0]<=tile_X : inA_addr_reg[3:2]<=tile_Y;
 
-  assign XA_intf_in[0][`wrreq_extra]=|Adatacnt0[8:4];
-  assign XA_intf_in[1][`wrreq_extra]=|Adatacnt1[8:4];
+  assign XA_intf_out[0][`wrreq_extra]=|Adatacnt0[8:4];
+  assign XA_intf_out[1][`wrreq_extra]=|Adatacnt1[8:4];
  
   assign amatch[0]=IDX<3 ? XA_intf_in[0][`wrAreq_TX]==tile_X : XA_intf_in[0][`wrAreq_TY]==tile_Y;
   assign amatch[1]=IDX<3 ? XA_intf_in[1][`wrAreq_TX]==tile_X : XA_intf_in[1][`wrAreq_TY]==tile_Y;
