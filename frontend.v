@@ -23,7 +23,6 @@ no UK nobility member owns or has contributed to this project.
 not accept free hint on debugging in exchange of the entire core.
 */
 
-//verilator lint_off WIDTHEXPAND
 module frontend (
   input clk,
   input irqload,
