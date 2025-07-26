@@ -323,6 +323,7 @@ generate
       wire [11:0][5:0] index_miss;
       wire [11:0] index_miss_has;
       wire [11:0][3:0] index12m_idx;
+      wire [11:0][11:0] index12m_pos;
       wire [11:0] index12m_idx_has;
       reg [11:0][5:0] index_miss_reg;
       reg [11:0] index_miss_has_reg;
@@ -368,10 +369,10 @@ generate
       reg idxpredb_has_reg,idxpredb_has_reg2,idxpredb_has_reg3;
       reg [3:0] ids0_reg;
       reg [3:0] ids1_reg;
-      wire [3:0] ids0p;
-      wire [3:0] ids1p;
-      wire ids0_has;
-      wire ids1_has;
+      //wire [3:0] ids0p;
+      //wire [3:0] ids1p;
+      //wire ids0_has;
+      //wire ids1_has;
       wire [511:0] pppoc;
       reg [511:0] poo_c_reg;
       reg [511:0] pppoc_reg;
@@ -419,7 +420,14 @@ generate
           wire [11:0][5:0] xalloc;
           wire [11:0][5:0] xalloc2;
           wire [11:0][63:0][7:0] dreqmort_flags;
-          wire [11:0][63:0][63:0] xdreqmort; 
+          wire [11:0][63:0][63:0] xdreqmort;
+          wire [11:0] indexST_has;
+          wire [3:0] ids0;
+          wire [3:0] ids1;
+          wire ids0_has;
+          wire ids1_has;
+          wire [11:0] ids0p;
+          wire [11:0] ids1p; 
       wire [41:0] ret_cookie;
       reg [41:0] ret_cookie_reg;
       reg [41:0] ret_cookie_reg2;
@@ -562,8 +570,8 @@ generate
       assign retIP[0]=jcond0[reti_reg];
       assign retIP[1]=jcond1[reti_reg];
       assign retire_bndl=insi!=reti;
-      bit_find_index12 fst(indexST,ids0p,ids0,ids0_has);
-      bit_find_index12r fstb(indexST,ids1p,ids1,ids1_has);
+      bit_find_index12 fst(indexST_has,ids0p,ids0,ids0_has);
+      bit_find_index12r fstb(indexST_has,ids1p,ids1,ids1_has);
       bit_find_index12 fjmp(isJump, idj0p,idj0,idj0_has);
       bit_find_index12r fjmp2(isJump, idj1p,idj1,idj1_has);
       for(fu=0;fu<12;fu=fu+1) begin : funit
@@ -752,7 +760,7 @@ generate
           wire retire_ret;
           wire [3:0] cond_early;
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
-          bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_present);
+          bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_idx_has);
           bit_find_index12 pfaff_mod({7'b0,missus_reg4[dreqmort[index_miss_reg4][18:11]]},missphyfirst,,);
           assign missx_en[PHY]=index12m_idx_reg==fu;
           assign missx_addr[PHY]= fu==index12m_idx_reg ? xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]] : 'z;
@@ -859,6 +867,7 @@ generate
 
           assign phy[PHY].opcode_reg[fu]=opcode_reg;
           assign phy[PHY].dreqmort_flags[fu]=dreqmort_flags;
+          assign phy[PHY].indexST_has[fu]=indexST_has;
 
           assign res_logic[63:32]=opcode_reg[2:1]==0 &~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 &~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
@@ -1085,19 +1094,19 @@ generate
               end
               is_write<=1'b0;
               is_write_reg<=is_write;
-              if (ids0_has && ids0p==fu) begin
-                   resX[fu]<=dreqmort[ids0p];
-                   resWD[fu]<=dreqdata[ids0p];
-                   write_size[fu]<=1<<dreqmort_flags[ids0p][1:0];
+              if (ids0_has && ids0==fu) begin
+                   resX[fu]<=dreqmort[ids0];
+                   resWD[fu]<=dreqdata[ids0];
+                   write_size[fu]<=1<<dreqmort_flags[ids0][1:0];
                    is_write[fu]<=1'b1;
-                   write_upper[fu]<=dreqmort_flags[ids0p][6];
+                   write_upper[fu]<=dreqmort_flags[ids0][6];
               end
-              if (ids1_has && ids1p==fu) begin
-                   resX[fu]<=dreqmort[ids1p];
-                   resWD[fu]<=dreqdata[ids1p];
-                   write_size[fu]<=1<<dreqmort_flags[ids1p][1:0];
+              if (ids1_has && ids1==fu) begin
+                   resX[fu]<=dreqmort[ids1];
+                   resWD[fu]<=dreqdata[ids1];
+                   write_size[fu]<=1<<dreqmort_flags[ids1][1:0];
                    is_write[fu]<=1'b1;
-                   write_upper[fu]<=dreqmort_flags[ids0p][6];
+                   write_upper[fu]<=dreqmort_flags[ids1][6];
               end
               if (indexFLG_has_reg) begin
                   if (flcond(cond_early,data_cond[indexFLG_reg])) begin
@@ -1325,7 +1334,7 @@ generate
                   end
           end
   wire [5:0] shareX;
-  bit_find_index12 ex(~(ret1|mret1),retire_ind,retire,has_ret);
+  bit_find_index12 ex(~(ret1|mret1),,retire,);
     tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
       clk,rst,
       XH_intf_in[tile_X], 

@@ -1,8 +1,9 @@
 
-module findindex12(
+module bit_find_index12(
   input [11:0] din,
   output [11:0] dout0,
-  output [3:0] dout);
+  output [3:0] dout,
+  output has);
 
   generate
     genvar a;
@@ -12,4 +13,5 @@ module findindex12(
     end
   endgenerate
   assign dout=|din ? 'z : '0;
+  assign has=|din;
 endmodule
