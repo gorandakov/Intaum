@@ -1,28 +1,13 @@
-/* 
-The country: since the country is the rich and their kids,
-the country is not welcome here. It is not the country project.
-also not donation of puppies to us corporations.
-also is not an os roulette.
-not an open source clicksword.
-not a Microsoft shill.
-not a Google praendtl.
-I don't hold patents on this and don't intend to.
-not a linux peacock.
-not a voodo broddo.
-not a doss munchey.
-not a olga volga .
-not a dako muscovite.
-not an apple cruscokh .
-not a royal crunch.
-not olga dakova's spirit.
-not a exchange token for getting into uni.
-not a physX token.
-not the source code of my person.
-no UK tech mogul's money were used to make this project.
-no UK nobility member owns or has contributed to this project.
-not accept free hint on debugging in exchange of the entire core.
-*/
+// Dump of all post-preprocessor input
+// Blank lines and `line directives have been removed
+//
+// Information:
+//   Verilator 5.020 2024-01-01 rev (Debian 5.020-1)
+//   Arguments: -cc frontend.v --Mdir obj_dir --debug --gdbbt
+//   Build jobs: 1
+//   Verilate jobs: 1
 
+`begin_keywords "1800-2017"
 module frontend (
   input clk,
   input irqload,
@@ -52,11 +37,10 @@ module frontend (
       11: flcond=1'b1;
       12: flcond=cond[1]^1;
       13: flcond=cond[1]^1&~cond[0];
-      14: flcond=~cond[3]&&^cond[2:1];//pointer set
-      15: flcond=!(~cond[3]&&^cond[2:1]); //pointer clear
+      14: flcond=~cond[3]&&^cond[2:1]; 
+      15: flcond=!(~cond[3]&&^cond[2:1]);  
     endcase
   endfunction
-
   function [63:0] flconv;
     input [65:0] din;
     input isdbl;
@@ -66,7 +50,6 @@ module frontend (
     input [63:0] din;
     input [1:0] sel;
     case (sel)
-
       0: fsconv={2'b10,din[63:62],~din[62],din[61:1]};
       1: fsconv={2'b10,din[63:62],din[59:30]};
       default: fsconv={2'b10,din[63:0]};
@@ -83,9 +66,7 @@ module frontend (
           if (addrl[2:0]>(addr_aligned[2:0]+(1<<flag_aligned[1:0]))) is_wconfl=0;
       end
   endfunction
-
   function [4:0] fee_undex;
-//{insn_clopp[31:30],insn_clopp[24],insn_clopp[9:5],insn_clopp[3:0]}
       input [3:0] inp;
       case(inp)
           0: fee_undex=32;
@@ -114,7 +95,6 @@ default:
           if (addrl[2:0]>(addr_aligned[2:0]+(1<<flag_aligned[1:0]))) is_lconfl=0;
       end
   endfunction
-
   function bndnonred;
       input [20:0] from;
       input [20:0] to;
@@ -167,28 +147,23 @@ generate
   reg [65535:0][1:0] predB;
   reg [65535:0][1:0] predC;
   reg [(1<<9)-1:0][65:0] htlb;
-
   wire [59:0] missx_en;
   wire [59:0][38:0] missx_addr;
   wire [59:0][59:0] missx_phy;
-
   wire except;
   wire except_ldconfl;
   wire [1:0][42:0] retIP;
   wire [41:0] retSRCIP;
   reg [41:0] retSRCIP_reg; 
   wire [31:0] random;
-  `define wrreq_size 655
-  `define wrAreq_size 122
-  wire [1:0][`wrreq_size:0] XH_intf_in[3:0];
-  wire [1:0][`wrreq_size:0] XV_intf_in[3:0];
-  wire [1:0][`wrreq_size:0] XH_intf_out[3:0];
-  wire [1:0][`wrreq_size:0] XV_intf_out[3:0];
-    
-  wire [1:0][`wrAreq_size:0] AXH_intf_in[3:0];
-  wire [1:0][`wrAreq_size:0] AXV_intf_in[3:0];
-  wire [1:0][`wrAreq_size:0] AXH_intf_out[3:0];
-  wire [1:0][`wrAreq_size:0] AXV_intf_out[3:0];
+  wire [1:0][655:0] XH_intf_in[3:0];
+  wire [1:0][655:0] XV_intf_in[3:0];
+  wire [1:0][655:0] XH_intf_out[3:0];
+  wire [1:0][655:0] XV_intf_out[3:0];
+  wire [1:0][122:0] AXH_intf_in[3:0];
+  wire [1:0][122:0] AXV_intf_in[3:0];
+  wire [1:0][122:0] AXH_intf_out[3:0];
+  wire [1:0][122:0] AXV_intf_out[3:0];
   wire [1:0][59:0] jretire; 
   wire [1:0][59:0] jtaken; 
   wire [1:0][59:0] jmpmispred;
@@ -204,7 +179,6 @@ generate
   reg [35:0][11:0] wstall_reg;
   reg [35:0][11:0] aligned;
   wire [35:0][11:0][65:0] xdataA;
-
   always @(posedge clk) begin
     missus_reg<=missus;
     missus_reg2<=missus_reg;
@@ -219,7 +193,7 @@ generate
       genvar PHY;
     for(PHY=0;PHY<36;PHY=PHY+1) begin : phy
       reg [31:0] insn_clopp;
-      reg [41:0] IP; //shl 1
+      reg [41:0] IP;  
       reg [41:0] IP_reg;
       reg [41:0] IP_reg2;
       reg [41:0] IP_reg3;
@@ -289,8 +263,6 @@ generate
       reg [1:0][59:0] pred_en_reg2;
       wire [1:0][85:0] tbuf;
       wire [1:0] jen;
-      //reg [63:0][59:0] miss;
-      //reg [63:0][11:0] missus;
       reg [255:0][85:0] tbufl;
       wire [11:0] retire;
       reg [11:0] retire_reg;
@@ -298,8 +270,6 @@ generate
       reg [63:0][3:0] jcondx1;
       reg [63:0][4:0] jcc0;
       reg [63:0][4:0] jcc1;
-      //reg reti;
-      //reg reti_reg;
       wire [11:0][65:0] pppoe;
       reg [11:0][65:0] pppoe_reg;
       reg [11:0][65:0] pppoe_reg2;
@@ -369,10 +339,6 @@ generate
       reg idxpredb_has_reg,idxpredb_has_reg2,idxpredb_has_reg3;
       reg [3:0] ids0_reg;
       reg [3:0] ids1_reg;
-      //wire [3:0] ids0p;
-      //wire [3:0] ids1p;
-      //wire ids0_has;
-      //wire ids1_has;
       wire [511:0] pppoc;
       reg [511:0] poo_c_reg;
       reg [511:0] pppoc_reg;
@@ -390,13 +356,12 @@ generate
           reg [11:0][63:0][3:0] data_cond2;
           reg [11:0][63:0][5:0] ldi2reg;
           reg [11:0][63:0][5:0] data_imm_phy;
-        //  reg [11:0][63:0][5:0] data_loopstop;
-          reg [5:0][11:0][63:0] rdy; //port lsu/alu=bits 2:1 a,b; port store data=bit 0,A,B; upper 3 bits=needed bits
+          reg [5:0][11:0][63:0] rdy;  
           reg [11:0][63:0][4+5:0] rdyA;
           reg [11:0][63:0][4+5:0] rdyB;
           reg [11:0][63:0][4+5:0] rdyFL0;
           reg [11:0][63:0][4+5:0] rdyFL1;
-          reg [11:0][63:0][5:0] rdyM; // also used for cloop second condition
+          reg [11:0][63:0][5:0] rdyM;  
           reg [11:0][63:0] free;
           reg [11:0][65:0] resX;
           reg [11:0][65:0] resX_reg;
@@ -451,8 +416,7 @@ generate
       always @(posedge clk) begin
           if (isret) sttop--;
           if (iscall|irqload) begin
-              htlb[sttop+1]<={IP_reg4[35:6]+1,5'b0};
-              sttop=sttop+1;
+              htlb[sttop++ +1]<={IP_reg4[35:6]+1,5'b0};
           end
           if (rst) reti<=0;
           else if (except|except_ldconfl) reti<=insi;
@@ -501,7 +465,6 @@ generate
           index_miss_reg4<=index_miss_reg3;
           index_miss_has_reg4<=index_miss_has_reg3;
           poo_c_reg<=poo_c;
-          //poo_c_reg2<=poo_c_reg;
           pppoc_reg<=pppoc;
           pppoc_reg2<=pppoc_reg;
       end
@@ -509,7 +472,6 @@ generate
       assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
       assign is_cloop[0]=tbuf[0][IP[12:4]][44];
       assign is_cloop[1]=tbuf[1][IP[12:4]][44];
-
       always @(posedge clk) begin
         ids0_reg<=ids0p;
         ids1_reg<=ids1p;
@@ -541,7 +503,6 @@ generate
       end else if (^jen[1:0]) begin
         if (is_cloop[0]) vec<=1'b1;
         if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret[0] ? ret_cookie : tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
-        //else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+32; vec<=1'b0; end
       end else begin
           IP=IP+32;
@@ -553,7 +514,6 @@ generate
               if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b1;
               if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b1;
               GHT<=retGHT;
-              //tbufl[retSRCIP[13:5]][0]={retJPR0,1'b1,retSRCIP,retIPA};
               IP<=|jtaken[0] ? retIP[0] : retSRCIP + 32;
            end
       end else if (|jretire[1] && except) begin
@@ -563,7 +523,6 @@ generate
               if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b10;
               if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b10;
               GHT<=retGHT;
-            //tbufl[retSRCIP[13:5]][1]={retJPR1,1'b1,retSRCIP,retIPB  };                 
               IP<=|jtaken[1] ? retIP[1] : retSRCIP + 32;
          end
       end
@@ -792,7 +751,6 @@ generate
           assign res_loop0=clres;
           assign res_loop1=clres2;
           assign res_loop2=clres3;
-
           assign rT_en0=indexLSU_ALU_has;
           assign rT_en=opcode[5] && rT_en0;
           assign ldsize=1<<opcode[9:8]-1;
@@ -801,7 +759,6 @@ generate
           assign LQX=opcodex[19:14];
           assign op_anx=opcode[7:5]==0 && |opcode[10:9];
           assign opand=opcode[7:5]!=0;
-         // assign jindir=fu!=10 && !opcode[10];
           assign dataA[31:0]=data_gen[rA[9:6]][rA[5:0]][31:0] & {32{opand}};
           assign dataB[31:0]=data_gen[rB[9:6]][rB[5:0]][31:0];
           assign dataBI[31:0]=opcode[11] ?data_imm2[rT[9:6]][rT[5:0]][9:0]*(data_phy): data_imm[rT[9:6]][rT[5:0]][31:0];
@@ -865,11 +822,9 @@ generate
           assign res_logic[31:0]=opcode[2:1]==2 &~foo ? xdataA[({1'b0,loopstop[5:0]}+{1'b0,dataBIX[5:0]})%36][fu][31:0] 
               : 'z;
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
-
           assign phy[PHY].opcode_reg[fu]=opcode_reg;
           assign phy[PHY].dreqmort_flags[fu]=dreqmort_flags;
           assign phy[PHY].indexST_has[fu]=indexST_has;
-
           assign res_logic[63:32]=opcode_reg[2:1]==0 &~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 &~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==3 &~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
@@ -877,7 +832,6 @@ generate
               : 'z;
           assign res_logic[63:32]=foo_reg & bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? {dataB_reg[63:43],dataA[42:32]} : 'z;
           assign res_logic[63:32]=foo_reg & ~bndnonred(dataA[63:43],{dataB_reg[63:43]}) ? dataA[63:32] : 'z;
-
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 'z;
@@ -916,7 +870,6 @@ generate
           assign xalloc2[fu]=alloc2;
           assign xdataA[PHY][fu]=dataA;
           assign phy[PHY].xdreqmort=dreqmort;
-
           reg [5:0] LDI;
           reg [5:0] LDI_reg;
           reg [5:0] miss_rvi;
@@ -925,7 +878,6 @@ generate
           always @(posedge clk) begin
               loopstop_save<=loopstop;
               dataA_reg[63:32]<=dataA[63:32];
-            //  dataA_rexx[31:0]<=dataA[31:0];
               dataA_reg[31:0]<=dataA[31:0];
               dataA_reg2<=dataA_reg;
               dataA_reg3<=dataA_reg2;
@@ -937,7 +889,6 @@ generate
               write_size_reg<=write_size;
               ldsize_reg<=ldsize;
               dataBIX_reg[63:32]<=dataBIX[63:32];
-             // dataBIX_rexx[31:0]<=dataBIX[31:0];
               dataBIX_reg[31:0]<=dataBIX[31:0];
               dataBIX_reg2<=dataBIX_reg;
               dataBIX_reg3<=dataBIX_reg2;
@@ -1082,7 +1033,6 @@ generate
               indexFLG_reg<=indexFLG;
               indexFLG_has_reg<=indexFLG_has;
               if (missx_en) misaddr0<=missx_addr;
-            //  if (miss_pfaff || missrs_reg4[index_miss] && miss_reg4[index_miss]) miss_reg4[index_miss]<=1'b0;
               miss_recover<=1'b0;
               if (insetr_addr==missaddr0 && insetr_en || insetrh_addr==missaddr0 && insetrh_en || insetrv_addr==missaddr0 && insetrv_en) begin
                   miss_rvi<=miss_reg4;
@@ -1139,7 +1089,6 @@ generate
               end
               if (rT_en0_reg2 | rT_en_reg2 && |opcode_reg2[7:6]) begin
                   dreqmort[LQ][63:32]<=res[63:32];
-                 // dreqmord_flags[LQ]<={opcode_reg[7:6],opcode_reg[9:8]};
               end
               if (indexLDU_has_reg) begin
                   dreqdata[LQX][31:0]<=res[31:0];
@@ -1147,7 +1096,6 @@ generate
               end
               if (indexLDU_has_reg2) begin
                   dreqdata[LQX][63:32]<=res[63:32];
-                  //dreqdata_flags[LQX]<={2'b01,2'b0};
               end
               for(fu3=0;fu3<12;fu3++) for(sch=0;sch<64;sch=sch+1) begin
                   if (rT_en && rdyB[fu3][sch]==rT && rdy[fu3][sch][5]) rdy[fu3][sch][2]=1'b1; 
@@ -1202,7 +1150,7 @@ generate
                   if (&instr[39:38]) data_op[alloc][7:6]=2'b0;
                  if (instr[39:38]==2'b10 && instr[33]|instr[34]&~instr[12]) begin
                    data_imm[alloc]=&instr[34:33] ? ret_cookie_reg3 : {{41{instr[24]}}^{17'b0,insn_clopp[31],13'b0},instr[24:14],instr[11:0]};
-                   data_op[alloc][11]<=instr[13]; //1=call 0=jump
+                   data_op[alloc][11]<=instr[13];  
                    data_cond[alloc]={instr[37:35],instr[32]};
                    data_cond2[alloc]=instr[31:28];
                    data_op[10:8]=instr[27:25];
@@ -1424,11 +1372,10 @@ generate
       end
       reg [9:0][38:0] tr;
       reg wway,hway,vway;
-      assign insetr_en=1'b0; //tile ccNUMA within die/package cut in favour of unaligned load
+      assign insetr_en=1'b0;  
       for(way=0;way<8;way=way+1) begin : cache_way
           wire [11:0][65:0] poo_e;
           wire [11:0][65:0] poo_u;
-         // wire [66*8-1:0] poo_c;
           reg [66*8-1:0] poo_c_reg;
           reg [11:0][65:0] poo_e_reg;
           always @(posedge clk) begin
@@ -1443,10 +1390,7 @@ generate
                   wway=1;
               if (insetrh_en && insetrh_addr[5:0]==line && tag[insetrh_addr[6]]==insetrh_addr[36:6]) 
                   hway=1;
-     //   if (insertv_en && cache_way[way2].cache_line[insetrv_addr[5:0]].tag[insetrv_addr[6]]==insetrv_addr[36:6]) 
-     //             vway=1;
           end
-            // assign poo_c2[2*fuB+:2]=poo_c[fuB*66+64+:2];
              always @(posedge clk) begin
                 if (way==0) wway=0;
                 if (line==insetr_addr[5:0] && insetr_expen)
@@ -1501,9 +1445,7 @@ generate
                 if (line==3) assign anyhitW[fuB][way]=tag[52]&&tag[50:19][resX[fuB][6]]==resX[fuB][37:6];
                 if (line==4) assign anyhitE[fuB][way]=tag[52]&&tag[50:19][srcIPOff[reti_reg][6]]==srcIPOff[reti_reg][37:6];
                 if (line==5) assign anyhitC[fuB][way]=tag[51]&&tag[50:19][resX[fuB][6]]==IP_reg[36:5];
-              //  if (line==4) assign tlbhit=tr_reg[resX[fuB][31:22]][37:6]==resX[fuB][63:37] && tr_reg[resX[fuB][31:22]][38];
                 assign pppoc[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[64*fuB+:64] : 'z;
-              //  assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
                 always @(posedge clk) begin
                   poo_mask_reg<=poo_mask[65:0];
                   if (fuB==ids0_reg || fuB==ids1_reg)
@@ -1512,15 +1454,355 @@ generate
                   line_data[resX[fuB][6:3]][8*(byte_+resX[fuB][2:0]-8*write_upper[fuB])+:8]<=resWD[fuB][8*byte_+:8];
                     if (anyhitE_reg[fuB][way] && srcIPOff[reti_reg2][12:7]==line[5:0] && dreqmort_flags[fuB][7][reti_reg2]); 
                   line_data[{srcIPOff[reti_reg2][6],3'b111}][fee_undex(fuB)]<=1'b0;
-                //        if (][way] && is_write_reg[fuB] && resW[fuB][2:0]==line[5:3] && byte_<write_size_reg[fuB] &&
-                //            resX[fuB][63:9]=='1); 
-                //            line_data[line][resW[fuB][6:3]]<=resW[fuB][8*resW[fuB][2:0]+:8];
                 end
              end
           end
       end
     end
-
-    end //multicore loop
+    end  
   endgenerate
+endmodule
+
+`begin_keywords "1800-2017"
+module bit_find_index #(ALLOC=0) (
+  input [63:0] sel,
+  output [5:0] dout,
+  output hasany
+  );
+  wire [7:0] tmp1;
+  wire [2:0] lo;
+  wire [2:0] hi;
+  wire [7:0][2:0] lo0; 
+  generate
+    genvar a,b;
+    if (ALLOC) begin : ALLOC_IN
+        for(a=0;a<8;a=a+1) begin
+                wire [7:0] tmp2;
+                wire [7:0] dummy2;
+                assign tmp1[a]=|sel[8*a+:8];
+                assign {tmp2,dummy2}=255<<a;
+            for(b=0;b<8;b=b+1) begin
+                assign lo0[b]=tmp2==sel[8*b+:8] ? a[2:0] : 'z;
+            end
+            assign lo0[a]=sel[8*a+:8]==8'b0 ? '0 : 'z;
+            assign lo=hi==a ? lo0[a] : 'z;
+            assign hi=tmp2==tmp1 ? a[2:0] : 'z;
+        end
+    end else begin : SHEDULE_IN
+        for(a=0;a<8;a=a+1) begin
+                wire [7:0] tmp2;
+                wire [7:0] tmp3;
+                wire [7:0] dummy2;
+                wire [7:0] dummy3;
+                assign tmp1[a]=|sel[8*a+:8];
+                assign {tmp2,dummy2}=255<<a;
+                assign {dummy3,tmp3}=255*256>>a;
+            for(b=0;b<8;b=b+1) begin
+                assign lo0[b]=tmp2==sel[8*b+:8] ? a[2:0] : 'z;
+            end
+            assign lo0[a]=sel[8*a+:8]==8'b0 ? '0 : 'z;
+            assign lo=hi==a ? lo0[a] : 'z;
+            assign hi=tmp3==tmp1 ? a[2:0] : 'z;
+        end
+    end
+  endgenerate
+  assign hasany=|sel;
+  assign dout={hasany ? hi : '0,lo};
+endmodule
+
+`begin_keywords "1800-2017"
+module bit_find_index12(
+  input [11:0] din,
+  output [11:0] dout0,
+  output [3:0] dout,
+  output has);
+  generate
+    genvar a;
+    for(a=0;a<12;a++) begin
+        assign dout0[a]=din[a:0]==1<<a;
+        assign dout=dout0[a] ? a[3:0] : 'z;
+    end
+  endgenerate
+  assign dout=|din ? 'z : '0;
+  assign has=|din;
+endmodule
+
+`begin_keywords "1800-2017"
+module bit_find_index12r(
+  input [11:0] din,
+  output [11:0] dout0,
+  output [3:0] dout,
+  output has);
+  generate
+    genvar a;
+    for(a=0;a<12;a++) begin
+        assign dout0[a]=din[11:a]==1<<(11-a);
+        assign dout=dout0[a] ? 4'd11-a[3:0] : 'z;
+    end
+  endgenerate
+  assign dout=|din ? 'z : '0;
+  assign has=|din;
+endmodule
+
+`begin_keywords "1800-2017"
+module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
+  input clk,
+  input rst,
+  input [1:0][655:0] X_intf_in, 
+  output [1:0][655:0] X_intf_out,
+  input [1:0][122:0] XA_intf_in, 
+  output [1:0][122:0] XA_intf_out,
+  input in_en,
+  input [66*8-1:0] in_datum, 
+  input [36:0] in_addr,
+  input [11:0] insize, 
+  output reqmort_expun,
+  output [66*8-1:0] reqmort_data,
+  output [36:0] reqmortaddr,
+  output [11:0] reqmort_size,
+  output outen,
+  input [2:0] missue_en,
+  input [2:0][38:0] missue_addr,
+  input [2:0][11:0] missue_phy,
+  inout [5:0] shareX);
+  wire [655-1:0] wrreq;
+  reg [7:0][655-1:0] queue;
+  reg [7:0][655-1:0] oqueue;
+  reg [7:0] data_in;
+  reg [7:0] odata_in;
+  reg stall;
+  reg [42:0] in_addr_reg;
+  reg [1:0] in_size_reg;
+  reg in_en_reg;
+  integer qrpos0,qrpos1,qrposr0,qrposr1;
+  integer qpos0,qpos1,qposr0,qposr1;
+  wire [8:0] sharX;
+  wire fwd,back;
+  wire [8:0] pdatacnt0;
+  wire [8:0] pdatacnt1;
+  wire [8:0] datacnt0;
+  wire [8:0] datacnt1;
+  wire [1:0] match;
+  wire [1:0][655-1:0] XA_intf_in_chg;
+  wire [655-1:0] wrAreq;
+  reg [7:0][655-1:0] Aqueue;
+  reg [7:0][655-1:0] Aoqueue;
+  reg [7:0] Adata_in;
+  reg [7:0] Aodata_in;
+  reg Astall;
+  reg [42:0] inA_addr_reg;
+  reg [1:0] inA_size_reg;
+  reg inA_en_reg;
+  integer Aqrpos0,Aqrpos1,Aqrposr0,Aqrposr1;
+  integer Aqpos0,Aqpos1,Aqposr0,Aqposr1;
+  wire fwdA,backA;
+  wire [8:0] Apdatacnt0;
+  wire [8:0] Apdatacnt1;
+  wire [8:0] Adatacnt0;
+  wire [8:0] Adatacnt1;
+  wire [1:0] amatch;
+  assign shareX[IDX]=|odata_in;
+  assign sharX={3'b0,shareX};
+  assign outen=&shareX || (|pdatacnt0[7:4] || |pdatacnt1[7:4])&(~(sharX[IDX+3]));
+  assign wrreq[591:0]=in_datum;
+  assign wrreq[592]=IDX<2;
+  assign wrreq[593]=IDX>=2;
+  assign wrreq[598:594]=in_addr_reg[1:0];
+  assign wrreq[603:599]=in_addr_reg[3:2];
+  assign wrreq[652:616]=in_addr_reg[36:0];
+  assign wrreq[615:604]=in_size_reg;
+  assign wrreq[654]=1'b0;
+  assign XA_intf_in_chg[0][652:616]=XA_intf_in[0][120:88];
+  assign XA_intf_in_chg[0][615:604]={2'b11,XA_intf_in[0][-2+87:86]};
+  assign XA_intf_in_chg[1][652:616]=XA_intf_in[1][120:88];
+  assign XA_intf_in_chg[1][615:604]={2'b11,XA_intf_in[1][-2+87:86]};
+  assign X_intf_out[0][655-1:0]=in_en_reg & back ? wrreq : queue[0][qposr0];
+  assign X_intf_out[1][655-1:0]=in_en_reg & fwd ? wrreq : queue[1][qposr1];
+  assign fwd=IDX<2 ? in_addr_reg[1:0]>tile_X : in_addr_reg[3:2]>tile_Y;
+  assign back=IDX<2 ? in_addr_reg[1:0]<=tile_X : in_addr_reg[3:2]<=tile_Y;
+  assign X_intf_out[0][655]=|datacnt0[8:4];
+  assign X_intf_out[1][655]=|datacnt1[8:4];
+  assign match[0]=IDX<3 ? X_intf_in[0][598:594]==tile_X : X_intf_in[0][603:599]==tile_Y;
+  assign match[1]=IDX<3 ? X_intf_in[1][598:594]==tile_X : X_intf_in[1][603:599]==tile_Y;
+  assign reqmort_data=|odata_in[0] ? oqueue[0][qrpos0][591:0] : oqueue[1][qrpos1][591:0];
+  assign reqmortaddr=|odata_in[0] ? {tile_Y[4:0],tile_X[4:0],oqueue[0][qrpos0][652:616]} : {tile_Y[4:0],tile_X[4:0],oqueue[1][qrpos1][652:616]};
+  assign reqmort_size=|odata_in[0] ? oqueue[0][qrpos0][615:604] : oqueue[1][qrpos1][615:604];
+  assign reqmort_expun=|odata_in[0] ? oqueue[0][qrpos0][654] : oqueue[1][qrpos1][654];
+  popcnt12 pa(data_in[0],datacnt0);
+  popcnt12 pb(data_in[1],datacnt1);
+  popcnt12 pxa(odata_in[0],pdatacnt0);
+  popcnt12 pxb(odata_in[1],pdatacnt1);
+  always @(posedge clk) begin
+      if (rst) begin
+          data_in<='0;
+          in_en_reg<='0;
+      end else begin
+          if (in_en_reg && X_intf_in[0][653]) begin
+              queue[0][qpos0]=X_intf_in[0];
+              data_in[0][qpos0]<=1'b1;
+              qpos0<=qpos0+1;
+          end
+          if (in_en_reg && X_intf_in[1][653]) begin
+              queue[1][qpos1]=X_intf_in[1];
+              data_in[1][qpos1]<=1'b1;
+              qpos1<=qpos1+1;
+          end
+          if (!in_en_reg || fwd) begin
+              if (data_in[0]!=0 && X_intf_out[0][655]) begin
+                  qposr0<=qposr0+1;
+                  data_in[0][qposr0]<=1'b0;
+              end
+          end
+          if (!in_en_reg || back) begin
+              if (data_in[1]!=0 && X_intf_out[1][655]) begin
+                  qposr1<=qposr1+1;
+                  data_in[1][qposr1]<=1'b0;
+              end
+          end
+          if (match[0]) begin
+              oqueue[0][qpos0]=X_intf_in[0];
+              odata_in[qpos0]=1'b1;
+              qpos0=qpos0+1;
+          end
+          if (match[1]) begin
+              oqueue[1][qpos1]=X_intf_in[1];
+              odata_in[qpos1]=1'b1;
+              qpos1=qpos1+1;
+          end
+          if (amatch[0]) begin
+              oqueue[0][qpos0]=XA_intf_in_chg[0];
+              odata_in[qpos0]=1'b1;
+              qpos0=qpos0+1;
+          end
+          if (amatch[1]) begin
+              oqueue[1][qpos1]=XA_intf_in_chg[1];
+              odata_in[qpos1]=1'b1;
+              qpos1=qpos1+1;
+          end
+          if (outen && |odata_in[0]) begin
+              qrpos0<=qrpos0+1;
+              odata_in[0][qrpos0]<=1'b0;
+          end else if (outen) begin
+              qrpos1<=qrpos1+1;
+              odata_in[1][qrpos1]<=1'b0;
+          end
+          in_addr_reg<=in_addr;
+          in_en_reg<=in_en;
+          in_size_reg<=insize;
+      end
+  end
+  wire [5:0][38:0] missue0;
+  wire [5:0] missue0_en;
+  wire [5:0][9:0] missue0_phy;
+  wire [1:0] missue_idx_first;
+  wire [1:0][38:0] mqueue;
+  wire [1:0] mqueue_en;
+  wire [1:0][9:0] mqueue_phy;
+  assign wrAreq[73:0]=missue0[missue_idx_first];
+  assign wrAreq[74]=IDX<2;
+  assign wrAreq[75]=IDX>=2;
+  assign wrAreq[80:76]=~|missue0[36:4] ? tile_X[1:0] : missue0[missue_idx_first][1:0];
+  assign wrAreq[85:81]=~|missue0[36:4] ? tile_Y[1:0] : missue0[missue_idx_first][3:2];
+  assign wrAreq[87:86]=missue0_phy[missue_idx_first];
+  assign missue0[2:0]=missue_addr;
+  assign missue0_phy[2:0]=missue_phy;
+  assign missue0_en[2:0]=missue_en;
+  assign {missue0[3],missue0_phy[3]}=Aqueue[0][Aqposr0];
+  assign missue0_en[3]=Aqposr0!=Aqpos0;
+  assign missue_idx_first=missue_en[0] ? 0 : 'z;
+  assign missue_idx_first=missue_en[1:0]==2'b10 ? 1 : 'z;
+  assign missue_idx_first=missue_en[2:0]==3'b100 ? 2 : 'z;
+  assign missue_idx_first=missue_en[2:0]==3'b0 ? 3 : 'z;
+  assign mqueue[0]=missue0[missue_idx_first+1];
+  assign mqueue[1]=missue0[missue_idx_first+2];
+  assign mqueue_en[0]=missue0_en[missue_idx_first+1] && missue_idx_first<2;
+  assign mqueue_en[1]=missue0_en[missue_idx_first+2] && missue_idx_first<1;
+  assign mqueue_phy[0]=missue0_phy[missue_idx_first+1];
+  assign mqueue_phy[1]=missue0_phy[missue_idx_first+2];
+  assign XA_intf_out[0][122-1:0]=inA_en_reg & backA ? wrAreq : Aqueue[0][Aqposr0];
+  assign XA_intf_out[1][122-1:0]=inA_en_reg & fwdA ? wrAreq : Aqueue[1][Aqposr1];
+  assign fwdA=IDX<2 ? inA_addr_reg[1:0]>tile_X : inA_addr_reg[3:2]>tile_Y;
+  assign backA=IDX<2 ? inA_addr_reg[1:0]<=tile_X : inA_addr_reg[3:2]<=tile_Y;
+  assign XA_intf_out[0][655]=|Adatacnt0[8:4];
+  assign XA_intf_out[1][655]=|Adatacnt1[8:4];
+  assign amatch[0]=IDX<3 ? XA_intf_in[0][80:76]==tile_X : XA_intf_in[0][85:81]==tile_Y;
+  assign amatch[1]=IDX<3 ? XA_intf_in[1][80:76]==tile_X : XA_intf_in[1][85:81]==tile_Y;
+  popcnt12 a_pa(Adata_in[0],Adatacnt0);
+  popcnt12 a_pb(Adata_in[1],Adatacnt1);
+  popcnt12 a_pxa(Aodata_in[0],Apdatacnt0);
+  popcnt12 a_pxb(Aodata_in[1],Apdatacnt1);
+  always @(posedge clk) begin
+      if (rst) begin
+          Adata_in<='0;
+          inA_en_reg<='0;
+      end else begin
+          if (mqueue_en[0]) begin
+              Aqueue[Aqpos0]=mqueue[0];
+              Adata_in[Aqpos0]=1'b1;
+              Aqpos0=Aqpos0+1;
+          end
+          if (mqueue_en[1]) begin
+              Aqueue[Aqpos1]=mqueue[1];
+              Adata_in[Aqpos1]=1'b1;
+              Aqpos1=Aqpos1+1;
+          end
+          if (fwdA) begin
+            if (!mqueue_en[0] && XA_intf_out[0][123]) begin
+                  Aqposr0=Aqposr0+1;
+                  Adata_in[Aqposr0]<=1'b0;
+              end
+          end
+          if (backA) begin
+              if (!mqueue_en[0] && XA_intf_out[1][123]) begin
+                  Aqposr1=Aqposr1+1;
+                  Adata_in[Aqposr1]=1'b0;
+              end
+          end
+      end
+  end
+endmodule
+
+`begin_keywords "1800-2017"
+module popcnt6(
+  input [5:0] din,
+  output reg [6:0] dout);
+  always @* begin
+      case(din)
+        6'b000000: dout=1;
+        6'b100000,
+        6'b10000,
+        6'b1000,
+        6'b100,
+        6'b10,
+        6'b1: dout=2;
+        6'b110000,6'b101000, 6'b100100,6'b100010,6'b100001,
+        6'b11000,6'b10100, 6'b10010,6'b10001,
+        6'b1100,6'b1010, 6'b1001,
+        6'b110,6'b101,
+        6'b11: dout=4;
+        6'b111000,6'b110100,6'b101100,6'b110010,6'b101010,6'b100110,6'b110001,6'b101001,6'b100101,6'b100011,
+        6'b11100,6'b11010,6'b10110,6'b11001,6'b10101,6'b10011,
+        6'b1110,6'b1101,6'b1011,
+        6'b111: dout=8;
+        6'b001111,6'b010111,6'b011011,6'b011101,6'b011110,
+        6'b100111,6'b101011,6'b101101,6'b101110,
+        6'b110011,6'b110101,6'b110110,
+        6'b111001,6'b111010,
+        6'b111100: dout=16;
+        6'b011111,6'b101111,6'b110111,6'b111011,6'b111101,6'b111110: dout=32;
+        6'b111111: dout=64;
+      endcase
+  end
+endmodule
+module popcnt12(
+  input [11:0]din,
+  output reg [12:0] dout);
+  wire [6:0] tmp1;
+  wire [6:0]tmp2;
+  integer kl;
+  popcnt6 A(din[5:0],tmp1);
+  popcnt6 B(din[11:6],tmp2);
+  always @* begin
+      for(kl=0;kl<7;kl=kl+1) if (tmp1[kl]) dout=tmp2<<kl;
+  end
 endmodule

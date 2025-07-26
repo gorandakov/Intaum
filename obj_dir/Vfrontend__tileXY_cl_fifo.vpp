@@ -1,0 +1,344 @@
+`begin_keywords "1800-2017"
+`line 1 "tileXY_cl_fifo.v" 1
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+`line 13 "tileXY_cl_fifo.v" 0
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+`line 24 "tileXY_cl_fifo.v" 0
+module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
+  input clk,
+  input rst,
+  input [1:0][655:0] X_intf_in, 
+  output [1:0][655:0] X_intf_out,
+  input [1:0][122:0] XA_intf_in, 
+  output [1:0][122:0] XA_intf_out,
+  input in_en,
+  input [66*8-1:0] in_datum, 
+  input [36:0] in_addr,
+  input [11:0] insize, 
+  output reqmort_expun,
+  output [66*8-1:0] reqmort_data,
+  output [36:0] reqmortaddr,
+  output [11:0] reqmort_size,
+ 
+  output outen,
+  input [2:0] missue_en,
+  input [2:0][38:0] missue_addr,
+  input [2:0][11:0] missue_phy,
+  inout [5:0] shareX);
+
+`line 46 "tileXY_cl_fifo.v" 0
+  wire [655-1:0] wrreq;
+
+`line 48 "tileXY_cl_fifo.v" 0
+  reg [7:0][655-1:0] queue;
+  reg [7:0][655-1:0] oqueue;
+  reg [7:0] data_in;
+  reg [7:0] odata_in;
+  reg stall;
+  reg [42:0] in_addr_reg;
+  reg [1:0] in_size_reg;
+  reg in_en_reg;
+  integer qrpos0,qrpos1,qrposr0,qrposr1;
+  integer qpos0,qpos1,qposr0,qposr1;
+  wire [8:0] sharX;
+  wire fwd,back;
+  wire [8:0] pdatacnt0;
+  wire [8:0] pdatacnt1;
+  wire [8:0] datacnt0;
+  wire [8:0] datacnt1;
+  wire [1:0] match;
+
+`line 66 "tileXY_cl_fifo.v" 0
+  wire [1:0][655-1:0] XA_intf_in_chg;
+
+`line 68 "tileXY_cl_fifo.v" 0
+  wire [655-1:0] wrAreq;
+
+`line 70 "tileXY_cl_fifo.v" 0
+  reg [7:0][655-1:0] Aqueue;
+  reg [7:0][655-1:0] Aoqueue;
+  reg [7:0] Adata_in;
+  reg [7:0] Aodata_in;
+  reg Astall;
+  reg [42:0] inA_addr_reg;
+  reg [1:0] inA_size_reg;
+  reg inA_en_reg;
+  integer Aqrpos0,Aqrpos1,Aqrposr0,Aqrposr1;
+  integer Aqpos0,Aqpos1,Aqposr0,Aqposr1;
+  wire fwdA,backA;
+  wire [8:0] Apdatacnt0;
+  wire [8:0] Apdatacnt1;
+  wire [8:0] Adatacnt0;
+  wire [8:0] Adatacnt1;
+  wire [1:0] amatch;
+
+`line 87 "tileXY_cl_fifo.v" 0
+  assign shareX[IDX]=|odata_in;
+
+`line 89 "tileXY_cl_fifo.v" 0
+  assign sharX={3'b0,shareX};
+
+`line 91 "tileXY_cl_fifo.v" 0
+  assign outen=&shareX || (|pdatacnt0[7:4] || |pdatacnt1[7:4])&(~(sharX[IDX+3]));
+
+`line 93 "tileXY_cl_fifo.v" 0
+  assign wrreq[591:0]=in_datum;
+  assign wrreq[592]=IDX<2;
+  assign wrreq[593]=IDX>=2;
+  assign wrreq[598:594]=in_addr_reg[1:0];
+  assign wrreq[603:599]=in_addr_reg[3:2];
+  assign wrreq[652:616]=in_addr_reg[36:0];
+  assign wrreq[615:604]=in_size_reg;
+  assign wrreq[654]=1'b0;
+
+`line 102 "tileXY_cl_fifo.v" 0
+  assign XA_intf_in_chg[0][652:616]=XA_intf_in[0][120:88];
+  assign XA_intf_in_chg[0][615:604]={2'b11,XA_intf_in[0][-2+87:86]};
+  assign XA_intf_in_chg[1][652:616]=XA_intf_in[1][120:88];
+  assign XA_intf_in_chg[1][615:604]={2'b11,XA_intf_in[1][-2+87:86]};
+
+`line 107 "tileXY_cl_fifo.v" 0
+  assign X_intf_out[0][655-1:0]=in_en_reg & back ? wrreq : queue[0][qposr0];
+  assign X_intf_out[1][655-1:0]=in_en_reg & fwd ? wrreq : queue[1][qposr1];
+
+`line 110 "tileXY_cl_fifo.v" 0
+  assign fwd=IDX<2 ? in_addr_reg[1:0]>tile_X : in_addr_reg[3:2]>tile_Y;
+  assign back=IDX<2 ? in_addr_reg[1:0]<=tile_X : in_addr_reg[3:2]<=tile_Y;
+
+`line 113 "tileXY_cl_fifo.v" 0
+  assign X_intf_out[0][655]=|datacnt0[8:4];
+  assign X_intf_out[1][655]=|datacnt1[8:4];
+ 
+  assign match[0]=IDX<3 ? X_intf_in[0][598:594]==tile_X : X_intf_in[0][603:599]==tile_Y;
+  assign match[1]=IDX<3 ? X_intf_in[1][598:594]==tile_X : X_intf_in[1][603:599]==tile_Y;
+
+`line 119 "tileXY_cl_fifo.v" 0
+  assign reqmort_data=|odata_in[0] ? oqueue[0][qrpos0][591:0] : oqueue[1][qrpos1][591:0];
+  assign reqmortaddr=|odata_in[0] ? {tile_Y[4:0],tile_X[4:0],oqueue[0][qrpos0][652:616]} : {tile_Y[4:0],tile_X[4:0],oqueue[1][qrpos1][652:616]};
+  assign reqmort_size=|odata_in[0] ? oqueue[0][qrpos0][615:604] : oqueue[1][qrpos1][615:604];
+  assign reqmort_expun=|odata_in[0] ? oqueue[0][qrpos0][654] : oqueue[1][qrpos1][654];
+
+`line 124 "tileXY_cl_fifo.v" 0
+  popcnt12 pa(data_in[0],datacnt0);
+  popcnt12 pb(data_in[1],datacnt1);
+  
+  popcnt12 pxa(odata_in[0],pdatacnt0);
+  popcnt12 pxb(odata_in[1],pdatacnt1);
+
+`line 130 "tileXY_cl_fifo.v" 0
+  always @(posedge clk) begin
+      if (rst) begin
+          data_in<='0;
+          in_en_reg<='0;
+      end else begin
+          if (in_en_reg && X_intf_in[0][653]) begin
+              queue[0][qpos0]=X_intf_in[0];
+              data_in[0][qpos0]<=1'b1;
+              qpos0<=qpos0+1;
+          end
+          if (in_en_reg && X_intf_in[1][653]) begin
+              queue[1][qpos1]=X_intf_in[1];
+              data_in[1][qpos1]<=1'b1;
+              qpos1<=qpos1+1;
+          end
+          if (!in_en_reg || fwd) begin
+              if (data_in[0]!=0 && X_intf_out[0][655]) begin
+                  qposr0<=qposr0+1;
+                  data_in[0][qposr0]<=1'b0;
+              end
+          end
+          if (!in_en_reg || back) begin
+              if (data_in[1]!=0 && X_intf_out[1][655]) begin
+                  qposr1<=qposr1+1;
+                  data_in[1][qposr1]<=1'b0;
+              end
+          end
+          if (match[0]) begin
+              oqueue[0][qpos0]=X_intf_in[0];
+              odata_in[qpos0]=1'b1;
+              qpos0=qpos0+1;
+          end
+          if (match[1]) begin
+              oqueue[1][qpos1]=X_intf_in[1];
+              odata_in[qpos1]=1'b1;
+              qpos1=qpos1+1;
+          end
+          if (amatch[0]) begin
+              oqueue[0][qpos0]=XA_intf_in_chg[0];
+              odata_in[qpos0]=1'b1;
+              qpos0=qpos0+1;
+          end
+          if (amatch[1]) begin
+              oqueue[1][qpos1]=XA_intf_in_chg[1];
+              odata_in[qpos1]=1'b1;
+              qpos1=qpos1+1;
+          end
+          if (outen && |odata_in[0]) begin
+              qrpos0<=qrpos0+1;
+              odata_in[0][qrpos0]<=1'b0;
+          end else if (outen) begin
+              qrpos1<=qrpos1+1;
+              odata_in[1][qrpos1]<=1'b0;
+          end
+          in_addr_reg<=in_addr;
+          in_en_reg<=in_en;
+          in_size_reg<=insize;
+      end
+  end
+  
+  wire [5:0][38:0] missue0;
+  wire [5:0] missue0_en;
+  wire [5:0][9:0] missue0_phy;
+  wire [1:0] missue_idx_first;
+  wire [1:0][38:0] mqueue;
+  wire [1:0] mqueue_en;
+  wire [1:0][9:0] mqueue_phy;
+
+`line 198 "tileXY_cl_fifo.v" 0
+  assign wrAreq[73:0]=missue0[missue_idx_first];
+  assign wrAreq[74]=IDX<2;
+  assign wrAreq[75]=IDX>=2;
+  assign wrAreq[80:76]=~|missue0[36:4] ? tile_X[1:0] : missue0[missue_idx_first][1:0];
+  assign wrAreq[85:81]=~|missue0[36:4] ? tile_Y[1:0] : missue0[missue_idx_first][3:2];
+  
+  assign wrAreq[87:86]=missue0_phy[missue_idx_first];
+
+`line 206 "tileXY_cl_fifo.v" 0
+  assign missue0[2:0]=missue_addr;
+  assign missue0_phy[2:0]=missue_phy;
+  assign missue0_en[2:0]=missue_en;
+  assign {missue0[3],missue0_phy[3]}=Aqueue[0][Aqposr0];
+  assign missue0_en[3]=Aqposr0!=Aqpos0;
+  assign missue_idx_first=missue_en[0] ? 0 : 'z;
+  assign missue_idx_first=missue_en[1:0]==2'b10 ? 1 : 'z;
+  assign missue_idx_first=missue_en[2:0]==3'b100 ? 2 : 'z;
+  assign missue_idx_first=missue_en[2:0]==3'b0 ? 3 : 'z;
+
+`line 216 "tileXY_cl_fifo.v" 0
+  assign mqueue[0]=missue0[missue_idx_first+1];
+  assign mqueue[1]=missue0[missue_idx_first+2];
+  assign mqueue_en[0]=missue0_en[missue_idx_first+1] && missue_idx_first<2;
+  assign mqueue_en[1]=missue0_en[missue_idx_first+2] && missue_idx_first<1;
+  assign mqueue_phy[0]=missue0_phy[missue_idx_first+1];
+  assign mqueue_phy[1]=missue0_phy[missue_idx_first+2];
+  
+  assign XA_intf_out[0][122-1:0]=inA_en_reg & backA ? wrAreq : Aqueue[0][Aqposr0];
+  assign XA_intf_out[1][122-1:0]=inA_en_reg & fwdA ? wrAreq : Aqueue[1][Aqposr1];
+
+`line 226 "tileXY_cl_fifo.v" 0
+  assign fwdA=IDX<2 ? inA_addr_reg[1:0]>tile_X : inA_addr_reg[3:2]>tile_Y;
+  assign backA=IDX<2 ? inA_addr_reg[1:0]<=tile_X : inA_addr_reg[3:2]<=tile_Y;
+
+`line 229 "tileXY_cl_fifo.v" 0
+  assign XA_intf_out[0][655]=|Adatacnt0[8:4];
+  assign XA_intf_out[1][655]=|Adatacnt1[8:4];
+ 
+  assign amatch[0]=IDX<3 ? XA_intf_in[0][80:76]==tile_X : XA_intf_in[0][85:81]==tile_Y;
+  assign amatch[1]=IDX<3 ? XA_intf_in[1][80:76]==tile_X : XA_intf_in[1][85:81]==tile_Y;
+
+`line 235 "tileXY_cl_fifo.v" 0
+   
+   
+   
+
+`line 239 "tileXY_cl_fifo.v" 0
+  popcnt12 a_pa(Adata_in[0],Adatacnt0);
+  popcnt12 a_pb(Adata_in[1],Adatacnt1);
+  
+  popcnt12 a_pxa(Aodata_in[0],Apdatacnt0);
+  popcnt12 a_pxb(Aodata_in[1],Apdatacnt1);
+
+`line 245 "tileXY_cl_fifo.v" 0
+  always @(posedge clk) begin
+      if (rst) begin
+          Adata_in<='0;
+          inA_en_reg<='0;
+      end else begin
+          if (mqueue_en[0]) begin
+              Aqueue[Aqpos0]=mqueue[0];
+              Adata_in[Aqpos0]=1'b1;
+              Aqpos0=Aqpos0+1;
+          end
+          if (mqueue_en[1]) begin
+              Aqueue[Aqpos1]=mqueue[1];
+              Adata_in[Aqpos1]=1'b1;
+              Aqpos1=Aqpos1+1;
+          end
+          if (fwdA) begin
+            if (!mqueue_en[0] && XA_intf_out[0][123]) begin
+                  Aqposr0=Aqposr0+1;
+                  Adata_in[Aqposr0]<=1'b0;
+              end
+          end
+          if (backA) begin
+              if (!mqueue_en[0] && XA_intf_out[1][123]) begin
+                  Aqposr1=Aqposr1+1;
+                  Adata_in[Aqposr1]=1'b0;
+              end
+          end
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+
+`line 291 "tileXY_cl_fifo.v" 0
+ 
+      end
+  end
+endmodule
+
+
+`line 297 "tileXY_cl_fifo.v" 0
