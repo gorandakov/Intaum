@@ -258,9 +258,9 @@ generate
       wire [36:0] insetr_addr;
       wire [36:0] insetrh_addr;
       wire [36:0] insetrv_addr;
-      wire [511:0] insetr_data;
-      wire [511:0] insetrh_data;
-      wire [511:0] insetrv_data;
+      wire [527:0] insetr_data;
+      wire [527:0] insetrh_data;
+      wire [527:0] insetrv_data;
       wire [35:0] insetrh_phy;
       wire insetrh_shared;
       wire insetrh_exclusive;
@@ -1493,13 +1493,13 @@ generate
                 wire [63:0] dummy64;
                 wire [63:0] dummy64B;
                 integer byte_;
-                assign poo_e[fuB][63:0]={poo_u[63:0],line_data[resA_reg[fuB][6:3]][63:0]}>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
+                assign poo_e[fuB][63:0]={poo_u[fuB][63:0],line_data[resA_reg[fuB][6:3]][63:0]}>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
                 assign {poo_e[fuB][65:64],dummy64}=line_data[resA_reg[fuB][6:3]]>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
                 assign poo_u[fuB]=opcode_reg[fuB][5] ? 0 : line_data[res_reg[fuB][6:3]];
                 if (fuB<8) assign poo_c[64*fuB+:64]=line_data[{IP[8],fuB[2:0]}][63:0];
-                assign {poo_mask,dummy64B}=(130'h3ffff_ffff_ffff_ffff_00<<(ldsize_reg[fuB][2:0]*8))&{66'h3ffff_ffff_ffff_ffff,64'b0};
+                assign {poo_mask}=(130'h3ffff_ffff_ffff_ffff_00<<(ldsize_reg[fuB][2:0]*8))&{66'h3ffff_ffff_ffff_ffff,64'b0};
                 assign pppoe[fuB]=anyhit[fuB][way]   ? 
-                   poo_e_reg && poo_mask_reg[65:0] : 'z;
+                   poo_e_reg[fuB] & poo_mask_reg[65:0] : 'z;
                 assign anyhitU[fuB][way]=line==res_reg2[12:7] ? tag[res_reg2[fuB][6]][51]&&tag[res_reg2[fuB][6]][50:19]=={res_reg[fuB][37:32],res_reg2[fuB][31:6]} : 1'bz;
                 assign anyhit[fuB][way] =line==resA_reg2[12:7] ? tag[resA_reg2[fuB][6]][51]&&tag[resA_reg2[fuB][6]][50:19]=={resA_reg[fuB][37:32],resA_reg2[fuB][31:6]} : 1'bz;
                 assign anyhitW[fuB][way]=line==resX[12:7] ? tag[resX[fuB][6]][52]&&tag[resX[fuB][6]][50:19]==resX[fuB][37:6] : 1'bz;
