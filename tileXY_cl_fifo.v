@@ -3,23 +3,23 @@
 `define wrreq_YDONE 593
 `define wrreq_TX 598:594
 `define wrreq_TY 603:599
-`define wrreq_sz 615:604
-`define wrreq_addr 652:616
-`define wrreq_snd 653
-`define wrreq_expun 654
-`define wrreq_size 655
-`define wrreq_extra 655
+`define wrreq_sz 641:604
+`define wrreq_addr 678:642
+`define wrreq_snd 679
+`define wrreq_expun 680
+`define wrreq_size 681
+`define wrreq_extra 681
 
 `define wrAreq_data 73:0
 `define wrAreq_XDONE 74
 `define wrAreq_YDONE 75
 `define wrAreq_TX 80:76
 `define wrAreq_TY 85:81
-`define wrAreq_sz 87:86
-`define wrAreq_addr 120:88
-`define wrAreq_snd 121
-`define wrAreq_size 122
-`define wrAreq_extra 123
+`define wrAreq_sz 121:86
+`define wrAreq_addr 158:122
+`define wrAreq_snd 159
+`define wrAreq_size 160
+`define wrAreq_extra 160
 
 module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   input clk,
@@ -31,11 +31,11 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   input in_en,
   input [66*8-1:0] in_datum, 
   input [36:0] in_addr,
-  input [11:0] insize,//{shared,exclusive,phymsk}
+  input [37:0] insize,//{shared,exclusive,phymsk}
   output reqmort_expun,
   output [66*8-1:0] reqmort_data,
   output [36:0] reqmortaddr,
-  output [11:0] reqmort_size,
+  output [37:0] reqmort_size,
 //  output reqmort_flush_only,
   output outen,
   input [2:0] missue_en,
@@ -100,9 +100,9 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign wrreq[`wrreq_expun]=1'b0;
 
   assign XA_intf_in_chg[0][`wrreq_addr]=XA_intf_in[0][`wrAreq_addr];
-  assign XA_intf_in_chg[0][`wrreq_sz]={2'b11,XA_intf_in[0][-2+`wrAreq_sz]};
+  assign XA_intf_in_chg[0][`wrreq_sz]={2'b11,XA_intf_in[0][`wrAreq_sz]};
   assign XA_intf_in_chg[1][`wrreq_addr]=XA_intf_in[1][`wrAreq_addr];
-  assign XA_intf_in_chg[1][`wrreq_sz]={2'b11,XA_intf_in[1][-2+`wrAreq_sz]};
+  assign XA_intf_in_chg[1][`wrreq_sz]={2'b11,XA_intf_in[1][`wrAreq_sz]};
 
   assign X_intf_out[0][`wrreq_size-1:0]=in_en_reg & back ? wrreq : queue[0][qposr0];
   assign X_intf_out[1][`wrreq_size-1:0]=in_en_reg & fwd ? wrreq : queue[1][qposr1];
@@ -189,11 +189,11 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
  // assign outen=&shareX || |match_overflow_begin&(~(sharX[IDX+3]));
   wire [5:0][38:0] missue0;
   wire [5:0] missue0_en;
-  wire [5:0][9:0] missue0_phy;
+  wire [5:0][35:0] missue0_phy;
   wire [1:0] missue_idx_first;
   wire [1:0][38:0] mqueue;
   wire [1:0] mqueue_en;
-  wire [1:0][9:0] mqueue_phy;
+  wire [1:0][35:0] mqueue_phy;
 
   assign wrAreq[`wrAreq_data]=missue0[missue_idx_first];
   assign wrAreq[`wrAreq_XDONE]=IDX<2;
