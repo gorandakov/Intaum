@@ -114,7 +114,11 @@ default:
           if (addrl[2:0]>(addr_aligned[2:0]+(1<<flag_aligned[1:0]))) is_lconfl=0;
       end
   endfunction
-
+  function [11:0] vaff;
+      input [11:0][7:0] din;
+      integer k;
+      for(k=0;k<12;k++) vaff[k]=|din[k];
+  endfunction
   function bndnonred;
       input [20:0] from;
       input [20:0] to;
@@ -178,8 +182,8 @@ generate
   wire [41:0] retSRCIP;
   reg [41:0] retSRCIP_reg; 
   wire [31:0] random;
-  `define wrreq_size 655
-  `define wrAreq_size 122
+  `define wrreq_size 681
+  `define wrAreq_size 160
   wire [1:0][`wrreq_size:0] XH_intf_in[3:0];
   wire [1:0][`wrreq_size:0] XV_intf_in[3:0];
   wire [1:0][`wrreq_size:0] XH_intf_out[3:0];
@@ -304,11 +308,11 @@ generate
       reg [11:0][65:0] pppoe_reg;
       reg [11:0][65:0] pppoe_reg2;
       reg [11:0][65:0] pppoe_reg3;
-      reg [11:0] anyhit;
-      reg [11:0] anyhitU;
-      reg [11:0] anyhitE;
-      reg [11:0] anyhitW;
-      reg [11:0] anyhitC;
+      reg [11:0][7:0] anyhit;
+      reg [11:0][7:0] anyhitU;
+      reg [11:0][7:0] anyhitE;
+      reg [11:0][7:0] anyhitW;
+      reg [11:0][7:0] anyhitC;
       reg [11:0] anyhit_reg;
       reg [11:0] anyhitW_reg;
       reg [11:0] anyhitC_reg;
@@ -476,12 +480,12 @@ generate
           pppoe_reg<=pppoe;
           pppoe_reg2<=pppoe_reg;
           pppoe_reg3<=pppoe_reg2;
-          anyhit_reg<=anyhit;
-          anyhitW_reg<=anyhitW;
-          anyhitC_reg<=anyhitC;
+          anyhit_reg<=vaff(anyhit);
+          anyhitW_reg<=vaff(anyhitW);
+          anyhitC_reg<=vaff(anyhitC);
           anyhitC_reg2<=anyhitC_reg;
           anyhitC_reg3<=anyhitC_reg2;
-          anyhitE_reg<=anyhitE;
+          anyhitE_reg<=vaff(anyhitE);
           IP_reg<=IP;
           IP_reg2<=IP_reg;
           IP_reg3<=IP_reg2;
@@ -1332,15 +1336,15 @@ generate
                           miss[ldi]=1;
                           missus[res[fuB][18:11]][PHY%5]=1;
                       end
-                      if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) begin
+                      if (!anyhit_reg[fu] && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) begin
                           miss[ldi]=1;
                         missus[res_reg[fuB][18:11]][PHY%5]=1;
                       end
                   end
                   missrs=0;
                   for(ldi=0;ldi<64;ldi++) begin
-                    if (!anyhitW_reg && opcode_reg2[6] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[resX_reg[18:11]];
-                    if (!anyhit_reg && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[res_reg[18:11]];
+                    if (!anyhitW_reg[fu] && opcode_reg2[6] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[resX_reg[18:11]];
+                    if (!anyhit_reg[fu] && opcode_reg2[7] && ldi==indexLSU_ALU_reg3) missrs[ldi]=missrs[ldi]|missus[res_reg[18:11]];
                   end
           end
   wire [5:0] shareX;
@@ -1494,13 +1498,13 @@ generate
                 assign poo_u[fuB]=opcode_reg[fuB][5] ? 0 : line_data[res_reg[fuB][6:3]];
                 assign poo_c[64*fuB+:64]=line_data[IP[8:5]][63:0];
                 assign {poo_mask,dummy64B}=(130'h3ffff_ffff_ffff_ffff_00<<(ldsize_reg[fuB][2:0]*8))&{66'h3ffff_ffff_ffff_ffff,64'b0};
-                assign pppoe[fuB]=tag[51]&&tag[18:0][resA_reg[fuB][6]]=={resA_reg[fuB][31:26],resA_reg[fuB][25:13]}&& line==resA_reg[fuB][12:7]  ? 
+                assign pppoe[fuB]=anyhit[fuB][way]   ? 
                    poo_e_reg && poo_mask_reg[65:0] : 'z;
-                if (line==0) assign anyhitU[fuB][way]=tag[51]&&tag[50:19][res_reg2[fuB][6]]=={res_reg[fuB][37:32],res_reg2[fuB][31:6]};
-                if (line==1) assign anyhit[fuB][way]=tag[51]&&tag[50:19][resA_reg2[fuB][6]]=={resA_reg[fuB][37:32],resA_reg2[fuB][31:6]};
-                if (line==3) assign anyhitW[fuB][way]=tag[52]&&tag[50:19][resX[fuB][6]]==resX[fuB][37:6];
-                if (line==4) assign anyhitE[fuB][way]=tag[52]&&tag[50:19][srcIPOff[reti_reg][6]]==srcIPOff[reti_reg][37:6];
-                if (line==5) assign anyhitC[fuB][way]=tag[51]&&tag[50:19][resX[fuB][6]]==IP_reg[36:5];
+                assign anyhitU[fuB][way]=line==res_reg2[12:7] ? tag[51]&&tag[50:19][res_reg2[fuB][6]]=={res_reg[fuB][37:32],res_reg2[fuB][31:6]} : 1'bz;
+                assign line==resA_reg2[12:7] ? anyhit[fuB][way]=tag[51]&&tag[50:19][resA_reg2[fuB][6]]=={resA_reg[fuB][37:32],resA_reg2[fuB][31:6]} : 1'bz;
+                assign anyhitW[fuB][way]=line==resX[12:7] ? tag[52]&&tag[50:19][resX[fuB][6]]==resX[fuB][37:6] : 1'bz;
+                assign anyhitE[fuB][way]=line==srcIPOff[reti_reg][11:6] ? tag[52]&&tag[50:19][srcIPOff[reti_reg][6]]==srcIPOff[reti_reg][37:6] : 1'bz;
+                assign anyhitC[fuB][way]=line==IP_reg[12:6] ? tag[51]&&tag[50:19][IP_reg[6]]==IP_reg[36:5] : 1'bz;
               //  if (line==4) assign tlbhit=tr_reg[resX[fuB][31:22]][37:6]==resX[fuB][63:37] && tr_reg[resX[fuB][31:22]][38];
                 if (fuB<8) assign pppoc[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[64*fuB+:64] : 'z;
               //  assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
