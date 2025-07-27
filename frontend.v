@@ -1500,11 +1500,11 @@ generate
                 assign {poo_mask,dummy64B}=(130'h3ffff_ffff_ffff_ffff_00<<(ldsize_reg[fuB][2:0]*8))&{66'h3ffff_ffff_ffff_ffff,64'b0};
                 assign pppoe[fuB]=anyhit[fuB][way]   ? 
                    poo_e_reg && poo_mask_reg[65:0] : 'z;
-                assign anyhitU[fuB][way]=line==res_reg2[12:7] ? tag[51]&&tag[50:19][res_reg2[fuB][6]]=={res_reg[fuB][37:32],res_reg2[fuB][31:6]} : 1'bz;
-                assign anyhit[fuB][way] =line==resA_reg2[12:7] ? tag[51]&&tag[50:19][resA_reg2[fuB][6]]=={resA_reg[fuB][37:32],resA_reg2[fuB][31:6]} : 1'bz;
-                assign anyhitW[fuB][way]=line==resX[12:7] ? tag[52]&&tag[50:19][resX[fuB][6]]==resX[fuB][37:6] : 1'bz;
-                assign anyhitE[fuB][way]=line==srcIPOff[reti_reg][11:6] ? tag[52]&&tag[50:19][srcIPOff[reti_reg][6]]==srcIPOff[reti_reg][37:6] : 1'bz;
-                assign anyhitC[fuB][way]=line==IP_reg[12:6] ? tag[51]&&tag[50:19][IP_reg[6]]==IP_reg[36:5] : 1'bz;
+                assign anyhitU[fuB][way]=line==res_reg2[12:7] ? tag[res_reg2[fuB][6]][51]&&tag[res_reg2[fuB][6]][50:19]=={res_reg[fuB][37:32],res_reg2[fuB][31:6]} : 1'bz;
+                assign anyhit[fuB][way] =line==resA_reg2[12:7] ? tag[resA_reg2[fuB][6]][51]&&tag[resA_reg2[fuB][6]][50:19]=={resA_reg[fuB][37:32],resA_reg2[fuB][31:6]} : 1'bz;
+                assign anyhitW[fuB][way]=line==resX[12:7] ? tag[resX[fuB][6]][52]&&tag[resX[fuB][6]][50:19]==resX[fuB][37:6] : 1'bz;
+                assign anyhitE[fuB][way]=line==srcIPOff[reti_reg][11:6] ? tag[srcIPOff[reti_reg][6]][52]&&tag[srcIPOff[reti_reg][6]][50:19]==srcIPOff[reti_reg][37:6] : 1'bz;
+                assign anyhitC[fuB][way]=line==IP_reg[12:6] ? tag[IP_reg[6]][51]&&tag[IP_reg[6]][50:19]==IP_reg[36:5] : 1'bz;
               //  if (line==4) assign tlbhit=tr_reg[resX[fuB][31:22]][37:6]==resX[fuB][63:37] && tr_reg[resX[fuB][31:22]][38];
                 if (fuB<8) assign pppoc[64*fuB+:64]=anyhitC[fuB][way ]&& line==IP_reg[11:6] ? poo_c_reg[64*fuB+:64] : 'z;
               //  assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
