@@ -84,7 +84,7 @@ module frontend (
       end
   endfunction
 
-  function [4:0] fee_undex;
+  function [6:0] fee_undex;
 //{insn_clopp[31:30],insn_clopp[24],insn_clopp[9:5],insn_clopp[3:0]}
       input [3:0] inp;
       case(inp)
@@ -318,7 +318,7 @@ generate
       reg [11:0] anyhitC_reg;
       reg [11:0] anyhitC_reg2;
       reg [11:0] anyhitC_reg3;
-      reg [11:0] anyhitE_reg;
+      reg [11:0][7:0] anyhitE_reg;
       wire tbuf_error;
       reg [3:0] ifu_stage_valid;
       wire insert_en=ifu_stage_valid[3] && anyhitC_reg3;
@@ -1496,20 +1496,21 @@ generate
                 assign poo_e[fuB][63:0]={poo_u[63:0],line_data[resA_reg[fuB][6:3]][63:0]}>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
                 assign {poo_e[fuB][65:64],dummy64}=line_data[resA_reg[fuB][6:3]]>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
                 assign poo_u[fuB]=opcode_reg[fuB][5] ? 0 : line_data[res_reg[fuB][6:3]];
-                assign poo_c[64*fuB+:64]=line_data[IP[8:5]][63:0];
+                if (fuB<8) assign poo_c[64*fuB+:64]=line_data[{IP[8],fuB[2:0]}][63:0];
                 assign {poo_mask,dummy64B}=(130'h3ffff_ffff_ffff_ffff_00<<(ldsize_reg[fuB][2:0]*8))&{66'h3ffff_ffff_ffff_ffff,64'b0};
                 assign pppoe[fuB]=anyhit[fuB][way]   ? 
                    poo_e_reg && poo_mask_reg[65:0] : 'z;
                 assign anyhitU[fuB][way]=line==res_reg2[12:7] ? tag[51]&&tag[50:19][res_reg2[fuB][6]]=={res_reg[fuB][37:32],res_reg2[fuB][31:6]} : 1'bz;
-                assign line==resA_reg2[12:7] ? anyhit[fuB][way]=tag[51]&&tag[50:19][resA_reg2[fuB][6]]=={resA_reg[fuB][37:32],resA_reg2[fuB][31:6]} : 1'bz;
+                assign anyhit[fuB][way] =line==resA_reg2[12:7] ? tag[51]&&tag[50:19][resA_reg2[fuB][6]]=={resA_reg[fuB][37:32],resA_reg2[fuB][31:6]} : 1'bz;
                 assign anyhitW[fuB][way]=line==resX[12:7] ? tag[52]&&tag[50:19][resX[fuB][6]]==resX[fuB][37:6] : 1'bz;
                 assign anyhitE[fuB][way]=line==srcIPOff[reti_reg][11:6] ? tag[52]&&tag[50:19][srcIPOff[reti_reg][6]]==srcIPOff[reti_reg][37:6] : 1'bz;
                 assign anyhitC[fuB][way]=line==IP_reg[12:6] ? tag[51]&&tag[50:19][IP_reg[6]]==IP_reg[36:5] : 1'bz;
               //  if (line==4) assign tlbhit=tr_reg[resX[fuB][31:22]][37:6]==resX[fuB][63:37] && tr_reg[resX[fuB][31:22]][38];
-                if (fuB<8) assign pppoc[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[64*fuB+:64] : 'z;
+                if (fuB<8) assign pppoc[64*fuB+:64]=anyhitC[fuB][way ]&& line==IP_reg[11:6] ? poo_c_reg[64*fuB+:64] : 'z;
               //  assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
                 always @(posedge clk) begin
                   poo_mask_reg<=poo_mask[65:0];
+                  /* verilator lint_off WIDTHEXPAND */
                   if (fuB==ids0_reg || fuB==ids1_reg)
                     for (byte_=0;byte_<8;byte_=byte_+1)
                       if (anyhitW[fuB][way] && is_write_reg[fuB] && resX[fuB][12:7]==line[5:0] && byte_<write_size_reg[fuB]); 
@@ -1519,6 +1520,7 @@ generate
                 //        if (][way] && is_write_reg[fuB] && resW[fuB][2:0]==line[5:3] && byte_<write_size_reg[fuB] &&
                 //            resX[fuB][63:9]=='1); 
                 //            line_data[line][resW[fuB][6:3]]<=resW[fuB][8*resW[fuB][2:0]+:8];
+                /* verilator lint_on WIDTHEXPAND */
                 end
              end
           end
