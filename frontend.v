@@ -381,6 +381,8 @@ generate
       reg [511:0] poo_c_reg;
       reg [511:0] pppoc_reg;
       reg [511:0] pppoc_reg2;
+      reg [23:0] pppoc2_reg;
+      regt [23:0] pppoc2_reg2; 
       wire [511:0] poo_c;
       reg vec,vec_reg,vec_reg2,vec_reg3;
           reg [11:0][63:0][63:0] data_gen;
@@ -508,6 +510,8 @@ generate
           //poo_c_reg2<=poo_c_reg;
           pppoc_reg<=pppoc;
           pppoc_reg2<=pppoc_reg;
+          pppoc2_reg<=pppoc2;
+          pppoc2_reg2<=pppoc2_reg;
       end
       wire [1:0] is_cloop;
       assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
@@ -1171,6 +1175,7 @@ generate
               wstall_reg<=wstall;
               instr<=pppoc_reg2[fu*40+:40];
               insn_clopp<=pppoc_reg2[255-32+:32];
+              insn_isptr<=pppoc2_reg2;
               if (rT_en_reg && opcode[10] | opcode[5]) data_gen[rT_reg[5:0]][31:0]<=res[31:0];
               if (rT_en0_reg3 && opcode_reg2[7]) data_gen[rTMem_reg2[5:0]][31:0]<=pppoe_reg[31:0];
               if (rT_en0_reg3 && opcode_reg2[5:3]==35) data_gen[rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
@@ -1236,7 +1241,7 @@ generate
                     data_cond[alloc][3:0]=instr[12:9];
                     data_imm[alloc]={{46{instr[32]}},instr[32:15]};
                     data_op[alloc][8]=1'b1;
-                    if (!instr_clextra[fu]) begin
+                    if (!instr_clextra[fu] && insn_isptr[fu] && fu==0) begin
                       data_imm[alloc]={spgcookie({instr[17:15],instr[8:4]}),4'b0,instr[32:15],instr[8:4],17'b0};
                       data_op[alloc][8]=1'b0;
                     end  
@@ -1436,11 +1441,12 @@ generate
           wire [11:0][65:0] poo_e;
           wire [11:0][65:0] poo_u;
          // wire [66*8-1:0] poo_c;
-          reg [66*8-1:0] poo_c_reg;
+          reg [64*8-1:0] poo_c_reg;
           reg [11:0][65:0] poo_e_reg;
           always @(posedge clk) begin
               poo_e_reg<=poo_e;
               poo_c_reg<=poo_c;
+              poo_cp_reg<=poo_cpl
           end
         for(line=0;line<64;line=line+1) begin : cache_line
           reg [15:0][65:0] line_data;
@@ -1488,6 +1494,7 @@ generate
                 assign {poo_e[fuB][65:64],dummy64}=line_data[resA_reg[fuB][6:3]]>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
                 assign poo_u[fuB]=opcode_reg[fuB][5] ? 0 : line_data[res_reg[fuB][6:3]];
                 if (fuB<8) assign poo_c[64*fuB+:64]=line_data[{IP[8],fuB[2:0]}][63:0];
+                if (fuB<8) assign poo_cp[3*fuB+:3]=line_data[{IP[8],fuB[2:0]}][65:63];
                 assign {poo_mask}=(130'h3ffff_ffff_ffff_ffff_00<<(ldsize_reg[fuB][2:0]*8))&{66'h3ffff_ffff_ffff_ffff,64'b0};
                 assign pppoe[fuB]=anyhit[fuB][way]   ? 
                    poo_e_reg[fuB] & poo_mask_reg[65:0] : 'z;
@@ -1498,6 +1505,7 @@ generate
                 assign anyhitC[fuB][way]=line==IP_reg[12:6] ? tag[IP_reg[5]][37]&&tag[IP_reg[5]][36:0]==IP_reg[41:5] : 1'bz;
               //  if (line==4) assign tlbhit=tr_reg[resX[fuB][31:22]][37:6]==resX[fuB][63:37] && tr_reg[resX[fuB][31:22]][38];
                 if (fuB<8) assign pppoc[64*fuB+:64]=anyhitC[fuB][way ]&& line==IP_reg[11:6] ? poo_c_reg[64*fuB+:64] : 'z;
+                if (fuB<8) assign pppoc2[3*fuB+:3]=anyhitC[fuB][way ]&& line==IP_reg[11:6] ? poo_cp_reg[3*fuB+:3] : 'z;
               //  assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
                 always @(posedge clk) begin
                   poo_mask_reg<=poo_mask[65:0];
