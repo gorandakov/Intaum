@@ -1320,6 +1320,10 @@ generate
                   insi<=insi+1;
                   data_op[alloc][20]=instr_clextra[fu] && data_op[alloc][4:0]!=3;
                   ldi2reg[insi]<=alloc;
+                  if (IP_reg3[65] || ~^IP_reg3[64:32] || IP_reg[58:43]!=6'd63) begin
+                      data_op[alloc][7:0]<=8'b10101001;
+                      data_op[alloc]<='0;
+                  end 
               end
           end
           always @* begin
