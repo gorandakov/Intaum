@@ -1454,14 +1454,14 @@ generate
              always @(posedge clk) begin
                 if (way==0) wway=0;
                 if (line==insetr_addr[5:0] && insetr_expen)
-                  tag[insetr_addr[6]][67:66]<=0;
+                  tag[insetr_addr[6]][38:37]<=0;
                 if (line==insetrh_addr[5:0] && insetrh_expen)
-                  tag[insetrh_addr[6]][67:66]<=0;
+                  tag[insetrh_addr[6]][38:37]<=0;
                 if (line==insetrv_addr[5:0] && insetrv_expen)
-                  tag[insetrv_addr[6]][67:66]<=0;
+                  tag[insetrv_addr[6]][38:37]<=0;
                 if (way==random && insetr_phy[PHY] && !wway) begin
                    if (line==insetr_addr[5:0]) begin
-                       tag[insetr_addr[6]]<={insetr_exclusive,1'b1,insetr_addr[36:7]};
+                       tag[insetr_addr[6]]<={insetr_exclusive,1'b1,insetr_addr[36:0]};
                        line_data[8*insetr_addr[6]+:8]<=insetr_data;
                        expun_data<=line_data[8*insetr_addr[6]+:8];
                        expun_addr<=tag[insetr_addr[6]][36:0];
@@ -1470,7 +1470,7 @@ generate
                  end
                 if (way==random && insetrh_phy[PHY] && !hway) begin
                   if (line==insetrh_addr[5:0] && insetrh_phy[PHY]) begin
-                      tag[insetrh_addr[6]]<={insetrh_exclusive,1'b1,insetrh_addr[36:7]};
+                      tag[insetrh_addr[6]]<={insetrh_exclusive,1'b1,insetrh_addr[36:0]};
                       expunh_data<=line_data[8*insetrh_addr[6]+:8];
                       expunh_addr<=tag[insetrh_addr[6]][36:0];
                       expunh_phy<=1;
@@ -1479,7 +1479,7 @@ generate
                 end
                 if (way==random && insetrv_phy[PHY] && !vway) begin
                   if (line==insetrv_addr[5:0] && insetrv_phy[PHY]) begin
-                      tag[insetrv_addr[6]]<={insetrv_exclusive,1'b1,insetrv_addr[36:7]};
+                      tag[insetrv_addr[6]]<={insetrv_exclusive,1'b1,insetrv_addr[36:0]};
                       line_data[8*insetrv_addr[6]+:8]<=insetrv_data;
                       expunv_data<=line_data[8*insetrv_addr[6]+:8];
                       expunv_addr<=tag[insetrv_addr[6]][36:0];
@@ -1500,11 +1500,11 @@ generate
                 assign {poo_mask}=(130'h3ffff_ffff_ffff_ffff_00<<(ldsize_reg[fuB][2:0]*8))&{66'h3ffff_ffff_ffff_ffff,64'b0};
                 assign pppoe[fuB]=anyhit[fuB][way]   ? 
                    poo_e_reg[fuB] & poo_mask_reg[65:0] : 'z;
-                assign anyhitU[fuB][way]=line==res_reg2[12:7] ? tag[res_reg2[fuB][6]][51]&&tag[res_reg2[fuB][6]][50:19]=={res_reg[fuB][37:32],res_reg2[fuB][31:6]} : 1'bz;
-                assign anyhit[fuB][way] =line==resA_reg2[12:7] ? tag[resA_reg2[fuB][6]][51]&&tag[resA_reg2[fuB][6]][50:19]=={resA_reg[fuB][37:32],resA_reg2[fuB][31:6]} : 1'bz;
-                assign anyhitW[fuB][way]=line==resX[12:7] ? tag[resX[fuB][6]][52]&&tag[resX[fuB][6]][50:19]==resX[fuB][37:6] : 1'bz;
-                assign anyhitE[fuB][way]=line==srcIPOff[reti_reg][11:6] ? tag[srcIPOff[reti_reg][6]][52]&&tag[srcIPOff[reti_reg][6]][50:19]==srcIPOff[reti_reg][37:6] : 1'bz;
-                assign anyhitC[fuB][way]=line==IP_reg[12:6] ? tag[IP_reg[6]][51]&&tag[IP_reg[6]][50:19]==IP_reg[36:5] : 1'bz;
+                assign anyhitU[fuB][way]=line==res_reg2[12:7] ? tag[res_reg2[fuB][6]][37]&&tag[res_reg2[fuB][6]][36:0]=={res_reg[fuB][42:32],res_reg2[fuB][31:6]} : 1'bz;
+                assign anyhit[fuB][way] =line==resA_reg2[12:7] ? tag[resA_reg2[fuB][6]][37]&&tag[resA_reg2[fuB][6]][36:0]=={resA_reg[fuB][42:32],resA_reg2[fuB][31:6]} : 1'bz;
+                assign anyhitW[fuB][way]=line==resX[12:7] ? tag[resX[fuB][6]][38]&&tag[resX[fuB][6]][36:0]==resX[fuB][42:6] : 1'bz;
+                assign anyhitE[fuB][way]=line==srcIPOff[reti_reg][11:6] ? tag[srcIPOff[reti_reg][5]][38]&&tag[srcIPOff[reti_reg][5]][36:0]==srcIPOff[reti_reg][41:5] : 1'bz;
+                assign anyhitC[fuB][way]=line==IP_reg[12:6] ? tag[IP_reg[5]][37]&&tag[IP_reg[5]][36:0]==IP_reg[41:5] : 1'bz;
               //  if (line==4) assign tlbhit=tr_reg[resX[fuB][31:22]][37:6]==resX[fuB][63:37] && tr_reg[resX[fuB][31:22]][38];
                 if (fuB<8) assign pppoc[64*fuB+:64]=anyhitC[fuB][way ]&& line==IP_reg[11:6] ? poo_c_reg[64*fuB+:64] : 'z;
               //  assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
