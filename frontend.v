@@ -126,7 +126,7 @@ default:
   endfunction
   function [20:0] spgcookie;
      input [7:0] on_low;
-     spgcookie={on_low,on_low[6:0],6'd15};
+     spgcookie={on_low,on_low[6:0],6'd17};
   endfunction
   function addition_check;
       input [20:0] cookie;
@@ -1237,7 +1237,7 @@ generate
                     data_imm[alloc]={{46{instr[32]}},instr[32:15]};
                     data_op[alloc][8]=1'b1;
                     if (!instr_clextra[fu]) begin
-                      data_imm[alloc]={spgcookie({instr[17:15],instr[8:4]}),6'b0,instr[32:15],instr[8:4],15'b0};
+                      data_imm[alloc]={spgcookie({instr[17:15],instr[8:4]}),4'b0,instr[32:15],instr[8:4],17'b0};
                       data_op[alloc][8]=1'b0;
                     end  
                   end
