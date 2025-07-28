@@ -883,7 +883,8 @@ generate
           assign res_logic[63:32]=opcode_reg[2:1]==3 &~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==2 &~foo_reg ? xdataA[({1'b0,loopstop[5:0]}+{1'b0,dataBIX_reg[5:0]})%36][fu][63:32] 
               : 'z;
-          assign res_logic[63:32]=foo_reg & ? {dataA_reg[16:9],dataA_reg[15:9]+dataBI[15:9],6'd9,dataA[42:32]} : 'z; //stackframe alloc; chunks of 512 bytes up to 127
+          assign res_logic[63:32]=foo_reg && dataA[58:43]>9 ? {dataA_reg[16:9],dataA_reg[15:9]+dataBI_reg[15:9],6'd9,dataA[42:32]} : 'z; //stackframe alloc; chunks of 512 bytes up to 127
+          assign res_logic[63:32]=foo_reg && dataA[58:43]<=9 ? {dataA[63:32]} : 'z; //stackframe alloc; chunks of 512 bytes up to 127
 
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
