@@ -958,8 +958,8 @@ generate
               rA<=rdyA[indexLSU_ALU];
               rB<=rdyB[indexLSU_ALU];
               rBX<=rdyB[indexLDU];
-              rT<={fu,indexLSU_ALU};
-              rTMem<={fu,rdyM[indexLSU_ALU]};
+              rT<={fu[3:0],indexLSU_ALU};
+              rTMem<={fu[3:0],rdyM[fu][indexLSU_ALU]};
               opcode<=data_op[indexLSU_ALU];
               opcodex<=data_op[indexLDU];
               rFL<=rdyFL0[indexLSU_ALU];
@@ -1443,9 +1443,9 @@ generate
           reg [15:0][65:0] line_data;
           reg [1:0][38:0] tag;
           always @* begin
-              if (insetrh_en && insetrh_addr[5:0]==line && tag[insetrh_addr[6]]==insetrh_addr[36:0]) 
+              if (insetrh_en && insetrh_addr[5:0]==line && tag[insetrh_addr[6]][37:0]=={1'b1,insetrh_addr[36:0]}) 
                   hway=1;
-              if (insetrv_en && insetrv_addr[5:0]==line && tag[insetrv_addr[6]]==insetrv_addr[36:0]) 
+              if (insetrv_en && insetrv_addr[5:0]==line && tag[insetrv_addr[6]][37:0]=={1'b1,insetrv_addr[36:0]}) 
                   vway=1;
           end
             // assign poo_c2[2*fuB+:2]=poo_c[fuB*66+64+:2];
