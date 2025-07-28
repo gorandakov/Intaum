@@ -1441,35 +1441,21 @@ generate
           end
         for(line=0;line<64;line=line+1) begin : cache_line
           reg [15:0][65:0] line_data;
-          reg [1:0][52:0] tag;
+          reg [1:0][38:0] tag;
           always @* begin
-              if (insetr_en && insetr_addr[5:0]==line && tag[insetr_addr[6]]==insetr_addr[36:6]) 
-                  wway=1;
-              if (insetrh_en && insetrh_addr[5:0]==line && tag[insetrh_addr[6]]==insetrh_addr[36:6]) 
+              if (insetrh_en && insetrh_addr[5:0]==line && tag[insetrh_addr[6]]==insetrh_addr[36:0]) 
                   hway=1;
-     //   if (insertv_en && cache_way[way2].cache_line[insetrv_addr[5:0]].tag[insetrv_addr[6]]==insetrv_addr[36:6]) 
-     //             vway=1;
+              if (insetrv_en && insetrv_addr[5:0]==line && tag[insetrv_addr[6]]==insetrv_addr[36:0]) 
+                  vway=1;
           end
             // assign poo_c2[2*fuB+:2]=poo_c[fuB*66+64+:2];
              always @(posedge clk) begin
-                if (way==0) wway=0;
-                if (line==insetr_addr[5:0] && insetr_expen)
-                  tag[insetr_addr[6]][38:37]<=0;
                 if (line==insetrh_addr[5:0] && insetrh_expen)
                   tag[insetrh_addr[6]][38:37]<=0;
                 if (line==insetrv_addr[5:0] && insetrv_expen)
                   tag[insetrv_addr[6]][38:37]<=0;
-                if (way==random && insetr_phy[PHY] && !wway) begin
-                   if (line==insetr_addr[5:0]) begin
-                       tag[insetr_addr[6]]<={insetr_exclusive,1'b1,insetr_addr[36:0]};
-                       line_data[8*insetr_addr[6]+:8]<=insetr_data;
-                       expun_data<=line_data[8*insetr_addr[6]+:8];
-                       expun_addr<=tag[insetr_addr[6]][36:0];
-                       expun_phy<=1;
-                   end
-                 end
                 if (way==random && insetrh_phy[PHY] && !hway) begin
-                  if (line==insetrh_addr[5:0] && insetrh_phy[PHY]) begin
+                  if (line==insetrh_addr[5:0] && insetrh_phy[PHY] && ~insetrh_expen) begin
                       tag[insetrh_addr[6]]<={insetrh_exclusive,1'b1,insetrh_addr[36:0]};
                       expunh_data<=line_data[8*insetrh_addr[6]+:8];
                       expunh_addr<=tag[insetrh_addr[6]][36:0];
@@ -1478,7 +1464,7 @@ generate
                   end
                 end
                 if (way==random && insetrv_phy[PHY] && !vway) begin
-                  if (line==insetrv_addr[5:0] && insetrv_phy[PHY]) begin
+                  if (line==insetrv_addr[5:0] && insetrv_phy[PHY] && ~insetrv_expen) begin
                       tag[insetrv_addr[6]]<={insetrv_exclusive,1'b1,insetrv_addr[36:0]};
                       line_data[8*insetrv_addr[6]+:8]<=insetrv_data;
                       expunv_data<=line_data[8*insetrv_addr[6]+:8];
@@ -1493,7 +1479,9 @@ generate
                 wire [63:0] dummy64;
                 wire [63:0] dummy64B;
                 integer byte_;
+                /* verilator lint_off WIDTHTRUNC */
                 assign poo_e[fuB][63:0]={poo_u[fuB][63:0],line_data[resA_reg[fuB][6:3]][63:0]}>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
+                /* verilator lint_on WIDTHTRUNC */
                 assign {poo_e[fuB][65:64],dummy64}=line_data[resA_reg[fuB][6:3]]>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
                 assign poo_u[fuB]=opcode_reg[fuB][5] ? 0 : line_data[res_reg[fuB][6:3]];
                 if (fuB<8) assign poo_c[64*fuB+:64]=line_data[{IP[8],fuB[2:0]}][63:0];
