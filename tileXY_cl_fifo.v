@@ -40,7 +40,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   output outen,
   input [2:0] missue_en,
   input [2:0][38:0] missue_addr,
-  input [2:0][11:0] missue_phy,
+  input [2:0][37:0] missue_phy,
   inout [5:0] shareX);
 
   wire [`wrreq_size-1:0] wrreq;

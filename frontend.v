@@ -30,9 +30,19 @@ module frontend (
   );
   reg rst=1;
   reg rst0=1;
+  reg rst_reg;
+  reg rst_reg2;
+  reg rst_reg3;
+  reg rst_reg4;
+  reg rst_reg5;
   always @(posedge clk) begin
       if (rst0) rst0<=0;
       else if (rst) rst<=0;
+      rst_reg<=rst;
+      rst_reg2<=rst_reg;
+      rst_reg3<=rst_reg2;
+      rst_reg4<=rst_reg3;
+      rst_reg5<=rst_reg4;
   end
   function flcond;
     input [3:0] cond;
@@ -52,8 +62,8 @@ module frontend (
       11: flcond=1'b1;
       12: flcond=cond[1]^1;
       13: flcond=cond[1]^1&~cond[0];
-      14: flcond=~cond[3]&&^cond[2:1];//pointer set
-      15: flcond=!(~cond[3]&&^cond[2:1]); //pointer clear
+      14: flcond=~cond[3]^cond[2]&&^cond[2:1];//pointer set
+      15: flcond=!(~cond[3]^cond[2]&&^cond[2:1]); //pointer clear
     endcase
   endfunction
 
@@ -270,17 +280,17 @@ generate
       wire [35:0] insetr_phy;
       wire insetr_shared;
       wire insetr_exclusive;
-      reg [36:0] expun_addr_reg;
+      reg [38:0] expun_addr_reg;
       reg [35:0] expun_phy_reg;
-      reg [36:0] expunh_addr_reg;
+      reg [38:0] expunh_addr_reg;
       reg [35:0] expunh_phy_reg;
-      reg [36:0] expunv_addr_reg;
+      reg [38:0] expunv_addr_reg;
       reg [35:0] expunv_phy_reg;
-      reg [36:0] expun_addr;
+      reg [38:0] expun_addr;
       reg [35:0] expun_phy;
-      reg [36:0] expunh_addr;
+      reg [38:0] expunh_addr;
       reg [35:0] expunh_phy;
-      reg [36:0] expunv_addr;
+      reg [38:0] expunv_addr;
       reg [35:0] expunv_phy;
       reg [8*66-1:0] expun_data_reg;
       reg [8*66-1:0] expunv_data_reg;
@@ -378,12 +388,15 @@ generate
       //wire ids0_has;
       //wire ids1_has;
       wire [511:0] pppoc;
+      wire [23:0] pppoc2;
       reg [511:0] poo_c_reg;
       reg [511:0] pppoc_reg;
       reg [511:0] pppoc_reg2;
       reg [23:0] pppoc2_reg;
-      regt [23:0] pppoc2_reg2; 
+      reg [23:0] pppoc2_reg2; 
       wire [511:0] poo_c;
+      wire [23:0] poo_cp;
+      reg [23:0] poo_cp_reg;
       reg vec,vec_reg,vec_reg2,vec_reg3;
           reg [11:0][63:0][63:0] data_gen;
           reg [11:0][63:0][65:0] data_fp;
@@ -854,15 +867,15 @@ generate
           assign {c32a,resA[fu][31:0]}=dataA[31:0]+dataBI[31:0]+({32{opcode[11]}}&data_imm[rT[9:6]][rT[5:0]][31:0]);
           assign resA[fu][63:32]=dataA_reg[63:32]+{32{resA_reg[fu][31]}}+c32a;
           assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[32])&& cond_tru_reg ?
-            {dataA[63]|~chk,dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[31] :c32_reg) : 'z;
+            {dataA[63],dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[31] :c32_reg) : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && opcode[8] && cond_tru ?
             dataBI[31:0] : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && ~opcode[8] && cond_tru ?
             dataB[31:0] : 'z;
           assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand)
-             || ~dataA_reg[65] || ^dataA_reg[64:63];
+             || ~dataA_reg[65]^dataA_reg[64] || ^dataA_reg[64:63];
           assign chkA=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIXH[42:32],dataBIXH_reg[31:0]},opcode_reg[11],isand)
-             || ~dataA_reg[65] || ^dataA_reg[64:63];
+             || ~dataA_reg[65]^dataA_reg[64] || ^dataA_reg[64:63];
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && opcode_reg[8] && cond_tru_reg ?
           {1'b0,dataBI_reg[63],dataBI_reg[63:32]} : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && ~opcode_reg[8] && cond_tru_reg ?
@@ -929,6 +942,7 @@ generate
           reg [5:0] LDI_reg;
           reg [5:0] miss_rvi;
           reg [39:0] instr;
+          reg [23:0] insn_isptr;
           assign loopstop=data_loopstop[indexLSU_ALU_reg]==63 ? loopstop_save : data_loopstop[indexLSU_ALU_reg];
           always @(posedge clk) begin
               loopstop_save<=loopstop;
@@ -1181,13 +1195,13 @@ generate
               if (rT_en0_reg3 && opcode_reg2[5:3]==35) data_gen[rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
               if (rT_en_reg2 && opcode_reg2[10] | opcode_reg2[5]) data_gen[rT_reg2[5:0]][65:32]<={c64,s64,res[63:32]}&{34{opcode_reg[20]}};
               if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<=opcode_reg2[7:0]==1 && dataBI_reg2[22] ? {dataMF_reg[65:63],~|dataMF_reg[62:53]} : opcode_reg2[7] ? {1'b0,pppoe_reg3[63],pppoe_reg3[63],~|pppoe_reg3[63:0]}:
-                  {c64_reg2|~chk_reg2,s64_reg2,res_reg2[63],~|res_reg2[63:0]};
+                  {c64_reg2|~chk_reg2,s64_reg2&chk_reg2,res_reg2[63],~|res_reg2[63:0]};
               if (rT_en_reg2) data_retFL[LQ_reg][3:0]<=opcode_reg2[7:5]==0 ? {dataMF[65:63],~|dataMF[62:53]} : {c64|~chk,s64,res[63],~|res[63:0],1'b0};
               if (rT_en_reg2 && opcode_reg2[10] && ~|opcode_reg2[7:6]) data_retFL[LQ_reg][3:0]<=opcode_reg2[9]==0 ? {res_loop0,res_loop2,res_loop2,res_loop1,1'b0} : {res_cloop0,res_cloop2,res_cloop2,res_cloop1,1'b0};
               if (rT_en_reg5 &&(opcode_reg4[7:5]=0 && opcode_reg4[4:0]==1 && dataBI_reg4[20])) data_fp[rTMem_reg4[5:0]]<=dataBI_reg4[22] ? dataMF_reg2 : xaddres;
               if (rT_en_reg5 &&(opcode_reg4[7:5]=0 && opcode_reg4[4:0]==1 && dataBI_reg4[21])) data_fp[rTMem_reg4[5:0]]<=xmulres;
               if (rT_en_reg5 &&(opcode_reg4[7] )) data_fp[rTMem_reg4[5:0]]<=flconv(pppoe_reg3,opcode_reg4[8]);
-              if (rT_en0_reg4 && opcode_reg3[5:3]=35) data_gen[rTMem_reg3[5:0]][65:32]<=res_mul[63:32];
+              if (rT_en0_reg4 && opcode_reg3[5:3]==35) data_gen[rTMem_reg3[5:0]][65:32]<=res_mul[63:32];
               if (rT_en0_reg4 && opcode_reg3[7]) data_gen[rTMem_reg2[5:0]][65:32]<=pppoe_reg2[65:32];
               if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=fsconv(dataMF_reg,dataBI_reg3[24:23])>>32;
               if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=fsconv(dataMF,dataBI_reg2[24:23]);
@@ -1196,14 +1210,14 @@ generate
                    jcondx0[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond;
                    if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ]+{data_cloop[rT_reg4[5:0]],5'b1};
                    if (opcode_reg4[8]) jcond0[LQ]<=srcIPOff[LQ]+res_reg3;
-                   jcc0[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataMF_reg3[65:63],~|dataMF_reg3[62:53]} : {c64_reg4|~chk_reg4,s64_reg4,res_reg3[63],~|res_reg3[63:0],1'b0};
+                   jcc0[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataMF_reg3[65:63],~|dataMF_reg3[62:53]} : {c64_reg4|~chk_reg4,s64_reg4&chk_reg4,res_reg3[63],~|res_reg3[63:0],1'b0};
                end
                if (rT_en0_reg4 && fu==idj1p) begin
                    jcond1[LQ]<=res_reg3;
                    jcondx1[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond;
                    if (opcode_reg4[10]) jcond1[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
                    if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ]+res_reg3;
-                   jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataMF_reg3[65:63],~|dataMF_reg3[62:53]} : {c64_reg4|~chk_reg4,s64_reg4,res_reg3[63],~|res_reg3[63:0],1'b0};
+                   jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataMF_reg3[65:63],~|dataMF_reg3[62:53]} : {c64_reg4|~chk_reg4,s64_reg4&chk_reg4,res_reg3[63],~|res_reg3[63:0],1'b0};
                end
                if (insert_en && (fu>=insn_clopp[13:10] && IP[4:0]==insn_clopp[19:15])|
                     (fu>=insn_clopp[23:10] && IP[4:0]==insn_clopp[29:25])  ) begin
@@ -1243,6 +1257,8 @@ generate
                     data_op[alloc][8]=1'b1;
                     if (!instr_clextra[fu]) begin
                       data_op[alloc][8]=1'b0;
+                      if (rst_reg5 || IP_reg4[42:6]==1) data_imm[alloc]<={8'h0,7'h7f,6'd36,43'b0};
+                      else data_imm[alloc]<={8'h0,7'h1,6'd3,43'b0};
                     end  
                   end
                   if (!|instr[39:38]) begin
@@ -1449,7 +1465,7 @@ generate
           always @(posedge clk) begin
               poo_e_reg<=poo_e;
               poo_c_reg<=poo_c;
-              poo_cp_reg<=poo_cpl
+              poo_cp_reg<=poo_cp;
           end
         for(line=0;line<64;line=line+1) begin : cache_line
           reg [15:0][65:0] line_data;
@@ -1470,7 +1486,7 @@ generate
                   if (line==insetrh_addr[5:0] && insetrh_phy[PHY] && ~insetrh_expen) begin
                       tag[insetrh_addr[6]]<={insetrh_exclusive,1'b1,insetrh_addr[36:0]};
                       expunh_data<=line_data[8*insetrh_addr[6]+:8];
-                      expunh_addr<=tag[insetrh_addr[6]][36:0];
+                      expunh_addr<={tag[insetrh_addr[6]][38],~tag[insetrh_addr[6]][38],tag[insetrh_addr[6]][36:0]};
                       expunh_phy<=1;
                       line_data[8*insetrh_addr[6]+:8]<=insetrh_data;
                   end
@@ -1480,7 +1496,7 @@ generate
                       tag[insetrv_addr[6]]<={insetrv_exclusive,1'b1,insetrv_addr[36:0]};
                       line_data[8*insetrv_addr[6]+:8]<=insetrv_data;
                       expunv_data<=line_data[8*insetrv_addr[6]+:8];
-                      expunv_addr<=tag[insetrv_addr[6]][36:0];
+                      expunv_addr<={tag[insetrh_addr[6]][38],~tag[insetrh_addr[6]][38],tag[insetrv_addr[6]][36:0]};
                       expunv_phy<=1;
                  end
              end
