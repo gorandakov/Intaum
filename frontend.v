@@ -184,7 +184,7 @@ generate
 
   wire [35:0] missx_en;
   wire [35:0][38:0] missx_addr;
-  wire [35:0][59:0] missx_phy;
+  wire [35:0][37:0] missx_phy;
 
   wire except;
   wire except_ldconfl;
@@ -446,7 +446,12 @@ generate
           wire ids0_has;
           wire ids1_has;
           wire [11:0] ids0p;
-          wire [11:0] ids1p; 
+          wire [11:0] ids1p;
+          reg irqload_reg;
+          reg irqload_reg2;
+          reg irqload_reg3;
+          reg irqload_reg4;
+          reg irqload_reg5; 
       wire [41:0] ret_cookie;
       reg [41:0] ret_cookie_reg;
       reg [41:0] ret_cookie_reg2;
@@ -470,7 +475,7 @@ generate
       always @(posedge clk) begin
           if (isret) sttop--;
           if (iscall|irqload) begin
-              htlb[sttop+1]<={IP_reg4[35:6]+1,5'b0};
+              htlb[sttop+1]<=irqload? IP[35:0] : {IP_reg4[35:6]+1,5'b0};
               sttop=sttop+1;
           end
           if (rst) reti<=0;
@@ -483,6 +488,11 @@ generate
           reti_reg2<=reti_reg;
           pred_en_reg<=pred_en;
           pred_en_reg2<=pred_en_reg;
+          irqload_reg<=irqload;
+          irqload_reg2<=irqload_reg;
+          irqload_reg3<=irqload_reg2;
+          irqload_reg4<=irqload_reg3;
+          irqload_reg5<=irqload_reg4;
           expun_addr_reg<=expun_addr;
           expun_data_reg<=expun_data;
           expun_phy_reg<= expun_phy;
@@ -1258,6 +1268,7 @@ generate
                     if (!instr_clextra[fu]) begin
                       data_op[alloc][8]=1'b0;
                       if (rst_reg5 || IP_reg4[42:6]==1) data_imm[alloc]<={8'h0,7'h7f,6'd36,43'b0};
+                      else if (irqload_reg5) data_imm[alloc]<={15'b0,6'd63,1'b0,IP_reg4};
                       else data_imm[alloc]<={8'h0,7'h1,6'd3,43'b0};
                     end  
                   end
