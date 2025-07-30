@@ -1267,8 +1267,9 @@ generate
                     data_op[alloc][8]=1'b1;
                     if (!instr_clextra[fu]) begin
                       data_op[alloc][8]=1'b0;
-                      if (rst_reg5 || IP_reg4[42:6]==1) data_imm[alloc]<={8'h0,7'h7f,6'd36,43'b0};
+                      if (rst_reg5 || IP_reg4[41:5]==1) data_imm[alloc]<={8'h0,7'h7f,6'd36,43'b0};
                       else if (irqload_reg5) data_imm[alloc]<={15'b0,6'd63,1'b0,IP_reg4};
+                      else if (IP_reg4[42]) data_imm[alloc]={spgcookie({instr[17:15],instr[8:4]}),4'b0,instr[32:15],instr[8:4],17'b0};
                       else data_imm[alloc]<={8'h0,7'h1,6'd3,43'b0};
                     end  
                   end
