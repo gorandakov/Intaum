@@ -1166,7 +1166,7 @@ generate
                   dreqmort_flags[LQ]<={~opcode_reg[20],~chk&~opcode_reg[5]||~chkA,1'b0,opcode_reg[7:6],opcode_reg[9:8]};
               end
               if (rT_en0_reg2 | rT_en_reg2 && |opcode_reg2[7:6]) begin
-                  dreqmort[LQ][65:32]<={isptrA&chk ? res[63] : c64,isptrA&chk ? ~res[63]:s64,res[63:32]};
+                  dreqmort[LQ][65:32]<={chk ? res[63] : c64,chk ? ~res[63]:s64,res[63:32]};
                  // dreqmord_flags[LQ]<={opcode_reg[7:6],opcode_reg[9:8]};
               end
               if (indexLDU_has_reg) begin
@@ -1203,10 +1203,10 @@ generate
               if (rT_en_reg && opcode[10] | opcode[5]) data_gen[rT_reg[5:0]][31:0]<=res[31:0];
               if (rT_en0_reg3 && opcode_reg2[7]) data_gen[rTMem_reg2[5:0]][31:0]<=pppoe_reg[31:0];
               if (rT_en0_reg3 && opcode_reg2[5:3]==35) data_gen[rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
-              if (rT_en_reg2 && opcode_reg2[10] | opcode_reg2[5]) data_gen[rT_reg2[5:0]][65:32]<={isptrA&chk ? res[63] : c64,isptrA&chk ? ~res[63]:s64,res[63:32]}&{34{opcode_reg[20]}};
+              if (rT_en_reg2 && opcode_reg2[10] | opcode_reg2[5]) data_gen[rT_reg2[5:0]][65:32]<={chk ? res[63] : c64,chk ? ~res[63]:s64,res[63:32]}&{34{opcode_reg[20]}};
               if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<=opcode_reg2[7:0]==1 && dataBI_reg2[22] ? {dataMF_reg[65:63],~|dataMF_reg[62:53]} : opcode_reg2[7] ? {1'b0,pppoe_reg3[63],pppoe_reg3[63],~|pppoe_reg3[63:0]}:
-                  {isptrA_reg2&chk_reg2 ? res_reg2[63] : c64_reg2,isptrA_reg2&chk_reg2 ? ~res_reg2[63]:s64_reg2,res_reg2[63],~|res_reg2[63:0]};
-              if (rT_en_reg2) data_retFL[LQ_reg][3:0]<=opcode_reg2[7:5]==0 ? {dataMF[65:63],~|dataMF[62:53]} : {isptrA&chk ? res[63] : c64,isptrA&chk ? ~res[63]:s64,res[63],~|res[63:0],1'b0};
+                  {chk_reg2 ? res_reg2[63] : c64_reg2,chk_reg2 ? ~res_reg2[63]:s64_reg2,res_reg2[63],~|res_reg2[63:0]};
+              if (rT_en_reg2) data_retFL[LQ_reg][3:0]<=opcode_reg2[7:5]==0 ? {dataMF[65:63],~|dataMF[62:53]} : {chk ? res[63] : c64,chk ? ~res[63]:s64,res[63],~|res[63:0],1'b0};
               if (rT_en_reg2 && opcode_reg2[10] && ~|opcode_reg2[7:6]) data_retFL[LQ_reg][3:0]<=opcode_reg2[9]==0 ? {res_loop0,res_loop2,res_loop2,res_loop1,1'b0} : {res_cloop0,res_cloop2,res_cloop2,res_cloop1,1'b0};
               if (rT_en_reg5 &&(opcode_reg4[7:5]=0 && opcode_reg4[4:0]==1 && dataBI_reg4[20])) data_fp[rTMem_reg4[5:0]]<=dataBI_reg4[22] ? dataMF_reg2 : xaddres;
               if (rT_en_reg5 &&(opcode_reg4[7:5]=0 && opcode_reg4[4:0]==1 && dataBI_reg4[21])) data_fp[rTMem_reg4[5:0]]<=xmulres;
@@ -1220,14 +1220,14 @@ generate
                    jcondx0[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond;
                    if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ]+{data_cloop[rT_reg4[5:0]],5'b1};
                    if (opcode_reg4[8]) jcond0[LQ]<=srcIPOff[LQ]+res_reg3;
-                   jcc0[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataMF_reg3[65:63],~|dataMF_reg3[62:53]} : {isptrA_reg3&chk_reg3 ? res_reg3[63] : c64_reg3,isptrA_reg3&chk_reg3 ? ~res_reg3[63]:s64_reg3,res_reg3[63],~|res_reg3[63:0],1'b0};
+                   jcc0[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataMF_reg3[65:63],~|dataMF_reg3[62:53]} : {chk_reg3 ? res_reg3[63] : c64_reg3,chk_reg3 ? ~res_reg3[63]:s64_reg3,res_reg3[63],~|res_reg3[63:0],1'b0};
                end
                if (rT_en0_reg4 && fu==idj1p) begin
                    jcond1[LQ]<=res_reg3;
                    jcondx1[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond;
                    if (opcode_reg4[10]) jcond1[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
                    if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ]+res_reg3;
-                   jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataMF_reg3[65:63],~|dataMF_reg3[62:53]} : {isptrA_reg3&chk_reg3 ? res_reg3[63] : c64_reg3,isptrA_reg3&chk_reg3 ? ~res_reg3[63]:s64_reg3,res_reg3[63],~|res_reg3[63:0],1'b0};
+                   jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataMF_reg3[65:63],~|dataMF_reg3[62:53]} : {chk_reg3 ? res_reg3[63] : c64_reg3,chk_reg3 ? ~res_reg3[63]:s64_reg3,res_reg3[63],~|res_reg3[63:0],1'b0};
                end
                if (insert_en && (fu>=insn_clopp[13:10] && IP[4:0]==insn_clopp[19:15])|
                     (fu>=insn_clopp[23:10] && IP[4:0]==insn_clopp[29:25])  ) begin
