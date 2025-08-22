@@ -41,6 +41,16 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   input [2:0] missue_en,
   input [2:0][38:0] missue_addr,
   input [2:0][37:0] missue_phy,
+  output fiq_en,
+  output [36:0] fiq_addr,
+  output fiq_want_shared,
+  output fiq_want_exclusive,
+  output fiq_wb,
+  input [8*66-1:0] fiq_data,
+  output [8*66-1:0] fiq_data_out,
+  input  fiq_en_in,
+  input fiq_fwd,
+  input [3:0] fiq_fwd_XY,
   inout [5:0] shareX);
 
   wire [`wrreq_size-1:0] wrreq;

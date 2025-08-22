@@ -1,0 +1,113 @@
+module fpuadd64(
+  input clk,
+  input rst,
+  input [63:0] A,
+  input [63:0] B,
+  input rnd,
+  output [63:0] res
+  );
+
+  wire [53:0] AB0;
+  wire [53:0] BA0;
+  wire [54:0] AB1;
+  wire [54:0] BA1;
+
+  wire [9:0] ABExp;
+  wire cABExp;
+  wire [9:0] BAExp;
+  wire cAB0;
+  wire age;
+  wire ABeq;
+  wire [53:0] S;
+  wire sxor;
+  reg sxor_reg,sxor_reg2;
+  wire [55:0] shAB;
+  wire [55:0] shBA;
+  wire [55:0] shar;
+  wire [55:0] shn;
+  wire [55:0] shn2;
+  wire [55:0] res_sh;
+  wire [55:0] res_sh2;
+  wire [55:0] res_dn;
+  wire [55:0] bz;
+  wire [55:0] ba;
+  wire ABOne;
+  wire [9:0] aegis;
+  wire [5:0] pfs;
+  wire [9:0] zux;
+  reg [5:0] pfs_reg;
+  reg [55:0] shar_reg;
+  reg [55:0] shn_reg;
+  reg [55:0] shn2_reg;
+  reg [9:0] aegis_reg;
+  reg [9:0] aegis_reg2;
+  reg ABOne_reg,ABeq_reg,ABOne_reg2,ABeq_reg2;
+  reg [53:0] S_reg;
+  reg [55:0] res_sh_reg;
+  reg [55:0] res_sh2_reg;
+  reg [55:0] res_dn_reg;
+  reg [9:0] zux_reg;
+  always @(posedge clk) begin
+    shar_reg<=shar;
+    shn_reg<=shn;
+    shn2_reg<=shn2;
+    aegis_reg<=aegis;
+    aegis_reg2<=aegis_reg;
+    ABOne_reg<=ABOne;
+    ABeq_reg<=ABeq;
+    ABOne_reg2<=ABOne_reg;
+    ABeq_reg2<=ABeq_reg;
+    S_reg<=S;
+    pfs_reg<=pfs;
+    sxor_reg<=sxor;
+    sxor_reg2<=sxor_reg;
+    res_sh_reg<=res_sh;
+    res_sh2_reg<=res_sh2;
+    res_dn_reg<=res_dn;
+    zux_reg<=zux;
+  end
+  assign {cAB0,AB0}={1'b1,A[52:0]}-{1'b1,B[52:0]};
+  assign BA0={1'b1,B[52:0]}-{1'b1,A[52:0]};
+
+  assign AB1={1'b1,A[52:0],rnd}-{2'b1,B[52:0]};
+  assign BA1={1'b1,B[52:0],rnd}-{2'b1,A[52:0]};
+
+ assign {cABExp,ABExp}=A[62:53]-B[62:53];
+ assign BAExp=B[62:53]-A[62:53];
+ assign age=cABExp && !ABeq | cAB0;
+ assign ABeq=A[62:53]==B[62:53];
+
+ assign aegis=cABExp ? B[62:53] : A[62:53];
+
+ assign S=ABeq && age ? AB0 : 'z;
+ assign S=ABeq && !age ? BA0 : 'z;
+ assign S=!ABeq && age ? AB1[54:1] : 'z;
+ assign S=!ABeq && !age ? BA1[54:1] : 'z;
+
+ assign shAB=({1'b1,B[52:0],2'b0}^{56{sxor}})>>ABExp;
+ assign shBA=({1'b1,A[52:0],2'b0}^{56{sxor}})>>BAExp;
+ assign sxor=A[63]^B[63];
+
+find_first_index nrm(S_reg,pfs,s_has);
+assign shar=age ? shAB&bz : shBA&ba;
+assign shn=age ? {1'b1,A[52:0],rnd,1'b0} &ba: {1'b1,B[52:0],rnd,1'b0}&bz;
+assign shn2=age ? {1'b1,A[52:0],1'b0,rnd} : {1'b1,B[52:0],1'b0,rnd};
+assign res_sh=shn_reg + shar_reg[55:0];
+assign res_sh2=shn2_reg + shar_reg;
+assign res_dn=S_reg << pfs;
+assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54]  ? res_sh_reg[54:2] : 'z;
+assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==1  ? res_sh_reg[53:1] : 'z;
+assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==0  ? res_sh2_reg[52:0] : 'z;
+assign res[52:0]=!(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 )   ? res_dn_reg : 'z;
+
+assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54]  ? aegis_reg2 + 1: 'z;
+assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==1  ? aegis_reg2: 'z;
+assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==0  ? aegis_reg2-1 : 'z;
+assign res[62:53]=!(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 )  ? (aegis_reg2-pfs_reg)&zux_reg : 'z;
+assign zux=aegis_reg<pfs ? '0 : '1;
+
+assign bz=B[62:53]==0 ? '0 : '1;
+
+assign ba=A[62:53]==0 ? '0 : '1;
+
+endmodule
