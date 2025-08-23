@@ -34,7 +34,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   input [37:0] insize,//{shared,exclusive,phymsk}
   output reqmort_expun,
   output [66*8-1:0] reqmort_data,
-  output [36:0] reqmortaddr,
+  output [3:0][36:0] reqmortaddr,
   output [37:0] reqmort_size,
 //  output reqmort_flush_only,
   output outen,
@@ -51,6 +51,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   input  fiq_en_in,
   input fiq_fwd,
   input [3:0] fiq_fwd_XY,
+  input [3:0][36:0] fiq_addr_fwd,
   inout [5:0] shareX);
 
   wire [`wrreq_size-1:0] wrreq;

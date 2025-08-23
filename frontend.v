@@ -218,14 +218,14 @@ generate
   reg [35:0][11:0] wstall_reg;
   reg [35:0][11:0] aligned;
   wire [35:0][11:0][65:0] xdataA;
-  wire [35:0][36:0]  rdaddr0;
+  wire [35:0][38:0]  rdaddr0;
   wire [35:0][8*66+4:0]  rddata;
   wire [35:0]  rden_in;
-  wire [35:0][36:4]  rdaddr;
+  wire [35:0][3:0][36:0]  rdaddr;
   wire [35:0] rden_out;
   wire [35:0][8*66+4:0]  wrdata;
   wire [35:0]  wren_in;
-  wire [35:0][36:4]  wraddr;
+  wire [35:0][3:0][36:0]  wraddr;
   wire [35:0] wren_out;
 
   always @(posedge clk) begin
@@ -243,9 +243,9 @@ generate
     rden_in,
     rdaddr,
     rden_out,
-    rdaddr0,
+    rdaddr0[36:4],
     wrdata,
-    wren_in,
+    wren_in||rdaddr0[37]&rden_in,
     wraddr,
     wren_out);
 
@@ -1441,11 +1441,12 @@ generate
       rdaddr0[PHY][38],
       rdaddr0[PHY][37],
       wren_in[PHY],
-      wrdata[PHY],
-      rddata[PHY],
+      wrdata[PHY][8*66-1:0],
+      rddata[PHY][8*66-1:0],
       rden_out[PHY],
       rddata[PHY][8*66],
       rddata[PHY][8*66+1+:4],
+      rdaddr[PHY],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
       clk,rst,
@@ -1470,11 +1471,12 @@ generate
       rdaddr0[PHY][38],
       rdaddr0[PHY][37],
       wren_in[PHY],
-      wrdata[PHY],
-      rddata[PHY],
+      wrdata[PHY][8*66-1:0],
+      rddata[PHY][8*66-1:0],
       rden_out[PHY],
       rddata[PHY][8*66],
       rddata[PHY][8*66+1+:4],
+      rdaddr[PHY],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
       clk,rst,
@@ -1499,11 +1501,12 @@ generate
       rdaddr0[PHY][38],
       rdaddr0[PHY][37],
       wren_in[PHY],
-      wrdata[PHY],
-      rddata[PHY],
+      wrdata[PHY][8*66-1:0],
+      rddata[PHY][8*66-1:0],
       rden_out[PHY],
       rddata[PHY][8*66],
       rddata[PHY][8*66+1+:4],
+      rdaddr[PHY],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
       clk,rst,
@@ -1528,11 +1531,12 @@ generate
       rdaddr0[PHY][38],
       rdaddr0[PHY][37],
       wren_in[PHY],
-      wrdata[PHY],
-      rddata[PHY],
+      wrdata[PHY][8*66-1:0],
+      rddata[PHY][8*66-1:0],
       rden_out[PHY],
       rddata[PHY][8*66],
       rddata[PHY][8*66+1+:4],
+      rdaddr[PHY],
       shareX);
       end
       reg [9:0][38:0] tr;

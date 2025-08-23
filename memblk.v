@@ -17,8 +17,8 @@ module memblk(
 );
   reg [63:0][35:0][1:0] wsz0_reg;
   reg [63:0][35:0][32:0] waddr0_reg;
-  reg [35:0][32:0] waddr0_xtra;
-  reg [35:0][32:0] waddr0_xtra_reg;
+  reg [35:0][3:0][32:0] waddr0_xtra;
+  reg [35:0][3:0][32:0] waddr0_xtra_reg;
   reg [35:0][32:0] waddr0_rexx;
   reg [35:0][32:0] waddr0_rexx2;
   reg [63:0][35:0][65:0] wrdata_reg;
@@ -26,8 +26,8 @@ module memblk(
   reg [63:0][35:0][26:0] rdaddr0_reg;
   reg [35:0][26:0] rdaddr0_rexx;
   reg [35:0][26:0] rdaddr0_rexx2;
-  reg [35:0][26:0] rdaddr0_xtra;
-  reg [35:0][26:0] rdaddr0_xtra_reg;
+  reg [35:0][3:0][26:0] rdaddr0_xtra;
+  reg [35:0][3:0][26:0] rdaddr0_xtra_reg;
   reg [63:0][35:0] rden_in_reg;
   reg [63:0][35:0][26:0] rdaddr_reg;
   reg [63:0][35:0][3:0] rdxdata_reg;
