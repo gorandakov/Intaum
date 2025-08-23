@@ -421,10 +421,10 @@ generate
       wire [23:0] poo_cp;
       reg [23:0] poo_cp_reg;
       reg vec,vec_reg,vec_reg2,vec_reg3;
-          reg [11:0][63:0][63:0] data_gen;
-          reg [11:0][63:0][65:0] data_fp;
+          reg [11:0][63:0][65:0] data_gen;
+          reg [11:0][63:0][63:0] data_fp;
           reg [11:0][63:0][4:0] data_genFL;
-          reg [11:0][63:0][5:0] data_retFL;
+          reg [11:0][63:0][4:0] data_retFL;
           reg signed [11:0][63:0][63:0] data_imm;
           reg [11:0][63:0][19:0] data_imm2;
           reg [11:0][63:0][20:0] data_op;
@@ -754,7 +754,10 @@ generate
           reg [20:0] opcode_reg4;
           reg [20:0] opcodex_reg4;
           reg [20:0] opcode_reg5;
-          wire [4:0] cond;
+          wire [3:0] cond;
+          reg [3:0] cond_reg;
+          reg [3:0] cond_reg2;
+          reg [3:0] cond_reg3;
           wire cond_tru;
           reg cond_tru_reg;
           wire [4:0] cond2;
@@ -865,8 +868,8 @@ generate
           assign {c32h,dataBIXH[31:0]}=dataBI_reg[31:0]+({32{opcode[11]}}&data_imm[fu][rT[9:6]][rT[5:0]][31:0]);
           assign dataA[63:32]=data_gen[rA_reg[9:6]][rA_reg[5:0]][63:32] & {34{opand_reg}};
           assign dataB[63:32]=data_gen[rB_reg[9:6]][rB_reg[5:0]][63:32];
-          assign dataMF[63:0]=data_gen[rA_reg3[9:6]][rA_reg2[5:0]][63:0];
-          assign dataBF[63:0]=data_gen[rB_reg3[9:6]][rB_reg2[5:0]][63:0];
+          assign dataMF[63:0]=data_fp[rA_reg3[9:6]][rA_reg2[5:0]][63:0];
+          assign dataBF[63:0]=data_fp[rB_reg3[9:6]][rB_reg2[5:0]][63:0];
           assign dataBI[63:32]=data_imm[fu][rT_reg[9:6]][rT_reg[5:0]][57:0]*(data_phy)>>32;
           assign dataBX[63:32]=data_gen[rBX_reg[9:6]][rBX_reg[5:0]][63:32];
           assign dataBIX[63:32]=opcode_reg[0] || opcode_reg[7:0]==2 ? dataBI[63:32] : dataBX[63:32];
@@ -1128,6 +1131,9 @@ generate
               dataBF_reg3<=dataBF_reg2;
               LQ_reg<=LQ;
               LQX_reg<=LQX;
+              cond_reg<=cond;
+              cond_reg2<=cond_reg;
+              cond_reg3<=cond_reg2;
               write_upper_reg<=write_upper;
               cond_tru_reg<=cond_tru;
               cond_xtru_reg<=cond_xtru;
@@ -1229,63 +1235,69 @@ generate
               instr<=pppoc_reg2[fu*40+:40];
               insn_clopp<=pppoc_reg2[255-32+:32];
               insn_isptr<=pppoc2_reg2;
-              if (rT_en_reg && opcode[10] | opcode[5]) data_gen[rT_reg[5:0]][31:0]<=res[31:0];
-              if (rT_en0_reg3 && opcode_reg2[7]) data_gen[rTMem_reg2[5:0]][31:0]<=pppoe_reg[31:0];
-              if (rT_en0_reg3 && opcode_reg2[5:3]==35) data_gen[rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
-              if (rT_en_reg2 && opcode_reg2[10] | opcode_reg2[5]) data_gen[rT_reg2[5:0]][65:32]<={chk ? res[63] : c64,chk ? ~res[63]:s64,res[63:32]}&{34{opcode_reg[20]}};
-              if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<=opcode_reg2[7:0]==1 && dataBI_reg2[22] ? {dataMF_reg[65:63],~|dataMF_reg[62:53]} : opcode_reg2[7] ? {1'b0,pppoe_reg3[63],pppoe_reg3[63],~|pppoe_reg3[63:0]}:
+              if (rT_en_reg && opcode[10] | opcode[5]) data_gen[fu][rT_reg[5:0]][31:0]<=res[31:0];
+              if (rT_en0_reg3 && opcode_reg2[7]) data_gen[fu][rTMem_reg2[5:0]][31:0]<=pppoe_reg[fu][31:0];
+              if (rT_en0_reg3 && opcode_reg2[5:3]==35) data_gen[fu][rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
+              if (rT_en_reg2 && opcode_reg2[10] | opcode_reg2[5]) data_gen[fu][rT_reg2[5:0]][65:32]<={chk ? res[63] : c64,chk ? ~res[63]:s64,res[63:32]}&{34{opcode_reg[20]}};
+              if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<=opcode_reg2[7:0]==1 && dataBI_reg2[22] ? {dataMF_reg[65:63],~|dataMF_reg[62:53]} : opcode_reg2[7] ? {1'b0,pppoe_reg3[fu][63],pppoe_reg3[fu][63],~|pppoe_reg3[fu][63:0]}:
                   {chk_reg2 ? res_reg2[63] : c64_reg2,chk_reg2 ? ~res_reg2[63]:s64_reg2,res_reg2[63],~|res_reg2[63:0]};
-              if (rT_en_reg2) data_retFL[LQ_reg][3:0]<=opcode_reg2[7:5]==0 ? {dataMF[65:63],~|dataMF[62:53]} : {chk ? res[63] : c64,chk ? ~res[63]:s64,res[63],~|res[63:0],1'b0};
-              if (rT_en_reg2 && opcode_reg2[10] && ~|opcode_reg2[7:6]) data_retFL[LQ_reg][3:0]<=opcode_reg2[9]==0 ? {res_loop0,res_loop2,res_loop2,res_loop1,1'b0} : {res_cloop0,res_cloop2,res_cloop2,res_cloop1,1'b0};
-              if (rT_en_reg5 &&(opcode_reg4[7:5]==0 && opcode_reg4[4:0]==1 && dataBI_reg4[20])) data_fp[rTMem_reg4[5:0]]<=dataBI_reg4[22] ? dataMF_reg2 : xaddres;
-              if (rT_en_reg5 &&(opcode_reg4[7:5]==0 && opcode_reg4[4:0]==1 && dataBI_reg4[21])) data_fp[rTMem_reg4[5:0]]<=xmulres;
-              if (rT_en_reg5 &&(opcode_reg4[7] )) data_fp[rTMem_reg4[5:0]]<=flconv(pppoe_reg3,opcode_reg4[8]);
-              if (rT_en0_reg4 && opcode_reg3[5:3]==35) data_gen[rTMem_reg3[5:0]][65:32]<=res_mul[63:32];
-              if (rT_en0_reg4 && opcode_reg3[7]) data_gen[rTMem_reg2[5:0]][65:32]<=pppoe_reg2[65:32];
-              if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[rTMem_reg3[5:0]][65:32]<=fsconv(dataMF_reg,dataBI_reg3[24:23])>>32;
-              if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[rTMem_reg3[5:0]][31:0]<=fsconv(dataMF,dataBI_reg2[24:23]);
+              if (rT_en_reg2) data_retFL[fu][LQ_reg]<=opcode_reg2[7:5]==0 ? {dataMF[65:63],~|dataMF[62:53]} : {chk ? res[63] : c64,chk ? ~res[63]:s64,res[63],~|res[63:0],1'b0};
+              if (rT_en_reg2 && opcode_reg2[10] && ~|opcode_reg2[7:6]) data_retFL[fu][LQ_reg]<=opcode_reg2[9]==0 ? {res_loop0,res_loop2,res_loop2,res_loop1,1'b0} : {res_cloop0,res_cloop2,res_cloop2,res_cloop1,1'b0};
+              if (rT_en_reg5 &&(opcode_reg4[7:5]==0 && opcode_reg4[4:0]==1 && dataBI_reg4[20])) data_fp[fu][rTMem_reg4[5:0]]<=dataBI_reg4[22] ? dataMF_reg2 : xaddres;
+              if (rT_en_reg5 &&(opcode_reg4[7:5]==0 && opcode_reg4[4:0]==1 && dataBI_reg4[21])) data_fp[fu][rTMem_reg4[5:0]]<=xmulres;
+              if (rT_en_reg5 &&(opcode_reg4[7] )) data_fp[fu][rTMem_reg4[5:0]]<=flconv(pppoe_reg3[fu],opcode_reg4[8]);
+              if (rT_en0_reg4 && opcode_reg3[5:3]==7) data_gen[fu][rTMem_reg3[5:0]][65:32]<={1'b0,res_mul[63],res_mul[63:32]};
+              if (rT_en0_reg4 && opcode_reg3[7]) data_gen[fu][rTMem_reg2[5:0]][65:32]<=pppoe_reg2[fu][65:32];
+              /* verilator lint_off WIDTHTRUNC */
+              if (rT_en0_reg3 && opcode_reg2[7:0]==1 && dataBI_reg2[22]) data_gen[fu][rTMem_reg3[5:0]][65:32]<=fsconv(dataMF_reg,dataBI_reg3[24:23])>>32;
+              if (rT_en0_reg2 && opcode_reg[7:0]==1 && dataBI_reg[22]) data_gen[fu][rTMem_reg3[5:0]][31:0]<=fsconv(dataMF,dataBI_reg2[24:23]);
+              /* verilator lint_on WIDTHTRUNC */
               if (rT_en0_reg4 && fu==idj0p) begin
-                   jcond0[LQ]<=res_reg3;
-                   jcondx0[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond;
-                   if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ]+{data_cloop[rT_reg4[5:0]],5'b1};
-                   if (opcode_reg4[8]) jcond0[LQ]<=srcIPOff[LQ]+res_reg3;
-                   jcc0[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataMF_reg3[65:63],~|dataMF_reg3[62:53]} : {chk_reg3 ? res_reg3[63] : c64_reg3,chk_reg3 ? ~res_reg3[63]:s64_reg3,res_reg3[63],~|res_reg3[63:0],1'b0};
+                   jcond0[LQ]<=res_reg3[fu][41:0];
+                   jcondx0[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond_reg3[3:0];
+                   /* verilator lint_off WIDTHEXPAND */
+                   if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ][41:0]+{data_cloop[rT_reg4[5:0]],5'b1};
+                   /* verilator lint_on WIDTHEXPAND */
+                   if (opcode_reg4[8]) jcond0[LQ]<=srcIPOff[LQ][41:0]+res_reg3[fu][41:0];
+                   jcc0[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {1'b0,dataMF_reg3[63],dataMF_reg3[63],~|dataMF_reg3[62:53],1'b0} : {chk_reg3 ? res_reg3[fu][63] : c64_reg3,chk_reg3 ? ~res_reg3[fu][63]:s64_reg3,res_reg3[fu][63],~|res_reg3[fu][63:0],1'b0};
                end
                if (rT_en0_reg4 && fu==idj1p) begin
-                   jcond1[LQ]<=res_reg3;
-                   jcondx1[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond;
-                   if (opcode_reg4[10]) jcond1[LQ]<=srcIPOff[LQ]+data_cloop[rT_reg4[5:0]];
-                   if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ]+res_reg3;
-                   jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {dataMF_reg3[65:63],~|dataMF_reg3[62:53]} : {chk_reg3 ? res_reg3[63] : c64_reg3,chk_reg3 ? ~res_reg3[63]:s64_reg3,res_reg3[63],~|res_reg3[63:0],1'b0};
+                   jcond1[LQ]<=res_reg3[fu][41:0];
+                   jcondx1[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond_reg3[3:0];
+                   /* verilator lint_off WIDTHEXPAND */
+                   if (opcode_reg4[10]) jcond1[LQ]<=srcIPOff[LQ][41:0]+{data_cloop[rT_reg4[5:0]],5'b1};
+                   /* verilator lint_on WIDTHEXPAND */
+                   if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ][41:0]+res_reg3[fu][41:0];
+                   jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {1'b0,dataMF_reg3[63],dataMF_reg3[63],~|dataMF_reg3[62:53],1'b0} : {chk_reg3 ? res_reg3[fu][63] : c64_reg3,chk_reg3 ? ~res_reg3[fu][63]:s64_reg3,res_reg3[fu][63],~|res_reg3[fu][63:0],1'b0};
                end
                if (insert_en && (fu>=insn_clopp[13:10] && IP[4:0]==insn_clopp[19:15])|
                     (fu>=insn_clopp[23:10] && IP[4:0]==insn_clopp[29:25])  ) begin
                   data_op[fu][alloc][7:6]=instr[39:38];
                   if (&instr[39:38]) data_op[fu][alloc][7:6]=2'b0;
                  if (instr[39:38]==2'b10 && instr[33]|instr[34]&~instr[12]) begin
-                   data_imm[fu][alloc]=&instr[34:33] ? ret_cookie_reg3 : {{41{instr[24]}}^{17'b0,insn_clopp[31],13'b0},instr[24:14],instr[11:0]};
+                   data_imm[fu][alloc]=&instr[34:33] ? {22'b0,ret_cookie_reg3} : {22'b0,{{42{instr[24]}}^{5'b0,insn_clopp[31],13'b0,instr[24:14],instr[11:0]}}};
                    data_op[fu][alloc][11]<=instr[13]; //1=call 0=jump
                    data_cond[fu][alloc]={instr[37:35],instr[32]};
                    data_cond2[fu][alloc]=instr[31:28];
                    data_op[fu][alloc][10:8]=instr[27:25];
-                   if (instr[34:33]==2 && !instr[25]) data_imm[fu][alloc]<=instr[1:0];
+                   if (instr[34:33]==2 && !instr[25]) data_imm[fu][alloc]<={62'b0,instr[1:0]};
                    if (instr[25]) data_imm[fu][alloc]<=0;
                    data_op[7:0] = instr[25] || instr[34:33]==2 ? 0 : 3;
-                   if (instr[27]) data_loopstop=idxpreda_has_reg3 ? idxpreda_reg3 : idxpredb_has_reg3 ? idxpredb_reg3 : 63;
+                   if (instr[27]) data_loopstop[PHY]=idxpreda_has_reg3 ? idxpreda_reg3 : idxpredb_has_reg3 ? idxpredb_reg3 : 63;
                   end else if (^instr[39:38]) begin
                       data_op[fu][alloc][10:8]=instr[37:35];
                       data_op[fu][alloc][5]=instr[34];
                       data_op[fu][alloc][4:0]=5'b1;
                       data_op[fu][alloc][11]=instr[34];
                       data_imm[fu][alloc]={{52{instr[24]}},instr[24:13]};
-                      data_imm2[fu][alloc]=instr[32:25];
+                      data_imm2[fu][alloc]={12'b0,instr[32:25]};
                     if (!instr[12]) data_imm[fu][alloc]={{44{instr[32]}},instr[32:13]};
-                      if (instr[12]) data_phy[alloc]=vec_reg3 ? 36 : PHY;
-                      else data_phy[alloc]=0;
+                      if (instr[12]) data_imm_phy[fu][alloc]=vec_reg3 ? 36 : PHY;
+                      else data_imm_phy[fu][alloc]=0;
                     if (!instr[34]) begin
                         data_imm[fu][alloc]=- 64'b1<<instr[36:35];
                         data_imm2[fu][alloc]=instr[32:13];
-                        data_phy[alloc]=1;
+                        data_imm_phy[fu][alloc]=1;
                     end
                   end
                   if (&instr[39:38]) begin
@@ -1298,18 +1310,19 @@ generate
                       data_op[fu][alloc][8]=1'b0;
                       if (rst_reg5 || IP_reg4[41:5]==1) data_imm[fu][alloc]<={8'h0,7'h7f,6'd36,43'b0};
                       else if (irqload_reg5) data_imm[fu][alloc]<={15'b0,6'd63,1'b0,IP_reg4};
-                      else if (IP_reg4[42]) data_imm[fu][alloc]={spgcookie({instr[17:15],instr[8:4]}),4'b0,instr[32:15],instr[8:4],17'b0};
+                      else if (IP_reg4[41:39]==3'b110) data_imm[fu][alloc]={spgcookie({instr[17:15],instr[8:4]}),3'b0,instr[32:15],instr[8:4],17'b0};
                       else data_imm[fu][alloc]<={8'h0,7'h1,6'd3,43'b0};
                     end  
                   end
                   if (!|instr[39:38]) begin
                     data_op[fu][alloc][4:0]={instr[37:34],instr[12]};
                       data_op[fu][alloc][5]=instr[37:34]==0 || instr[37:34]==8 && !instr[12] ? instr[26] /*fpuinsn*/ : 1'b1;
-                      data_cond[fu][alloc][3:0]=instr[32:27];
+                      data_cond[fu][alloc]=instr[32:29];
+                      
                     data_op[fu][alloc][8]=1'b0;
-                    data_imm[fu][alloc]={{20{instr[26]}},instr[26:14],instr[11:8],18'b0};
+                    data_imm[fu][alloc]={{27{instr[28]}},instr[28:14],instr[11:8],18'b0};
                       if ({instr[37:34],instr[14]}==19) begin
-                        data_imm[fu][alloc]={{30{instr[26]}},instr[26:25],{20{instr[24]}},instr[24:14]};
+                        data_imm[fu][alloc]={{29{instr[28]}},instr[28:25],{20{instr[24]}},instr[24:14]};
                         data_op[fu][alloc][4:0]=2;
                       end
                   end
@@ -1341,7 +1354,7 @@ generate
                        ret_is_alu[insi]<=1'b1;
                        //rTMem[insi]<=alloc;
                   end
-                   data_retFL[insi]<=1;
+                   data_retFL[fu][insi]<=1;
                    rdyA[fu][alloc]<=rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? insn_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : insn_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[7:4] && inssr[fuZ][39:38]==2)
