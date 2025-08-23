@@ -218,6 +218,15 @@ generate
   reg [35:0][11:0] wstall_reg;
   reg [35:0][11:0] aligned;
   wire [35:0][11:0][65:0] xdataA;
+  wire [35:0][36:0]  rdaddr0;
+  wire [35:0][8*66+4:0]  rddata;
+  wire [35:0]  rden_in;
+  wire [35:0][36:4]  rdaddr;
+  wire [35:0] rden_out;
+  wire [35:0][8*66+4:0]  wrdata;
+  wire [35:0]  wren_in;
+  wire [35:0][36:4]  wraddr;
+  wire [35:0] wren_out;
 
   always @(posedge clk) begin
     missus_reg<=missus;
@@ -228,7 +237,8 @@ generate
   end
   wire memstall;
   memblk blkmem(clk,rst,random,memstall,
-    rdaddr0[36:0],
+    rdaddr0[36:4],
+    rdaddr0[3:0],
     rddata,
     rden_in,
     rdaddr,
@@ -1426,16 +1436,16 @@ generate
       missx_en[2:0],
       missx_addr[2:0],
       missx_phy[2:0],
-      rden_in,
-      rdaddr0[36:0],
-      rdaddr0[38],
-      rdaddr0[37],
-      wren_in,
-      wrdata,
-      rddata,
-      rden_in_out,
-      rddata[8*66],
-      rddata[8*66+1+:4],
+      rden_in[PHY],
+      rdaddr0[PHY][36:0],
+      rdaddr0[PHY][38],
+      rdaddr0[PHY][37],
+      wren_in[PHY],
+      wrdata[PHY],
+      rddata[PHY],
+      rden_out[PHY],
+      rddata[PHY][8*66],
+      rddata[PHY][8*66+1+:4],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
       clk,rst,
@@ -1455,16 +1465,16 @@ generate
       missx_en[5:3],
       missx_addr[5:3],
       missx_phy[5:3],
-      rden_in,
-      rdaddr0[36:0],
-      rdaddr0[38],
-      rdaddr0[37],
-      wren_in,
-      wrdata,
-      rddata,
-      rden_in_out,
-      rddata[8*66],
-      rddata[8*66+1+:4],
+      rden_in[PHY],
+      rdaddr0[PHY][36:0],
+      rdaddr0[PHY][38],
+      rdaddr0[PHY][37],
+      wren_in[PHY],
+      wrdata[PHY],
+      rddata[PHY],
+      rden_out[PHY],
+      rddata[PHY][8*66],
+      rddata[PHY][8*66+1+:4],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
       clk,rst,
@@ -1484,16 +1494,16 @@ generate
       missx_en[8:6],
       missx_addr[8:6],
       missx_phy[8:6],
-      rden_in,
-      rdaddr0[36:0],
-      rdaddr0[38],
-      rdaddr0[37],
-      wren_in,
-      wrdata,
-      rddata,
-      rden_in_out,
-      rddata[8*66],
-      rddata[8*66+1+:4],
+      rden_in[PHY],
+      rdaddr0[PHY][36:0],
+      rdaddr0[PHY][38],
+      rdaddr0[PHY][37],
+      wren_in[PHY],
+      wrdata[PHY],
+      rddata[PHY],
+      rden_out[PHY],
+      rddata[PHY][8*66],
+      rddata[PHY][8*66+1+:4],
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
       clk,rst,
@@ -1513,16 +1523,16 @@ generate
       missx_en[11:9],
       missx_addr[11:9],
       missx_phy[11:9],
-      rden_in,
-      rdaddr0[36:0],
-      rdaddr0[38],
-      rdaddr0[37],
-      wren_in,
-      wrdata,
-      rddata,
-      rden_in_out,
-      rddata[8*66],
-      rddata[8*66+1+:4],
+      rden_in[PHY],
+      rdaddr0[PHY][36:0],
+      rdaddr0[PHY][38],
+      rdaddr0[PHY][37],
+      wren_in[PHY],
+      wrdata[PHY],
+      rddata[PHY],
+      rden_out[PHY],
+      rddata[PHY][8*66],
+      rddata[PHY][8*66+1+:4],
       shareX);
       end
       reg [9:0][38:0] tr;
@@ -1565,25 +1575,25 @@ generate
           end
             // assign poo_c2[2*fuB+:2]=poo_c[fuB*66+64+:2];
              always @(posedge clk) begin
-                if (line==insetrh_addr[0][5:0] && insetrh_expen | hway)
+                if (line==insetrh_addr[0][5:0] && insetrh_expen | |hway)
                   tag[insetrh_addr[0][6]][38:37]<=0;
-                if (line==insetrv_addr[0][5:0] && insetrv_expen | vway)
+                if (line==insetrv_addr[0][5:0] && insetrv_expen | |vway)
                   tag[insetrv_addr[0][6]][38:37]<=0;
-                if (way==random && insetrh_phy[PHY] && ~|hway || hway[way][0]) begin
-                  if (line==insetrh_addr[5:0] && insetrh_phy[PHY] && ~insetrh_expen) begin
-                      tag[insetrh_addr[6]]<={insetrh_exclusive,1'b1,insetrh_addr[36:0]};
-                      expunh_data<=line_data[8*insetrh_addr[6]+:8];
-                      expunh_addr<={tag[insetrh_addr[6]][38],~tag[insetrh_addr[6]][38],tag[insetrh_addr[6]][36:0]};
+                if (way==random[2:0] && insetrh_phy[PHY] && ~|hway || hway[way][0]) begin
+                  if (line==insetrh_addr[0][5:0] && insetrh_phy[PHY] && ~insetrh_expen) begin
+                      tag[insetrh_addr[0][6]]<={insetrh_exclusive,1'b1,insetrh_addr[0][36:0]};
+                      expunh_data<=line_data[8*insetrh_addr[0][6]+:8];
+                      expunh_addr<={tag[insetrh_addr[0][6]][38],~tag[insetrh_addr[0][6]][38],tag[insetrh_addr[0][6]][36:0]};
                       expunh_phy<=1;
-                      line_data[8*insetrh_addr[6]+:8]<=insetrh_data;
+                      line_data[8*insetrh_addr[0][6]+:8]<=insetrh_data;
                   end
                 end
-                if (way==random && insetrv_phy[PHY] && ~|vway || vway[way][0]) begin
-                  if (line==insetrv_addr[5:0] && insetrv_phy[PHY] && ~insetrv_expen) begin
-                      tag[insetrv_addr[6]]<={insetrv_exclusive,1'b1,insetrv_addr[36:0]};
-                      line_data[8*insetrv_addr[6]+:8]<=insetrv_data;
-                      expunv_data<=line_data[8*insetrv_addr[6]+:8];
-                      expunv_addr<={tag[insetrh_addr[6]][38],~tag[insetrh_addr[6]][38],tag[insetrv_addr[6]][36:0]};
+                if (way==random[2:0] && insetrv_phy[PHY] && ~|vway || vway[way][0]) begin
+                  if (line==insetrv_addr[0][5:0] && insetrv_phy[PHY] && ~insetrv_expen) begin
+                      tag[insetrv_addr[0][6]]<={insetrv_exclusive,1'b1,insetrv_addr[0][36:0]};
+                      line_data[8*insetrv_addr[0][6]+:8]<=insetrv_data;
+                      expunv_data<=line_data[8*insetrv_addr[0][6]+:8];
+                      expunv_addr<={tag[insetrv_addr[0][6]][38],~tag[insetrv_addr[0][6]][38],tag[insetrv_addr[0][6]][36:0]};
                       expunv_phy<=1;
                  end
              end
@@ -1594,9 +1604,9 @@ generate
                 wire [63:0] dummy64;
                 wire [63:0] dummy64B;
                 integer byte_;
-                /* vxerilator lint_off WIDTHTRUNC */
+                /* verilator lint_off WIDTHTRUNC */
                 assign poo_e[fuB][63:0]={poo_u[fuB][63:0],line_data[resA_reg[fuB][6:3]][63:0]}>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
-                /* vxerilator lint_on WIDTHTRUNC */
+                /* verilator lint_on WIDTHTRUNC */
                 assign {poo_e[fuB][65:64],dummy64}=line_data[resA_reg[fuB][6:3]]>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
                 assign poo_u[fuB]=opcode_reg[fuB][5] ? 0 : line_data[res_reg[fuB][6:3]];
                 if (fuB<8) assign poo_c[64*fuB+:64]=line_data[{IP[8],fuB[2:0]}][63:0];
@@ -1615,7 +1625,7 @@ generate
               //  assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
                 always @(posedge clk) begin
                   poo_mask_reg<=poo_mask[65:0];
-                  /* vxerilator lint_off WIDTHEXPAND */
+                  /* verilator lint_off WIDTHEXPAND */
                   if (fuB==ids0_reg || fuB==ids1_reg)
                     for (byte_=0;byte_<8;byte_=byte_+1)
                       if (anyhitW[fuB][way] && is_write_reg[fuB] && resX[fuB][12:7]==line[5:0] && byte_<write_size_reg[fuB]); 
@@ -1625,7 +1635,7 @@ generate
                 //        if (][way] && is_write_reg[fuB] && funit[fuB].resW[2:0]==line[5:3] && byte_<write_size_reg[fuB] &&
                 //            resX[fuB][63:9]=='1); 
                 //            line_data[line][funit[fuB].resW[6:3]]<=funit[fuB].resW[8*funit[fuB].resW[2:0]+:8];
-                /* vxerilator lint_on WIDTHEXPAND */
+                /* verilator lint_on WIDTHEXPAND */
                 end
              end
           end
