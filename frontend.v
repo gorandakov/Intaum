@@ -1220,7 +1220,7 @@ generate
                   if (rT_en && rdyFL1[fu3][sch]==rT && rdy[fu3][sch[8]]) rdy[fu3][sch[9]]=1'b1;
               end
               aligned[PHY][fu]<=dreqmort_flags[4][LDI]|dreqmort_flags[2][LDI];
-              if (&aligned && !wstall && !wstall_reg) begin
+              if (&aligned && ~|wstall && ~|wstall_reg) begin
                 dreqmort_flags[4][LDI_reg]<=1'b1;
                 dreqmort_flags[7][LDI_reg]<=lderror;
                 LDI_reg<=LDI;
@@ -1237,11 +1237,11 @@ generate
               insn_isptr<=pppoc2_reg2;
               if (rT_en_reg && opcode[10] | opcode[5]) data_gen[fu][rT_reg[5:0]][31:0]<=res[31:0];
               if (rT_en0_reg3 && opcode_reg2[7]) data_gen[fu][rTMem_reg2[5:0]][31:0]<=pppoe_reg[fu][31:0];
-              if (rT_en0_reg3 && opcode_reg2[5:3]==35) data_gen[fu][rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
+              if (rT_en0_reg3 && opcode_reg2[5:3]==7) data_gen[fu][rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
               if (rT_en_reg2 && opcode_reg2[10] | opcode_reg2[5]) data_gen[fu][rT_reg2[5:0]][65:32]<={chk ? res[63] : c64,chk ? ~res[63]:s64,res[63:32]}&{34{opcode_reg[20]}};
-              if (rT_en_reg2) data_genFL[rT_reg2[5:0]][3:0]<=opcode_reg2[7:0]==1 && dataBI_reg2[22] ? {dataMF_reg[65:63],~|dataMF_reg[62:53]} : opcode_reg2[7] ? {1'b0,pppoe_reg3[fu][63],pppoe_reg3[fu][63],~|pppoe_reg3[fu][63:0]}:
-                  {chk_reg2 ? res_reg2[63] : c64_reg2,chk_reg2 ? ~res_reg2[63]:s64_reg2,res_reg2[63],~|res_reg2[63:0]};
-              if (rT_en_reg2) data_retFL[fu][LQ_reg]<=opcode_reg2[7:5]==0 ? {dataMF[65:63],~|dataMF[62:53]} : {chk ? res[63] : c64,chk ? ~res[63]:s64,res[63],~|res[63:0],1'b0};
+              if (rT_en_reg2) data_genFL[fu][rT_reg2[5:0]][3:0]<=opcode_reg2[7:0]==1 && dataBI_reg2[22] ? {1'b0,dataMF_reg[63],dataMF_reg[63],~|dataMF_reg[62:53]} : opcode_reg2[7] ? {1'b0,pppoe_reg3[fu][63],pppoe_reg3[fu][63],~|pppoe_reg3[fu][63:0]}:
+                  {chk_reg2 ? res_reg2[fu][63] : c64_reg2,chk_reg2 ? ~res_reg2[fu][63]:s64_reg2,res_reg2[fu][63],~|res_reg2[fu][63:0]};
+              if (rT_en_reg2) data_retFL[fu][LQ_reg]<=opcode_reg2[7:5]==0 ? {1'b0,dataMF[63],dataMF[63],~|dataMF[62:53],1'b0} : {chk ? res[63] : c64,chk ? ~res[63]:s64,res[63],~|res[63:0],1'b0};
               if (rT_en_reg2 && opcode_reg2[10] && ~|opcode_reg2[7:6]) data_retFL[fu][LQ_reg]<=opcode_reg2[9]==0 ? {res_loop0,res_loop2,res_loop2,res_loop1,1'b0} : {res_cloop0,res_cloop2,res_cloop2,res_cloop1,1'b0};
               if (rT_en_reg5 &&(opcode_reg4[7:5]==0 && opcode_reg4[4:0]==1 && dataBI_reg4[20])) data_fp[fu][rTMem_reg4[5:0]]<=dataBI_reg4[22] ? dataMF_reg2 : xaddres;
               if (rT_en_reg5 &&(opcode_reg4[7:5]==0 && opcode_reg4[4:0]==1 && dataBI_reg4[21])) data_fp[fu][rTMem_reg4[5:0]]<=xmulres;
@@ -1631,7 +1631,7 @@ generate
                 assign {poo_mask}=(130'h3ffff_ffff_ffff_ffff_00<<(ldsize_reg[fuB][2:0]*8))&{66'h3ffff_ffff_ffff_ffff,64'b0};
                 assign pppoe[fuB]=anyhit[fuB][way]   ? 
                    poo_e_reg[fuB] & poo_mask_reg[65:0] : 'z;
-                assign anyhitU[fuB][way]=line==res_reg2[12:7] ? tag[res_reg2[fuB][6]][37]&&tag[res_reg2[fuB][6]][36:0]=={res_reg[fuB][42:32],res_reg2[fuB][31:6]} : 1'bz;
+                assign anyhitU[fuB][way]=line==res_reg2[fuB][12:7] ? tag[res_reg2[fuB][6]][37]&&tag[res_reg2[fuB][6]][36:0]=={res_reg[fuB][42:32],res_reg2[fuB][31:6]} : 1'bz;
                 assign anyhit[fuB][way] =line==resA_reg2[12:7] ? tag[resA_reg2[fuB][6]][37]&&tag[resA_reg2[fuB][6]][36:0]=={resA_reg[fuB][42:32],resA_reg2[fuB][31:6]} : 1'bz;
                 assign anyhitW[fuB][way]=line==resX[12:7] ? tag[resX[fuB][6]][38]&&tag[resX[fuB][6]][36:0]==resX[fuB][42:6] : 1'bz;
                 assign anyhitE[fuB][way]=line==srcIPOff[reti_reg][11:6] ? tag[srcIPOff[reti_reg][5]][38]&&tag[srcIPOff[reti_reg][5]][36:0]==srcIPOff[reti_reg][41:5] : 1'bz;
