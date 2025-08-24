@@ -735,6 +735,7 @@ generate
           reg signed [65:0] dataBIXS_reg4;
           reg signed [65:0] dataBI_reg4;
           wire [5:0] data_phy;
+          reg [5:0] data_phy_reg;
           wire [63:0] res;
           wire [63:0] res_logic;
           wire [63:0] res_shift;
@@ -853,8 +854,8 @@ generate
 
           assign rT_en0=indexLSU_ALU_has;
           assign rT_en=opcode[5] && rT_en0;
-          assign ldsize=1<<opcode[9:8]-1;
-          assign ldsizes=ldsize & {3{opcode[10]}};
+          assign ldsize[fu]=1<<opcode[9:8]-1;
+          assign ldsizes[fu]=ldsize[fu] & {3{opcode[10]}};
           assign LQ=opcode[19:14];
           assign LQX=opcodex[19:14];
           assign op_anx=opcode[7:5]==0 && |opcode[10:9];
@@ -862,53 +863,65 @@ generate
          // assign jindir=fu!=10 && !opcode[10];
           assign dataA[31:0]=data_gen[rA[9:6]][rA[5:0]][31:0] & {32{opand}};
           assign dataB[31:0]=data_gen[rB[9:6]][rB[5:0]][31:0];
-          assign dataBI[31:0]=opcode[11] ?data_imm2[fu][rT[9:6]][rT[5:0]][9:0]*(data_phy): data_imm[fu][rT[9:6]][rT[5:0]][31:0];
-          assign data_phy[31:0]=data_imm_phy[rT[9:6]][rT[5:0]][31:0];
+          /* verilator lint_off WIDTHTRUNC */
+          assign dataBI[31:0]=opcode[11] ?data_imm2[rT[9:6]][rT[5:0]][9:0]*(data_phy): data_imm[rT[9:6]][rT[5:0]][31:0];
+          /* verilator lint_on WIDTHTRUNC */
+          assign data_phy[5:0]=data_imm_phy[rT[9:6]][rT[5:0]][5:0];
           assign dataBX[31:0]=data_gen[rBX[9:6]][rBX[5:0]][31:0];
           assign dataBIX[31:0]=opcode[0] || opcode[7:0]==2 ? dataBI[31:0] : dataBX[31:0];
-          assign {c32h,dataBIXH[31:0]}=dataBI_reg[31:0]+({32{opcode[11]}}&data_imm[fu][rT[9:6]][rT[5:0]][31:0]);
-          assign dataA[63:32]=data_gen[rA_reg[9:6]][rA_reg[5:0]][63:32] & {34{opand_reg}};
-          assign dataB[63:32]=data_gen[rB_reg[9:6]][rB_reg[5:0]][63:32];
+          assign dataBIXH[31:0]=dataBI_reg[31:0]+({32{opcode[11]}}&data_imm[rT[9:6]][rT[5:0]][31:0]);
+          assign dataA[65:32]=data_gen[rA_reg[9:6]][rA_reg[5:0]][65:32] & {34{opand_reg}};
+          assign dataB[65:32]=data_gen[rB_reg[9:6]][rB_reg[5:0]][65:32];
           assign dataMF[63:0]=data_fp[rA_reg3[9:6]][rA_reg2[5:0]][63:0];
           assign dataBF[63:0]=data_fp[rB_reg3[9:6]][rB_reg2[5:0]][63:0];
-          assign dataBI[63:32]=data_imm[fu][rT_reg[9:6]][rT_reg[5:0]][57:0]*(data_phy)>>32;
+          /* verilator lint_off WIDTHTRUNC */
+          assign dataBI[63:32]=opcode[11] ? data_imm[rT_reg[9:6]][rT_reg[5:0]][63:32] : data_imm2[rT_reg[9:6]][rT_reg[5:0]]*(data_phy_reg)>>32;
+          /* verilator lint_on WIDTHTRUNC */
           assign dataBX[63:32]=data_gen[rBX_reg[9:6]][rBX_reg[5:0]][63:32];
           assign dataBIX[63:32]=opcode_reg[0] || opcode_reg[7:0]==2 ? dataBI[63:32] : dataBX[63:32];
-          assign dataBIXH[63:32]=dataBI[63:32]+{32{dataBIXH[31]}}+c32h;
+          /* verilator lint_off WIDTHEXPAND */
+          /* verilator lint_off WIDTHTRUNC */
+          assign dataBIXH[63:32]=({dataBI[63:32],dataBI_reg[31:0]}+({32{opcode[11]}}&data_imm[rT[9:6]][rT[5:0]][31:0]))>>32;
+          /* verilator lint_on WIDTHTRUNC */
+          /* verilator lint_on WIDTHEXPAND */
           assign dataFL=data_genFL[rFL[9:6]][rFL[5:0]][3:0];
           assign dataFL2=data_genFL[rFL2[9:6]][rFL2[5:0]][3:0];
           assign cond_tru=flcond(cond[3:0],dataFL);
           assign cond_xtru=flcond(cond2[3:0],dataFL2);
           assign {c32,res[31:0]}=opcode[7:0]==0 && cond_tru && !dataBI[32] ?
-          dataA[31:0]+dataB[31:0]^{32{dataBI[33]}}+dataBI[33] : 'z;
+          dataA[31:0]+dataB[31:0]^{32{dataBI[33]}}+{31'b0,dataBI[33]} : 'z;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==0 && cond_tru_reg ?
              {dataA[63],dataA[63:32]}+{dataBI_reg[34],dataB[63]&dataBI_reg[34],dataB[63:32]}^
-          {32{dataBI_reg[33]}}+(c32_reg) : 'z;
+          {33{dataBI_reg[33]}}+{32'b0,c32_reg} : 'z;
           assign {c32,res[31:0]}=(opcode[7:2]==1 || opcode[4:3]==1) 
                && cond_tru  ?
              res_shift[32:0] : 'z;
-          assign {s64,c64,res[63:32]}=(opcode_reg[7:2]==1 || opcode_reg[4:3]==1) 
+          assign {c64,s64,res[63:32]}=(opcode_reg[7:2]==1 || opcode_reg[4:3]==1) 
               && cond_tru_reg ?
-             {1'b0,res_shift[64:32]}&{33{opcode[7:2]==1}}|{33{opcode[7:2]!=1 && res_shift_reg[31]}} : 'z;
+             {1'b0,res_shift[63],res_shift[63:32]}&{34{opcode[7:2]==1}}|{34{opcode[7:2]!=1 && res_shift_reg[31]}} : 'z;
           assign {c32,res[31:0]}=opcode[4:3]==2 && cond_tru ?
              {1'b0,res_logic[31:0]} : 'z;
           assign isand=opcode[7:1]==8;
           assign {c64,s64,res[63:32]}=opcode_reg[4:3]==2 && cond_tru_reg ?
-          {dataA_reg[65:64]|{!isand_reg|!chk,1'b0},res_logic[64:32]} : 'z;
+          {dataA_reg[65:64]|{!isand_reg|!chk,1'b0},res_logic[63:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==1 && cond_tru ?
           {1'b0,val_sxt[31:0]} : 'z;
-          assign {s64,c64,res[63:32]}=opcode_reg[7:0]==1 && cond_tru_reg ?
-          {val_sxt[63],val_sxt[64:32]} : 'z;
+          assign {c64,s64,res[63:32]}=opcode_reg[7:0]==1 && cond_tru_reg ?
+          {1'b0,val_sxt[63],val_sxt[63:32]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
-          assign {c32a,resA[fu][31:0]}=dataA[31:0]+dataBI[31:0]+({32{opcode[11]}}&data_imm[fu][rT[9:6]][rT[5:0]][31:0]);
-          assign resA[fu][63:32]=dataA_reg[63:32]+{32{resA_reg[fu][31]}}+c32a;
+          /* verilator lint_off WIDTHEXPAND */
+          assign {c32a,resA[fu][31:0]}=dataA[31:0]+(dataBI[31:0]+({32{opcode[11]}}&data_imm[rT[9:6]][rT[5:0]][31:0]));
+          /* verilator lint_off WIDTHTRUNC */
+          assign resA[fu][63:32]=(dataA_reg[63:0]+({dataBI[63:32],dataBI_reg[31:0]}+({32{opcode_reg[11]}}&data_imm[rT[9:6]][rT[5:0]][31:0])))>>32;
+          /* verilator lint_on WIDTHTRUNC */
           assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[32])&& cond_tru_reg ?
-            {dataA[63],dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[31] :c32_reg) : 'z;
+            {dataA[63],dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[fu][31] :c32_reg) : 'z;
+          /* verilator lint_on WIDTHEXPAND */
           assign {c32,res[31:0]}=opcode[7:0]==3 && opcode[8] && cond_tru ?
-            dataBI[31:0] : 'z;
+            {1'b0,dataBI[31:0]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && ~opcode[8] && cond_tru ?
-            dataB[31:0] : 'z;
+            {1'b0,dataB[31:0]} : 'z;
           assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand)
              || ~dataA_reg[65]^dataA_reg[64] || ^dataA_reg[64:63];
           assign chkA=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIXH[42:32],dataBIXH_reg[31:0]},opcode_reg[11],isand)
@@ -1055,6 +1068,7 @@ generate
               rB_reg3<=rB_reg2;
               rBX_reg3<=rBX_reg2;
               rT_reg3<=rT_reg2;
+              data_phy_reg<=data_phy;
               rTMem_reg3<=rTMem_reg2;
               opcode_reg3<=opcode_reg2;
               opcodex_reg3<=opcodex_reg2;
