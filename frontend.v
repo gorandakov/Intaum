@@ -188,7 +188,7 @@ generate
 
   wire except;
   wire except_ldconfl;
-  wire [1:0][42:0] retIP;
+  wire [1:0][41:0] retIP;
   wire [41:0] retSRCIP;
   reg [41:0] retSRCIP_reg; 
   wire [31:0] random;
@@ -261,7 +261,7 @@ generate
       reg [41:0] IP_reg2;
       reg [41:0] IP_reg3;
       reg [41:0] IP_reg4;
-      reg [13:0] GHT;
+      reg [15:0] GHT;
       wire ccmiss;
       reg lderror;
       integer ldi;
@@ -328,7 +328,7 @@ generate
       wire [1:0] jen;
       //reg [63:0][35:0] miss;
       //reg [63:0][11:0] missus;
-      reg [255:0][85:0] tbufl;
+      reg [1:0][255:0][68:0] tbufl;
       wire [11:0] retire;
       reg [11:0] retire_reg;
       reg [63:0][3:0] jcondx0;
@@ -484,11 +484,11 @@ generate
       bit_find_index j1pred(~pred_en_reg2[1][35:0],idxpredb,idxpredb_has);
       assign {pred_en[1][PHY],pred_en[0][PHY]}=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
       assign tbuf=tbufl[IP[13:5]];
-      assign jen[0]=tbuf[0][43] && IP[42:4]==tbuf[0][82:44];
-      assign jen[1]=tbuf[1][43] && IP[42:4]==tbuf[1][82:44];
-      assign iscall=jen[0] && tbuf[0][83] || jen[1] && tbuf[1][83];
-      assign isret=jen[0] && tbuf[0][84] || jen[1] && tbuf[1][84];
-      assign ucjmp=jen[0] && tbuf[0][85] || jen[1] && tbuf[1][85];
+      assign jen[0]=tbufl[0][IP[12:4]][65:37]==IP[41:13];
+      assign jen[1]=tbufl[1][IP[12:4]][65:37]==IP[41:13];
+      assign iscall=jen[0] && tbufl[0][IP[12:4]][66] || jen[1] && tbufl[1][IP[12:4]][66];
+      assign isret=jen[0] && tbufl[0][IP[12:4]][67] || jen[1] && tbufl[1][IP[12:4]][67];
+      assign ucjmp=jen[0] && tbufl[0][IP[12:4]][68] || jen[1] && tbufl[1][IP[12:4]][68];
       assign jtaken[0][PHY]=&retire_reg[11:0] && flcond(jcondx0[reti_reg],jcc0[reti_reg][4:1]);
       assign jtaken[1][PHY]=&retire_reg[11:0] && flcond(jcondx1[reti_reg],jcc1[reti_reg][4:1]);
       assign jmpmispred[0][PHY]=&retire_reg[11:0] && jtaken[0][PHY]^data_jpred[reti_reg][0];
@@ -589,33 +589,36 @@ generate
           IP<=irqload ? irq_IP : except_ldconfl ? retSRCIP_reg : IP_reg4;
       end else if (&jen[1:0]) begin
         if (is_cloop[1:0]) vec<=1'b1;
-        if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret[0] ? ret_cookie : tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
-        else if (&pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=isret[1] ? ret_cookie : tbuf[1][IP[12:4]][42:0]; if (tbuf[1][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
+        if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret[0] ? ret_cookie : {tbufl[0][IP[12:4]][32:13],IP[12:4],tbufl[0][IP[12:4]][3:0]}; 
+            if (tbufl[0][IP[12:4]][65:37]!=IP[41:13]) tbuf_error<=1'b1; end
+        else if (&pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=isret[1] ? ret_cookie : {tbufl[1][IP[12:4]][32:13],IP[12:4],tbufl[1][IP[12:4]][3:0]}; 
+          if (tbufl[1][IP[12:4]][65:37]!=IP[41:13]) tbuf_error<=1'b1; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+32;  vec<=1'b0; end
       end else if (^jen[1:0]) begin
         if (is_cloop[0]) vec<=1'b1;
-        if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret[0] ? ret_cookie : tbuf[0][IP[12:4]][42:0]; if (tbuf[0][IP[12:0]][123:63]!=IP[63:13]) tbuf_error<=1'b1; end
+        if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret[0] ? ret_cookie : {tbufl[0][IP[12:4]][32:4],IP[12:4],tbufl[0][IP[12:4]][3:0]}; 
+          if (tbufl[0][IP[12:4]][65:37]!=IP[41:13]) tbuf_error<=1'b1; end
         //else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+32; vec<=1'b0; end
       end else begin
           IP=IP+32;
       end
       if (|jretire[0] && except) begin
-          tbufl[0][IP[12:4]]={retSRCIP[63:13],retIP[0][63:13]};
+          tbufl[0][IP[12:4]]={retSRCIP[41:13],retSRCIP[3:0],retIP[0][41:13],retIP[0][3:0]};
           if (|jmpmispred[0]) begin
-              if (random&3==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b1;
-              if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b1;
-              if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b1;
+              if ((random&3)==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b1;
+              if (random[3:0]==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b1;
+              if (random[7:0]==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b1;
               GHT<=retGHT;
               //tbufl[retSRCIP[13:5]][0]={retJPR0,1'b1,retSRCIP,retIPA};
               IP<=|jtaken[0] ? retIP[0] : retSRCIP + 32;
            end
       end else if (|jretire[1] && except) begin
-          tbufl[1][IP[12:4]]={retSRCIP[63:13],retIP[1][63:13]};
+          tbufl[1][IP[12:4]]={retSRCIP[41:13],retSRCIP[3:0],retIP[1][41:13],retIP[1][3:0]};
           if (|jmpmispred[1]) begin
-              if (random&3==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b10;
-              if (random&4'hf==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b10;
-              if (random&8'hff==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b10;
+              if ((random&3)==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b10;
+              if (random[3:0]==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b10;
+              if (random[7:0]==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b10;
               GHT<=retGHT;
             //tbufl[retSRCIP[13:5]][1]={retJPR1,1'b1,retSRCIP,retIPB  };                 
               IP<=|jtaken[1] ? retIP[1] : retSRCIP + 32;
@@ -624,11 +627,11 @@ generate
       end
       assign retIP[0]=jcond0[reti_reg];
       assign retIP[1]=jcond1[reti_reg];
-      assign retire_bndl=insi!=reti;
+      assign retire_bndl=insi[5:0]!=reti;
       bit_find_index12 fst(indexST_has,ids0p,ids0,ids0_has);
       bit_find_index12r fstb(indexST_has,ids1p,ids1,ids1_has);
-      bit_find_index12 fjmp(isJump, idj0p,idj0,idj0_has);
-      bit_find_index12r fjmp2(isJump, idj1p,idj1,idj1_has);
+      bit_find_index12 fjmp(isJump, idj0,idj0p,idj0_has);
+      bit_find_index12r fjmp2(isJump, idj1,idj1p,idj1_has);
       for(fu=0;fu<12;fu=fu+1) begin : funit
           reg [39:0] insn;
           wire chk;
@@ -820,8 +823,8 @@ generate
           wire retire_ret;
           wire [3:0] cond_early;
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
-          bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_idx_has);
-          bit_find_index pfaff_mod({7'b0,missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]]},missphyfirst,);
+          bit_find_index12 index12Miss(index_miss_has_reg2,index12m_pos,index12m_idx,index12m_idx_has);
+          bit_find_index pfaff_mod({28'b0,missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]]},missphyfirst,);
           assign missx_en[PHY]=index12m_idx_reg==fu;
           assign missx_addr[PHY]= fu==index12m_idx_reg ? {1'b0,phy[PHY].dreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 'z;
           assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]] & {36{index12m_idx==fu && missphyfirst[5:0]==PHY[5:0]}},fu[3:0]};
