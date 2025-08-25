@@ -184,7 +184,7 @@ generate
 
   wire [35:0] missx_en;
   wire [35:0][38:0] missx_addr;
-  wire [35:0][37:0] missx_phy;
+  wire [11:0][35:0] missx_phy;
 
   wire except;
   wire except_ldconfl;
@@ -824,16 +824,16 @@ generate
           bit_find_index pfaff_mod({7'b0,missus_reg4[dreqmort[index_miss_reg4][18:11]]},missphyfirst,);
           assign missx_en[PHY]=index12m_idx_reg==fu;
           assign missx_addr[PHY]= fu==index12m_idx_reg ? xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]] : 'z;
-          assign missx_phy[PHY]={missus_reg4[dreqmort[index_miss_reg4][18:11]] && {5{index12m_idx==fu & (missphyfirst==(PHY/4))}},fu[3:0],1'b0};
-          bit_find_index indexLSU_ALU_mod(~wstall & is_flg_ldi ? 1<<ldi2reg[fu][ldi] : rdy[2][fu][63:0]&rdy[1][fu][63:0]&rdy[3][fu][63:0]&rdy[4][fu][63:0]&{64{~index_miss_has && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
-          bit_find_index indexFLG_mod(rdy[3]&{64{~index_miss_has && ~|miss_reg}},indexFLG,indexFLG_has);
+          assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4][18:11]] & {36{index12m_idx==fu && missphyfirst[5:0]==PHY[5:0]}},fu[3:0],1'b0};
+          bit_find_index indexLSU_ALU_mod(~|wstall & is_flg_ldi ? 1<<ldi2reg[fu][ldi] : rdy[2][fu][63:0]&rdy[1][fu][63:0]&rdy[3][fu][63:0]&rdy[4][fu][63:0]&{64{~index_miss_has[fu] && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
+          bit_find_index indexFLG_mod(rdy[3][fu]&{64{~index_miss_has[fu] && ~|miss_reg}},indexFLG,indexFLG_has);
           bit_find_index indexLDU_mod(rdy[0][fu][63:0],indexLDU,indexLDU_has);
-          bit_find_index indexAlloc(free,alloc[5:0],alloc_en);
-          bit_find_indexR indexAlloc2(free,alloc2[5:0],alloc2_en);
-          bit_find_index indexST_mod(dreqmort_flags[4][63:0] && dreqmort_flags[2][63:0] ,indexST,indexST_has);
+          bit_find_index indexAlloc(free[fu],alloc[5:0],alloc_en);
+          bit_find_indexR indexAlloc2(free[fu],alloc2[5:0],alloc2_en);
+          bit_find_index indexST_mod(dreqmort_flags[4][63:0] & dreqmort_flags[2][63:0] ,indexST,indexST_has);
           fpuadd64 Xadd(clk,rst,dataMF,dataBF,1'b1,xaddres);
           fpuprod64 Xmul(clk,rst,dataMF,dataBF,1'b1,xmulres);
-          assign ret0[fu][PHY]=!data_retFL[reti][0];
+          assign ret0[fu][PHY]=!data_retFL[fu][reti][0];
           assign ret1[fu]=&ret0[fu];
           assign mret0[fu][PHY]=dreqmort_flags[5][reti] & dreqmort_flags[5][reti];
           assign mret1[fu]=&mret0[fu];
