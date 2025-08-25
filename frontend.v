@@ -184,7 +184,7 @@ generate
 
   wire [35:0] missx_en;
   wire [35:0][38:0] missx_addr;
-  wire [11:0][35:0] missx_phy;
+  wire [11:0][39:0] missx_phy;
 
   wire except;
   wire except_ldconfl;
@@ -192,8 +192,8 @@ generate
   wire [41:0] retSRCIP;
   reg [41:0] retSRCIP_reg; 
   wire [31:0] random;
-  `define wrreq_size 681
-  `define wrAreq_size 160
+  `define wrreq_size 683
+  `define wrAreq_size 162
   wire [1:0][`wrreq_size:0] XH_intf_in[3:0];
   wire [1:0][`wrreq_size:0] XV_intf_in[3:0];
   wire [1:0][`wrreq_size:0] XH_intf_out[3:0];
@@ -206,11 +206,11 @@ generate
   wire [1:0][35:0] jretire; 
   wire [1:0][35:0] jtaken; 
   wire [1:0][35:0] jmpmispred;
-  reg [255:0][4:0] missus;
-  reg [255:0][4:0] missus_reg;
-  reg [255:0][4:0] missus_reg2;
-  reg [255:0][4:0] missus_reg3;
-  reg [255:0][4:0] missus_reg4;
+  reg [255:0][35:0] missus;
+  reg [255:0][35:0] missus_reg;
+  reg [255:0][35:0] missus_reg2;
+  reg [255:0][35:0] missus_reg3;
+  reg [255:0][35:0] missus_reg4;
   wire [11:0][35:0] ret0;
   wire [11:0][35:0] mret0;
   wire [11:0][35:0] mxret0;
@@ -294,27 +294,27 @@ generate
       wire [527:0] insetr_data;
       wire [527:0] insetrh_data;
       wire [527:0] insetrv_data;
-      wire [35:0] insetrh_phy;
+      wire [39:0] insetrh_phy;
       wire insetrh_shared;
       wire insetrh_exclusive;
-      wire [35:0] insetrv_phy;
+      wire [39:0] insetrv_phy;
       wire insetrv_shared;
       wire insetrv_exclusive;
-      wire [35:0] insetr_phy;
+      wire [41:0] insetr_phy;
       wire insetr_shared;
       wire insetr_exclusive;
       reg [38:0] expun_addr_reg;
-      reg [35:0] expun_phy_reg;
+      reg [39:0] expun_phy_reg;
       reg [38:0] expunh_addr_reg;
-      reg [35:0] expunh_phy_reg;
+      reg [39:0] expunh_phy_reg;
       reg [38:0] expunv_addr_reg;
-      reg [35:0] expunv_phy_reg;
+      reg [39:0] expunv_phy_reg;
       reg [38:0] expun_addr;
-      reg [35:0] expun_phy;
+      reg [39:0] expun_phy;
       reg [38:0] expunh_addr;
-      reg [35:0] expunh_phy;
+      reg [39:0] expunh_phy;
       reg [38:0] expunv_addr;
-      reg [35:0] expunv_phy;
+      reg [39:0] expunv_phy;
       reg [8*66-1:0] expun_data_reg;
       reg [8*66-1:0] expunv_data_reg;
       reg [8*66-1:0] expunh_data_reg;
@@ -359,21 +359,21 @@ generate
       reg [63:0][41:0] jcond1;
       wire [11:0][5:0] index_miss;
       wire [11:0] index_miss_has;
-      wire [11:0][3:0] index12m_idx;
-      wire [11:0][11:0] index12m_pos;
-      wire [11:0] index12m_idx_has;
+      wire [3:0] index12m_idx;
+      wire [11:0] index12m_pos;
+      wire  index12m_idx_has;
       reg [11:0][5:0] index_miss_reg;
       reg [11:0] index_miss_has_reg;
-      reg [11:0][3:0] index12m_idx_reg;
-      reg [11:0] index12m_idx_has_reg;
+      reg [3:0] index12m_idx_reg;
+      reg  index12m_idx_has_reg;
       reg [11:0][5:0] index_miss_reg2;
       reg [11:0] index_miss_has_reg2;
-      reg [11:0][3:0] index12m_idx_reg2;
-      reg [11:0] index12m_idx_has_reg2;
+      reg [3:0] index12m_idx_reg2;
+      reg index12m_idx_has_reg2;
       reg [11:0][5:0] index_miss_reg3;
       reg [11:0] index_miss_has_reg3;
-      reg [11:0][3:0] index12m_idx_reg3;
-      reg [11:0] index12m_idx_has_reg3;
+      reg [3:0] index12m_idx_reg3;
+      reg index12m_idx_has_reg3;
       reg [11:0][5:0] index_miss_reg4;
       reg [11:0] index_miss_has_reg4;
       wire [3:0] idj0p;
@@ -821,10 +821,10 @@ generate
           wire [3:0] cond_early;
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_idx,index12m_pos,index12m_idx_has);
-          bit_find_index pfaff_mod({7'b0,missus_reg4[dreqmort[index_miss_reg4][18:11]]},missphyfirst,);
+          bit_find_index pfaff_mod({7'b0,missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]]},missphyfirst,);
           assign missx_en[PHY]=index12m_idx_reg==fu;
-          assign missx_addr[PHY]= fu==index12m_idx_reg ? xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]] : 'z;
-          assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4][18:11]] & {36{index12m_idx==fu && missphyfirst[5:0]==PHY[5:0]}},fu[3:0],1'b0};
+          assign missx_addr[PHY]= fu==index12m_idx_reg ? {1'b0,phy[PHY].dreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 'z;
+          assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]] & {36{index12m_idx==fu && missphyfirst[5:0]==PHY[5:0]}},fu[3:0]};
           bit_find_index indexLSU_ALU_mod(~|wstall & is_flg_ldi ? 1<<ldi2reg[fu][ldi] : rdy[2][fu][63:0]&rdy[1][fu][63:0]&rdy[3][fu][63:0]&rdy[4][fu][63:0]&{64{~index_miss_has[fu] && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
           bit_find_index indexFLG_mod(rdy[3][fu]&{64{~index_miss_has[fu] && ~|miss_reg}},indexFLG,indexFLG_has);
           bit_find_index indexLDU_mod(rdy[0][fu][63:0],indexLDU,indexLDU_has);
@@ -1441,11 +1441,11 @@ generate
                           lderror<=1'b1;
                       if (!anyhitW_reg[fu] && opcode_reg2[6] && ldi[5:0]==indexLSU_ALU_reg3) begin
                           miss[ldi[5:0]]=1;
-                          missus[res[18:11]][PHY/4]=1;
+                          missus[res[18:11]][PHY]=1;
                       end
                       if (!anyhit_reg[fu] && opcode_reg2[7] && ldi[5:0]==indexLSU_ALU_reg3) begin
                           miss[ldi[5:0]]=1;
-                        missus[res_reg[fu][18:11]][PHY/4]=1;
+                        missus[res_reg[fu][18:11]][PHY]=1;
                       end
                   end
                   missrs=0;
