@@ -1326,14 +1326,14 @@ generate
                       data_op[fu][alloc][11]=instr[34];
                       data_imm[fu][alloc]={{52{instr[24]}},instr[24:13]};
                       data_imm2[fu][alloc]={12'b0,instr[32:25]};
-                    if (!instr[12]) data_imm[fu][alloc]={{44{instr[32]}},instr[32:13]};
-                      if (instr[12]) data_imm_phy[fu][alloc]=vec_reg3 ? 36 : PHY;
-                      else data_imm_phy[fu][alloc]=0;
+                    if (!instr[12] && !instr[34]) data_imm[fu][alloc]={{44{instr[32]}},instr[32:13]};
+                      if (instr[12]) data_imm_phy[fu][alloc]=vec_reg3 ? 36 : PHY+5'd1;
+                      else data_imm_phy[fu][alloc]=1;
                     if (!instr[34]) begin
-                        data_imm[fu][alloc]=- 64'b1<<instr[36:35];
-                        data_imm2[fu][alloc]=instr[32:13];
-                        data_imm_phy[fu][alloc]=1;
-                    end
+-                        data_imm[fu][alloc]=- 64'b1<<instr[36:35];
+-                        data_imm2[fu][alloc]=instr[32:13];
+-                        data_imm_phy[fu][alloc]=1;
+-                   end
                   end
                   if (&instr[39:38]) begin
                     data_op[fu][alloc][4:0]={instr[37:34],instr[14]};
