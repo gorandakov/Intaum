@@ -943,10 +943,10 @@ generate
           assign res_logic[31:0]=opcode[2:1]==1 && ~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==2 && ~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
           /* verilator lint_off WIDTHEXPAND */
-          assign res_logic[31:0]=opcode[2:1]==3 && ~foo & dataBI[7] ? xdataA[fu][({1'b0,loopstop[5:0]}+{1'b0,dataBIX[5:0]})%6'd36][31:0] 
+          assign res_logic[31:0]=opcode[2:0]==6 && ~foo ? xdataA[fu][({1'b0,loopstop[5:0]}+{1'b0,dataB[5:0]})%6'd36][31:0] 
               : 'z;
           /* verilator lint_on WIDTHEXPAND */
-          assign res_logic[31:0]=opcode[2:1]==3 && ~foo & ~dataBI[7] ? dataA[31:0] 
+          assign res_logic[31:0]=opcode[2:0]==7 && ~foo ? xdataA[fu][({1'b0,PHY[5:0]}+{1'b0,dataBI[5:0]})%6'd36][31:0]
               : 'z;
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
 
@@ -958,14 +958,12 @@ generate
           assign res_logic[63:32]=opcode_reg[2:1]==1 && ~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==2 && ~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
           /* verilator lint_off WIDTHEXPAND */
-          assign res_logic[63:32]=opcode_reg[2:1]==3 && ~foo_reg & dataBI_reg[7] ? xdataA[fu][({1'b0,loopstop[5:0]}+{1'b0,dataBIX_reg[5:0]})%6'd36][63:32] 
+          assign res_logic[63:32]=opcode_reg[2:0]==6 && ~foo_reg ? xdataA[fu][({1'b0,loopstop[5:0]}+{1'b0,dataB_reg[5:0]})%6'd36][63:32] 
               : 'z;
           /* verilator lint_on WIDTHEXPAND */
-          assign res_logic[63:32]=opcode_reg[2:1]==3 && ~foo_reg & ~dataBI_reg[7] && dataA[58:43]>13 ? {dataA_reg[11:4],dataA_reg[10:4]+dataBI_reg[10:4],6'd4,dataA[42:32]}
+          assign res_logic[63:32]=opcode_reg[2:0]==7 && ~foo_reg ? xdataA[fu][({1'b0,PHY[5:0]}+{1'b0,dataBI_reg[5:0]})%6'd36][63:32]
               : 'z;
-          assign res_logic[63:32]=opcode_reg[2:1]==3 && ~foo_reg & ~dataBI_reg[7] && dataA[58:43]<=13 ? dataA_reg[63:32]
-              : 'z;
-          assign res_logic[63:32]=foo_reg && dataA[58:43]>13 ? {dataA_reg[13:6],dataA_reg[12:6]+dataBI_reg[12:6],6'd6,dataA[42:32]} : 'z; //stackframe alloc; chunks of 64 bytes up to 127
+          assign res_logic[63:32]=foo_reg && dataA[58:43]>13 ? {dataA_reg[12:5],dataA_reg[11:5]+dataBI_reg[11:5],6'd5,dataA[42:32]} : 'z; //stackframe alloc; chunks of 32 bytes up to 127
           assign res_logic[63:32]=foo_reg && dataA[58:43]<=13 ? {dataA[63:32]} : 'z; //stackframe alloc; chunks of 64 bytes up to 127
 
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
