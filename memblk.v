@@ -15,13 +15,16 @@ module memblk(
   output reg [35:0][3:0][36:0] wraddr,
   output reg [35:0] wren_out
 );
+  parameter [1:0] tileX;
+  parameter [1:0] tileY;
+
   reg [63:0][35:0][1:0] wsz0_reg;
   reg [63:0][35:0][32:0] waddr0_reg;
   reg [35:0][3:0][32:0] waddr0_xtra;
   reg [35:0][3:0][32:0] waddr0_xtra_reg;
   reg [35:0][32:0] waddr0_rexx;
   reg [35:0][32:0] waddr0_rexx2;
-  reg [63:0][35:0][65:0] wrdata_reg;
+  reg [63:0][35:0][66*8-1:0] wrdata_reg;
   reg [63:0][35:0] wren_in_reg;
   reg [63:0][35:0][32:0] rdaddr0_reg;
   reg [35:0][32:0] rdaddr0_rexx;
@@ -54,22 +57,23 @@ module memblk(
   generate
     genvar k;
     for(k=0;k<36;k=k+1) begin
+        /* verilator lint_off WIDTHTRUNC */
         assign tlbdata[k]=ram_block[1<<25+rdaddr0_reg[k][44][25:6]]>>rdaddr0_reg[k][44][26]*4*66;
         assign tlbdataw[k]=ram_block[1<<25+waddr0_reg[k][44][25:6]]>>waddr0_reg[k][44][26]*4*66;
-        assign rdaddr[k]=rdaddr0_xtra[k];
-        assign wraddr[k]=waddr0_xtra[k];
+        /* verilator lint_on WIDTHTRUNC */
+        assign rdaddr[k]={rdaddr0_xtra[k],tileX[1:0],tileY[1:0]};
+        assign wraddr[k]={waddr0_xtra[k],tileX[1:0],tileY[1:0]};
         assign rden_out[k]=rden_in_reg[47][k];
-        assign rddata[k]=ram_block[rdaddr0_reg[47][k]*8+:8];
+        assign rddata[k]={ram_blockx[rdaddr0_reg[47][k][24:0]],ram_block[rdaddr0_reg[47][k][24:0]]};
     end
   endgenerate
   always @* begin
     stall=0;
     for(rdport=0;rdport<16;rdport=rdport+1) begin
-       if (rdaddr0_reg[47]==rdaddr0_reg[48+rdport] && rden_in_reg[48+rdport] && rden_in_reg[47]) stall=1;
+       if (rdaddr0_reg[47]==rdaddr0_reg[48+rdport] && rden_in_reg[48+rdport][wport] && rden_in_reg[47][wport]) stall=1;
     end
   end
   always @(posedge clk) if (!stall) begin
-    wrdata_reg[0]<=wrdata;
     //     wrdata_reg[0]<=wrdata;    
     for(regcnt=1;regcnt<(48+16);regcnt++) begin
          waddr0_reg[regcnt]<=waddr0_reg[regcnt-1];
@@ -85,9 +89,11 @@ module memblk(
           rdxdata_reg[0][wport]<=rdaddr0[wport][3:0];
           wren_in_reg[0][wport]<=wren_in[wport]|rden_in[wport]&rdaddr0[wport][37];
           rden_in_reg[0][wport]<=rden_in[wport];
-          if (rden_in_reg[47][wport] && ram_block[rdaddr0_reg[47][wport]][8*66]||wren_in_reg[47]) ram_blockx[rdaddr0_reg[47][wport]]<={rdxdata_reg[47][wport],wren_in_reg[47]||ram_block[rdaddr0_reg[47][wport]][8*66]&~rdnshare};
+          wrdata_reg[0][wport]<=wrdata[wport][8*66-1:0];
+          if (rden_in_reg[47][wport] && ram_blockx[rdaddr0_reg[47][wport][24:0]][0]||wren_in_reg[47][wport]) ram_blockx[rdaddr0_reg[47][wport][24:0]]<=
+             {rdxdata_reg[47][wport],wren_in_reg[47][wport]||ram_blockx[rdaddr0_reg[47][wport][24:0]][0]&~rdnshare};
 
-          if (wren_in_reg[47][wport] && !rden_in_reg[47][wport]) ram_block[waddr0_reg[47][wport]*8+:8]<=wrdata_reg[47][wport][8*66-1:0];
+          if (wren_in_reg[47][wport] && !rden_in_reg[47][wport]) ram_block[waddr0_reg[47][wport][24:0]]<=wrdata_reg[47][wport][8*66-1:0];
           
           for(tlbptr=0;tlbptr<4;tlbptr=tlbptr+1) begin
               if (tlbdata[wport][66*tlbptr+:17]=={1'b1,rdaddr0_reg[wport][44][32:17]} && rden_in_reg[44][wport]) begin

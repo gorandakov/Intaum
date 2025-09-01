@@ -237,7 +237,7 @@ generate
     retSRCIP_reg<=retSRCIP;
   end
   wire memstall;
-  memblk blkmem(clk,rst,memstall,random[15:0],
+  memblk #(tile_X,tile_Y) blkmem(clk,rst,memstall,random[15:0],
     rdaddr0,
     rddata,
     rden_in,
