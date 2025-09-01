@@ -3,13 +3,13 @@ module memblk(
   input rst,
   output reg stall,
   input [15:0] random,  
-  input [35:0][36:0] rdaddr0,
-  input [35:0][3:0] rdxdata,
+  input [35:0][38:0] rdaddr0,
+ // input [35:0][3:0] rdxdata,
   output reg [35:0][8*66+4:0] rddata,
   input [35:0] rden_in,
   output reg [35:0][3:0][36:0] rdaddr,
   output reg [35:0] rden_out,
-  input [35:0][36:0] wraddr0,
+  input [35:0][38:0] wraddr0,
   input [35:0][8*66+4:0] wrdata,
   input [35:0] wren_in,
   output reg [35:0][3:0][36:0] wraddr,
@@ -67,12 +67,7 @@ module memblk(
     end
   end
   always @(posedge clk) if (!stall) begin
-    waddr0_reg[0]<=wraddr0;
-    wren_in_reg[0]<=wren_in;
     wrdata_reg[0]<=wrdata;
-    rdaddr0_reg[0]<=rdaddr0;
-    rden_in_reg[0]<=rden_in;
-    rdxdata_reg[0]<=rdxdata;
     //     wrdata_reg[0]<=wrdata;    
     for(regcnt=1;regcnt<(48+16);regcnt++) begin
          waddr0_reg[regcnt]<=waddr0_reg[regcnt-1];
@@ -83,30 +78,35 @@ module memblk(
          rdxdata_reg[regcnt]<=rdxdata_reg[regcnt-1];
     end
     for(wport=0;wport<36;wport++) begin
+          rdaddr0_reg[0][wport]<=rdaddr0[wport][36:4];
+          waddr0_reg[0][wport]<=wraddr0[wport][36:4];
+          rdxdata_reg[0][wport]<=rdaddr0[wport][3:0];
+          wren_in_reg[0][wport]<=wren_in[wport]|rden_in[wport]&rdaddr0[wport][37];
+          rden_in_reg[0][wport]<=rden_in[wport];
           if (rden_in_reg[47][wport] && ram_block[rdaddr0_reg[47][wport]][8*66]||wren_in_reg[47]) ram_block[rdaddr0_reg[47][wport]][8*66+4:8*66]<={rdxdata_reg[47][wport],wren_in_reg[47]||ram_block[rdaddr0_reg[47][wport]][8*66]&~rdnshare};
 
           if (wren_in_reg[47][wport] && !rden_in_reg[47]) ram_block[waddr0_reg[47][wport]][8*66-1:0]<=wrdata_reg[47][wport][8*66-1:0];
           
           for(tlbptr=0;tlbptr<4;tlbptr=tlbptr+1) begin
-              if (tlbdata[wport][66*tlbptr+:16]=={1'b1,rdaddr0_reg[wport][44][36:23]} && rden_in_reg[wport][44]) begin
-                  rdaddr0_reg[wport][44]<={tlbdata[wport][66*tlbptr+16+:17],rdaddr0_reg[wport][44][19:0]};
+              if (tlbdata[wport][66*tlbptr+:16]=={1'b1,rdaddr0_reg[wport][44][32:17]} && rden_in_reg[44][wport]) begin
+                  rdaddr0_reg[45][wport]<={tlbdata[wport][66*tlbptr+16+:15],rdaddr0_reg[44][wport][16:0]};
               end
-              if (tlbdata_reg[wport][66*tlbptr+16:17]=={1'b1,rdaddr0_reg[wport][45][36:20]} && rden_in_reg[wport][45] && tlbdata_reg[wport][66*tlbptr+16]) begin
-                  rdaddr0_xtra[wport][tlbptr]<={tlbdata_reg[wport][66*tlbptr+16+:17],rdaddr0_reg[wport][45][17:0]};
+              if (tlbdata_reg[wport][66*tlbptr+16+:15]=={rdaddr0_reg[wport][45][32:17]} && rden_in_reg[45][wport] && tlbdata_reg[wport][66*tlbptr+16]) begin
+                  rdaddr0_xtra[wport][tlbptr]<={tlbdata_reg[wport][66*tlbptr+:15],rdaddr0_reg[wport][45][16:0]};
               end
               if (rdaddr0_xtra[tlbdata]==rdaddr0_rexx2[wport]) begin
-                  rdaddr0_xtra_reg[wport][0]<=rdaddr0_xtra[wport][tlbdata];
-                  rdaddr0_xtra_reg[wport][tlbdata]<=rdaddr0_reg[wport][46];
+                  rdaddr0_xtra_reg[wport][0]<=rdaddr0_xtra[wport][tlbptr];
+                  rdaddr0_xtra_reg[wport][tlbptr]<=rdaddr0_reg[wport][46];
               end
-              if (tlbdataw[wport][66*tlbptr+:16]=={1'b1,waddr0_reg[wport][44][36:23]} && wren_in_reg[wport][44]) begin
-                  waddr0_reg[wport][44]<={tlbdataw[wport][66*tlbptr+16+:17],waddr0_reg[wport][44][19:0]};
+              if (tlbdataw[wport][66*tlbptr+:16]=={1'b1,waddr0_reg[44][wport][32:17]} && wren_in_reg[44][wport]) begin
+                  waddr0_reg[wport][45]<={tlbdataw[wport][66*tlbptr+16+:15],waddr0_reg[44][wport][16:0]};
               end
-              if (tlbdataw_reg[wport][66*tlbptr+16:17]=={1'b1,waddr0_reg[wport][45][36:20]} && wren_in_reg[wport][45] && tlbdataw_reg[wport][66*tlbptr+16]) begin
-                  waddr0_xtra[wport][tlbptr]<={tlbdataw_reg[wport][66*tlbptr+16+:17],waddr0_reg[wport][45][17:0]};
+              if (tlbdataw_reg[wport][66*tlbptr+16+:15]=={waddr0_reg[45][wport][32:17]} && wren_in_reg[45][wport] && tlbdataw_reg[wport][66*tlbptr+16]) begin
+                  waddr0_xtra[wport][tlbptr]<={tlbdataw_reg[wport][66*tlbptr+:15],waddr0_reg[45][wport][16:0]};
               end
-              if (waddr0_xtra[wport][tlbdata]==waddr0_rexx2[wport]) begin
-                  waddr0_xtra_reg[wport][0]<=waddr0_xtra[wport][tlbdata];
-                  waddr0_xtra_reg[wport][tlbdata]<=waddr0_reg[wport][46];
+              if (waddr0_xtra[wport][tlbptr]==waddr0_rexx2[wport]) begin
+                  waddr0_xtra_reg[wport][0]<=waddr0_xtra[wport][tlbptr];
+                  waddr0_xtra_reg[wport][tlbptr]<=waddr0_reg[wport][46];
               end
               waddr0_rexx[wport]<=waddr0_reg[wport][45];
               waddr0_rexx2[wport]<=waddr0_rexx[wport];

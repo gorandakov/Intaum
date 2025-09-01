@@ -78,7 +78,7 @@ module frontend (
     case (sel)
 
       0: fsconv={2'b10,din[63:62],~din[62],din[61:1]};
-      1: fsconv={2'b10,din[63:62],din[59:30]};
+      1: fsconv={34'b10,din[63:62],din[59:30]};
       default: fsconv={2'b10,din[63:0]};
     endcase
   endfunction               
@@ -157,13 +157,13 @@ default:
           byminus=(boogie>>7)=='1;
           byzero=(boogie>>7)=='0;
           if (on_low) begin
-            addition_check=(boogie[6:0]+val1[6:0])>=cookie[19:13]-!protect_cookie;
+            addition_check=(boogie[6:0]+val1[6:0])>=cookie[19:13]-{6'b0,!protect_cookie};
               if (cookie[12:6]>cookie[19:13] && (boogie[6:0]+val1[6:0])>cookie[12:6])
                   addition_check=0;
             if (!byone && !byzero || isand & byminus)
                 addition_check=0;
           end else begin
-            addition_check=(boogie[7:0]+val1[7:0])>=cookie[20:13]-!protect_cookie;
+            addition_check=(boogie[7:0]+val1[7:0])>=cookie[20:13]-{7'b0,!protect_cookie};
               if (cookie[12:6]>cookie[19:13] && (boogie[6:0]+val1[6:0])>cookie[12:6])
                   addition_check=0;
             if (!byminus && !byzero&!isand)
@@ -175,12 +175,13 @@ generate
   genvar tile_X,tile_Y,subPHY;
   for(tile_X=0;tile_X<1;tile_X=tile_X+1) 
   for(tile_Y=0;tile_Y<1;tile_Y=tile_Y+1) begin : HV
-  wire iscall,isret,ucjmp;
+  wire iscall,isret;
+  wire [1:0] ucjmp;
   reg [7:0] sttop;
   reg [65535:0][1:0] predA;
   reg [65535:0][1:0] predB;
   reg [65535:0][1:0] predC;
-  reg [(1<<9)-1:0][65:0] htlb;
+  reg [(1<<9)-1:0][41:0] htlb;
 
   wire [35:0] missx_en;
   wire [35:0][38:0] missx_addr;
@@ -236,20 +237,19 @@ generate
     retSRCIP_reg<=retSRCIP;
   end
   wire memstall;
-  memblk blkmem(clk,rst,random,memstall,
-    rdaddr0[36:4],
-    rdaddr0[3:0],
+  memblk blkmem(clk,rst,memstall,random[15:0],
+    rdaddr0,
     rddata,
     rden_in,
     rdaddr,
     rden_out,
-    rdaddr0[36:4],
+    rdaddr0,
     wrdata,
-    wren_in||rdaddr0[37]&rden_in,
+    wren_in,
     wraddr,
     wren_out);
 
-  wire irq_IP={31'b1,irqnum[3:0],7'b0};
+  wire [41:0] irq_IP={31'b1,irqnum[3:0],7'b0};
       genvar fu,fuB;
       genvar way,way2;
       genvar line;
@@ -354,7 +354,7 @@ generate
       reg [11:0][7:0] anyhitE_reg;
       wire tbuf_error;
       reg [3:0] ifu_stage_valid;
-      wire insert_en=ifu_stage_valid[3] && anyhitC_reg3;
+      wire insert_en=ifu_stage_valid[3] && |anyhitC_reg3;
       reg [63:0][41:0] jcond0;
       reg [63:0][41:0] jcond1;
       reg [63:0][41:0] retIP0;
@@ -484,15 +484,15 @@ generate
       reg [41:0] ret_cookie_reg2;
       reg [41:0] ret_cookie_reg3;
       assign ret_cookie=htlb[sttop];
-      bit_find_index j0pred(~pred_en_reg2[0][35:0],idxpreda,idxpreda_has);
-      bit_find_index j1pred(~pred_en_reg2[1][35:0],idxpredb,idxpredb_has);
-      assign {pred_en[1][PHY],pred_en[0][PHY]}=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]||ucjmp;
-      assign tbuf=tbufl[IP[13:5]];
+      bit_find_index j0pred({28'b0,~pred_en_reg2[0][35:0]},idxpreda,idxpreda_has);
+      bit_find_index j1pred({28'b0,~pred_en_reg2[1][35:0]},idxpredb,idxpredb_has);
+      assign {pred_en[1][PHY],pred_en[0][PHY]}=predA[{IP[17:5],GHT[1:0]}]^predB[{IP[12:5],GHT[7:0]}]^predC[{IP[6:5],GHT[13:0]}]|ucjmp;
+      //assign tbuf=tbufl[IP[13:5]];
       assign jen[0]=tbufl[0][IP[12:4]][65:37]==IP[41:13];
       assign jen[1]=tbufl[1][IP[12:4]][65:37]==IP[41:13];
       assign iscall=jen[0] && tbufl[0][IP[12:4]][66] || jen[1] && tbufl[1][IP[12:4]][66];
       assign isret=jen[0] && tbufl[0][IP[12:4]][67] || jen[1] && tbufl[1][IP[12:4]][67];
-      assign ucjmp=jen[0] && tbufl[0][IP[12:4]][68] || jen[1] && tbufl[1][IP[12:4]][68];
+      assign ucjmp={jen[1] && tbufl[1][IP[12:4]][68],jen[0] && tbufl[0][IP[12:4]][68]};
       assign jtaken[0][PHY]=&retire_reg[11:0] && flcond(jcondx0[reti_reg],jcc0[reti_reg][4:1]);
       assign jtaken[1][PHY]=&retire_reg[11:0] && flcond(jcondx1[reti_reg],jcc1[reti_reg][4:1]);
       assign jmpmispred[0][PHY]=&retire_reg[11:0] && jtaken[0][PHY]^data_jpred[reti_reg][0];
@@ -504,11 +504,11 @@ generate
       always @(posedge clk) begin
           if (isret) sttop--;
           if (iscall|irqload) begin
-              htlb[sttop+1]<=irqload? IP[35:0] : {IP_reg4[35:6]+1,5'b0};
+              htlb[sttop+1]<=irqload? IP[41:0] : {IP_reg4[41:5]+36'd1,5'b0};
               sttop=sttop+1;
           end
           if (rst) reti<=0;
-          else if (except|except_ldconfl) reti<=insi;
+          else if (except|except_ldconfl) reti<=insi[5:0];
           else if (retire_bndl) reti<=reti+1;
           ret_cookie_reg<=ret_cookie;
           ret_cookie_reg2<=ret_cookie_reg;
@@ -539,7 +539,7 @@ generate
           anyhitC_reg<=vaff(anyhitC);
           anyhitC_reg2<=anyhitC_reg;
           anyhitC_reg3<=anyhitC_reg2;
-          anyhitE_reg<=vaff(anyhitE);
+          anyhitE_reg<=anyhitE;
           IP_reg<=IP;
           IP_reg2<=IP_reg;
           IP_reg3<=IP_reg2;
@@ -566,13 +566,13 @@ generate
           pppoc2_reg2<=pppoc2_reg;
       end
       wire [1:0] is_cloop;
-      assign ccmiss=ifu_stage_valid[3] &&  !anyhitC_reg3;
-      assign is_cloop[0]=tbuf[0][IP[12:4]][44];
-      assign is_cloop[1]=tbuf[1][IP[12:4]][44];
+      assign ccmiss=ifu_stage_valid[3] &&  ~|anyhitC_reg3;
+      assign is_cloop[0]=tbufl[0][IP[12:4]][44];
+      assign is_cloop[1]=tbufl[1][IP[12:4]][44];
 
       always @(posedge clk) begin
-        ids0_reg<=ids0p;
-        ids1_reg<=ids1p;
+        ids0_reg<=ids0;
+        ids1_reg<=ids1;
         idxpreda_reg<=idxpreda;
         idxpreda_reg2<=idxpreda_reg;
         idxpreda_reg3<=idxpreda_reg2;
@@ -594,7 +594,7 @@ generate
       if (irqload|ccmiss|except_ldconfl) begin
           IP<=irqload ? irq_IP : except_ldconfl ? retSRCIP_reg : IP_reg4;
       end else if (&jen[1:0]) begin
-        if (is_cloop[1:0]) vec<=1'b1;
+        if (|is_cloop[1:0]) vec<=1'b1;
         if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret ? ret_cookie : {tbufl[0][IP[12:4]][32:4],IP[12:4],tbufl[0][IP[12:4]][3:0]}; 
             if (tbufl[0][IP[12:4]][65:37]!=IP[41:13]) tbuf_error<=1'b1; end
         else if (&pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=isret ? ret_cookie : {tbufl[1][IP[12:4]][32:4],IP[12:4],tbufl[1][IP[12:4]][3:0]}; 
@@ -945,9 +945,9 @@ generate
           /* verilator lint_off WIDTHEXPAND */
           assign res_logic[31:0]=opcode[2:0]==6 && ~foo ? xdataA[fu][({1'b0,loopstop[5:0]}+{1'b0,dataB[5:0]})%6'd36][31:0] 
               : 'z;
-          /* verilator lint_on WIDTHEXPAND */
           assign res_logic[31:0]=opcode[2:0]==7 && ~foo ? xdataA[fu][({1'b0,PHY[5:0]}+{1'b0,dataBI[5:0]})%6'd36][31:0]
               : 'z;
+          /* verilator lint_on WIDTHEXPAND */
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
 
           assign phy[PHY].opcode_reg[fu]=opcode_reg;
@@ -960,9 +960,9 @@ generate
           /* verilator lint_off WIDTHEXPAND */
           assign res_logic[63:32]=opcode_reg[2:0]==6 && ~foo_reg ? xdataA[fu][({1'b0,loopstop[5:0]}+{1'b0,dataB_reg[5:0]})%6'd36][63:32] 
               : 'z;
-          /* verilator lint_on WIDTHEXPAND */
           assign res_logic[63:32]=opcode_reg[2:0]==7 && ~foo_reg ? xdataA[fu][({1'b0,PHY[5:0]}+{1'b0,dataBI_reg[5:0]})%6'd36][63:32]
               : 'z;
+          /* verilator lint_on WIDTHEXPAND */
           assign res_logic[63:32]=foo_reg && dataA[58:43]>13 ? {dataA_reg[12:5],dataA_reg[11:5]+dataBI_reg[11:5],6'd5,dataA[42:32]} : 'z; //stackframe alloc; chunks of 32 bytes up to 127
           assign res_logic[63:32]=foo_reg && dataA[58:43]<=13 ? {dataA[63:32]} : 'z; //stackframe alloc; chunks of 64 bytes up to 127
 
@@ -1317,21 +1317,21 @@ generate
                    data_op[7:0] = instr[25] || instr[34:33]==2 ? 0 : 3;
                    if (instr[27]) data_loopstop[PHY]=idxpreda_has_reg3 ? idxpreda_reg3 : idxpredb_has_reg3 ? idxpredb_reg3 : 63;
                    retJTYPE[insi]={instr[25],&instr[34:33],instr[12]};
-                  end else if (^instr[39:38]) begin
+                 end else if (^instr[39:38]) begin
                       data_op[fu][alloc][10:8]=instr[37:35];
                       data_op[fu][alloc][5]=instr[34];
                       data_op[fu][alloc][4:0]=5'b1;
                       data_op[fu][alloc][11]=instr[34];
                       data_imm[fu][alloc]={{52{instr[24]}},instr[24:13]};
                       data_imm2[fu][alloc]={12'b0,instr[32:25]};
-                    if (!instr[12] && !instr[34]) data_imm[fu][alloc]={{44{instr[32]}},instr[32:13]};
+                      if (!instr[12] && !instr[34]) data_imm[fu][alloc]={{44{instr[32]}},instr[32:13]};
                       if (instr[12]) data_imm_phy[fu][alloc]=vec_reg3 ? 36 : PHY+5'd1;
                       else data_imm_phy[fu][alloc]=1;
-                    if (!instr[34]) begin
--                        data_imm[fu][alloc]=- 64'b1<<instr[36:35];
--                        data_imm2[fu][alloc]=instr[32:13];
--                        data_imm_phy[fu][alloc]=1;
--                   end
+                      if (!instr[34]) begin
+                        data_imm[fu][alloc]= - (64'b1<<instr[36:35]);
+                        data_imm2[fu][alloc]=instr[32:13];
+                        data_imm_phy[fu][alloc]=1;
+                      end
                   end
                   if (&instr[39:38]) begin
                     data_op[fu][alloc][4:0]={instr[37:34],instr[14]};
