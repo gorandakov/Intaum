@@ -23,18 +23,20 @@ module memblk(
   reg [35:0][32:0] waddr0_rexx2;
   reg [63:0][35:0][65:0] wrdata_reg;
   reg [63:0][35:0] wren_in_reg;
-  reg [63:0][35:0][26:0] rdaddr0_reg;
-  reg [35:0][26:0] rdaddr0_rexx;
-  reg [35:0][26:0] rdaddr0_rexx2;
-  reg [35:0][3:0][26:0] rdaddr0_xtra;
-  reg [35:0][3:0][26:0] rdaddr0_xtra_reg;
+  reg [63:0][35:0][32:0] rdaddr0_reg;
+  reg [35:0][32:0] rdaddr0_rexx;
+  reg [35:0][32:0] rdaddr0_rexx2;
+  reg [35:0][3:0][32:0] rdaddr0_xtra;
+  reg [35:0][3:0][32:0] rdaddr0_xtra_reg;
   reg [63:0][35:0] rden_in_reg;
-  reg [63:0][35:0][26:0] rdaddr_reg;
+  reg [63:0][35:0][32:0] rdaddr_reg;
   reg [63:0][35:0][3:0] rdxdata_reg;
   `ifndef production
-  reg [1<<24-1+1<<22+1<<19:0][66*8+4:0] ram_block;
+  reg [1<<24-1+1<<22+1<<19:0][66*8-1:0] ram_block;
+  reg [1<<24-1+1<<22+1<<19:0][4:0] ram_blockx;
   `else
-  reg [1<<25-1+1<<22+1<<19:0][66*8+4:0] ram_block;
+  reg [1<<25-1+1<<22+1<<19:0][66*8-1:0] ram_block;
+  reg [1<<25-1+1<<22+1<<19:0][4:0] ram_blockx;
   `endif
   integer wport;
   integer rdport;
@@ -56,8 +58,8 @@ module memblk(
         assign tlbdataw[k]=ram_block[1<<25+waddr0_reg[k][44][25:6]]>>waddr0_reg[k][44][26]*4*66;
         assign rdaddr[k]=rdaddr0_xtra[k];
         assign wraddr[k]=waddr0_xtra[k];
-        assign rden_out[k]=rden_in_reg[k][47];
-        assign rddata[k]=ram_block[rdaddr0_reg[k][47]];
+        assign rden_out[k]=rden_in_reg[47][k];
+        assign rddata[k]=ram_block[rdaddr0_reg[47][k]*8+:8];
     end
   endgenerate
   always @* begin
@@ -83,9 +85,9 @@ module memblk(
           rdxdata_reg[0][wport]<=rdaddr0[wport][3:0];
           wren_in_reg[0][wport]<=wren_in[wport]|rden_in[wport]&rdaddr0[wport][37];
           rden_in_reg[0][wport]<=rden_in[wport];
-          if (rden_in_reg[47][wport] && ram_block[rdaddr0_reg[47][wport]][8*66]||wren_in_reg[47]) ram_block[rdaddr0_reg[47][wport]][8*66+4:8*66]<={rdxdata_reg[47][wport],wren_in_reg[47]||ram_block[rdaddr0_reg[47][wport]][8*66]&~rdnshare};
+          if (rden_in_reg[47][wport] && ram_block[rdaddr0_reg[47][wport]][8*66]||wren_in_reg[47]) ram_blockx[rdaddr0_reg[47][wport]]<={rdxdata_reg[47][wport],wren_in_reg[47]||ram_block[rdaddr0_reg[47][wport]][8*66]&~rdnshare};
 
-          if (wren_in_reg[47][wport] && !rden_in_reg[47]) ram_block[waddr0_reg[47][wport]][8*66-1:0]<=wrdata_reg[47][wport][8*66-1:0];
+          if (wren_in_reg[47][wport] && !rden_in_reg[47][wport]) ram_block[waddr0_reg[47][wport]*8+:8]<=wrdata_reg[47][wport][8*66-1:0];
           
           for(tlbptr=0;tlbptr<4;tlbptr=tlbptr+1) begin
               if (tlbdata[wport][66*tlbptr+:17]=={1'b1,rdaddr0_reg[wport][44][32:17]} && rden_in_reg[44][wport]) begin
@@ -108,9 +110,9 @@ module memblk(
                   waddr0_xtra_reg[wport][0]<=waddr0_xtra[wport][tlbptr];
                   waddr0_xtra_reg[wport][tlbptr]<=waddr0_reg[46][wport];
               end
-              waddr0_rexx[wport]<=waddr0_reg[wport][45];
+              waddr0_rexx[wport]<=waddr0_reg[45][wport];
               waddr0_rexx2[wport]<=waddr0_rexx[wport];
-              rdaddr0_rexx[wport]<=rdaddr0_reg[wport][45];
+              rdaddr0_rexx[wport]<=rdaddr0_reg[45][wport];
               rdaddr0_rexx2[wport]<=rdaddr0_rexx[wport];
               tlbdata_reg<=tlbdata;
               tlbdataw_reg<=tlbdataw;
