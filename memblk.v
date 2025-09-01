@@ -88,25 +88,25 @@ module memblk(
           if (wren_in_reg[47][wport] && !rden_in_reg[47]) ram_block[waddr0_reg[47][wport]][8*66-1:0]<=wrdata_reg[47][wport][8*66-1:0];
           
           for(tlbptr=0;tlbptr<4;tlbptr=tlbptr+1) begin
-              if (tlbdata[wport][66*tlbptr+:16]=={1'b1,rdaddr0_reg[wport][44][32:17]} && rden_in_reg[44][wport]) begin
-                  rdaddr0_reg[45][wport]<={tlbdata[wport][66*tlbptr+16+:15],rdaddr0_reg[44][wport][16:0]};
+              if (tlbdata[wport][66*tlbptr+:17]=={1'b1,rdaddr0_reg[wport][44][32:17]} && rden_in_reg[44][wport]) begin
+                  rdaddr0_reg[45][wport]<={tlbdata[wport][66*tlbptr+16+:16],rdaddr0_reg[44][wport][16:0]};
               end
-              if (tlbdata_reg[wport][66*tlbptr+16+:15]=={rdaddr0_reg[wport][45][32:17]} && rden_in_reg[45][wport] && tlbdata_reg[wport][66*tlbptr+16]) begin
-                  rdaddr0_xtra[wport][tlbptr]<={tlbdata_reg[wport][66*tlbptr+:15],rdaddr0_reg[wport][45][16:0]};
+              if (tlbdata_reg[wport][66*tlbptr+17+:16]=={rdaddr0_reg[wport][45][32:17]} && rden_in_reg[45][wport] && tlbdata_reg[wport][66*tlbptr+16]) begin
+                  rdaddr0_xtra[wport][tlbptr]<={tlbdata_reg[wport][66*tlbptr+:16],rdaddr0_reg[wport][45][16:0]};
               end
-              if (rdaddr0_xtra[tlbdata]==rdaddr0_rexx2[wport]) begin
+              if (rdaddr0_xtra[wport][tlbptr]==rdaddr0_rexx2[wport]) begin
                   rdaddr0_xtra_reg[wport][0]<=rdaddr0_xtra[wport][tlbptr];
-                  rdaddr0_xtra_reg[wport][tlbptr]<=rdaddr0_reg[wport][46];
+                  rdaddr0_xtra_reg[wport][tlbptr]<=rdaddr0_reg[46][wport];
               end
-              if (tlbdataw[wport][66*tlbptr+:16]=={1'b1,waddr0_reg[44][wport][32:17]} && wren_in_reg[44][wport]) begin
-                  waddr0_reg[wport][45]<={tlbdataw[wport][66*tlbptr+16+:15],waddr0_reg[44][wport][16:0]};
+              if (tlbdataw[wport][66*tlbptr+:17]=={1'b1,waddr0_reg[44][wport][32:17]} && wren_in_reg[44][wport]) begin
+                  waddr0_reg[45][wport]<={tlbdataw[wport][66*tlbptr+16+:16],waddr0_reg[44][wport][16:0]};
               end
-              if (tlbdataw_reg[wport][66*tlbptr+16+:15]=={waddr0_reg[45][wport][32:17]} && wren_in_reg[45][wport] && tlbdataw_reg[wport][66*tlbptr+16]) begin
-                  waddr0_xtra[wport][tlbptr]<={tlbdataw_reg[wport][66*tlbptr+:15],waddr0_reg[45][wport][16:0]};
+              if (tlbdataw_reg[wport][66*tlbptr+17+:16]=={waddr0_reg[45][wport][32:17]} && wren_in_reg[45][wport] && tlbdataw_reg[wport][66*tlbptr+16]) begin
+                  waddr0_xtra[wport][tlbptr]<={tlbdataw_reg[wport][66*tlbptr+:16],waddr0_reg[45][wport][16:0]};
               end
               if (waddr0_xtra[wport][tlbptr]==waddr0_rexx2[wport]) begin
                   waddr0_xtra_reg[wport][0]<=waddr0_xtra[wport][tlbptr];
-                  waddr0_xtra_reg[wport][tlbptr]<=waddr0_reg[wport][46];
+                  waddr0_xtra_reg[wport][tlbptr]<=waddr0_reg[46][wport];
               end
               waddr0_rexx[wport]<=waddr0_reg[wport][45];
               waddr0_rexx2[wport]<=waddr0_rexx[wport];
