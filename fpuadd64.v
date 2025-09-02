@@ -28,7 +28,7 @@ module fpuadd64(
   wire [55:0] shn2;
   wire [55:0] res_sh;
   wire [55:0] res_sh2;
-  wire [55:0] res_dn;
+  wire [53:0] res_dn;
   wire [55:0] bz;
   wire [55:0] ba;
   wire ABOne;
@@ -45,8 +45,9 @@ module fpuadd64(
   reg [53:0] S_reg;
   reg [55:0] res_sh_reg;
   reg [55:0] res_sh2_reg;
-  reg [55:0] res_dn_reg;
+  reg [53:0] res_dn_reg;
   reg [9:0] zux_reg;
+  wire s_has;
   always @(posedge clk) begin
     shar_reg<=shar;
     shn_reg<=shn;
@@ -88,7 +89,7 @@ module fpuadd64(
  assign shBA=({1'b1,A[52:0],2'b0}^{56{sxor}})>>BAExp;
  assign sxor=A[63]^B[63];
 
-find_first_index nrm(S_reg,pfs,s_has);
+bit_find_index nrm({10'b0,S_reg},pfs,s_has);
 assign shar=age ? shAB&bz : shBA&ba;
 assign shn=age ? {1'b1,A[52:0],rnd,1'b0} &ba: {1'b1,B[52:0],rnd,1'b0}&bz;
 assign shn2=age ? {1'b1,A[52:0],1'b0,rnd} : {1'b1,B[52:0],1'b0,rnd};
@@ -96,18 +97,18 @@ assign res_sh=shn_reg + shar_reg[55:0];
 assign res_sh2=shn2_reg + shar_reg;
 assign res_dn=S_reg << pfs;
 assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54]  ? res_sh_reg[54:2] : 'z;
-assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==1  ? res_sh_reg[53:1] : 'z;
-assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==0  ? res_sh2_reg[52:0] : 'z;
-assign res[52:0]=!(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 )   ? res_dn_reg : 'z;
+assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==2'd1  ? res_sh_reg[53:1] : 'z;
+assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==2'd0  ? res_sh2_reg[52:0] : 'z;
+assign res[52:0]=!(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 )   ? res_dn_reg[52:0] : 'z;
 
-assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54]  ? aegis_reg2 + 1: 'z;
-assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==1  ? aegis_reg2: 'z;
-assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==0  ? aegis_reg2-1 : 'z;
-assign res[62:53]=!(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 )  ? (aegis_reg2-pfs_reg)&zux_reg : 'z;
-assign zux=aegis_reg<pfs ? '0 : '1;
+assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54]  ? aegis_reg2 + 10'd1: 'z;
+assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==2'd1  ? aegis_reg2: 'z;
+assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==2'd0  ? aegis_reg2-10'd1 : 'z;
+assign res[62:53]=!(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 )  ? (aegis_reg2-{4'b0,pfs_reg})&zux_reg : 'z;
+assign zux=aegis_reg<{4'b0,pfs} ? '0 : '1;
 
-assign bz=B[62:53]==0 ? '0 : '1;
+assign bz=B[62:53]==10'd0 ? '0 : '1;
 
-assign ba=A[62:53]==0 ? '0 : '1;
+assign ba=A[62:53]==10'd0 ? '0 : '1;
 
 endmodule

@@ -78,8 +78,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
 
   wire [`wrreq_size-1:0] wrAreq;
 
-  reg [7:0][`wrreq_size-1:0] Aqueue;
-  reg [7:0][`wrreq_size-1:0] Aoqueue;
+  reg [7:0][38:0] Aqueue;
+ // reg [7:0][`wrAreq_size-1:0] Aoqueue;
   reg [7:0] Adata_in;
   reg [7:0] Aodata_in;
   reg Astall;

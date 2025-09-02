@@ -40,11 +40,11 @@ module fpuprod64(
   end
 
 
-assign prodA={1'b1,A[52:0]}*{1'b1,B[52:0]}+rnd<<53;
+assign prodA={1'b1,A[52:0]}*{1'b1,B[52:0]}+{107'b0,rnd}<<53;
 
-assign prodB={1'b1,A[52:0]}*{1'b1,B[52:0]}+rnd<<52;
+assign prodB={1'b1,A[52:0]}*{1'b1,B[52:0]}+{107'b0,rnd}<<52;
 
-assign res[52:0]=prodA_reg2[107] | prodB_reg2[107] ? prodA_reg2[107:54] : prodB_reg2[106:53];
+assign res[52:0]=prodA_reg2[107] | prodB_reg2[107] ? prodA_reg2[106:54] : prodB_reg2[105:53];
 assign {c,ae}=A[62:53]+B[62:53]-bias;
 assign res[62:53]=ae_reg2|{10{c_reg2}};
 assign res[63]=A_reg2[63]^B_reg2[63];
