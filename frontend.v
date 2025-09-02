@@ -194,7 +194,7 @@ generate
   reg [41:0] retSRCIP_reg; 
   wire [31:0] random;
   `define wrreq_size 683
-  `define wrAreq_size 162
+  `define wrAreq_size 164
   wire [1:0][`wrreq_size:0] XH_intf_in[3:0];
   wire [1:0][`wrreq_size:0] XV_intf_in[3:0];
   wire [1:0][`wrreq_size:0] XH_intf_out[3:0];
