@@ -173,8 +173,8 @@ default:
   endfunction
 generate
   genvar tile_X,tile_Y,subPHY;
-  for(tile_X=0;tile_X<4;tile_X=tile_X+1) 
-  for(tile_Y=0;tile_Y<4;tile_Y=tile_Y+1) begin : HV
+  for(tile_X=0;tile_X<0;tile_X=tile_X+1) 
+  for(tile_Y=0;tile_Y<0;tile_Y=tile_Y+1) begin : HV
   wire iscall,isret;
   wire [1:0] ucjmp;
   reg [7:0] sttop;
@@ -259,7 +259,7 @@ generate
       genvar line;
       genvar PHY;
     for(PHY=0;PHY<36;PHY=PHY+1) begin : phy
-    core #(tile_X,tile_Y) one(
+    core #(tile_X,tile_Y,PHY) one(
   clk,
   irqload,
   irqnum,
@@ -320,6 +320,6 @@ generate
   memstall
   );
     end
-
+  end
   endgenerate
 endmodule

@@ -82,12 +82,14 @@ module core (
   inout [35:0] wren_out,
   inout [35:0][39:0] rdphy,
   inout [35:0][39:0] rdphy0,
-  inout [41:0] irq_IP={31'b1,irqnum[3:0],7'b0},
+  inout [41:0] irq_IP,
   inout memstall
   );
+/* verilator hier_block */
+
   parameter tile_X=0;
   parameter tile_Y=0;
-
+  parameter PHY=0;
   reg rst=1;
   reg rst0=1;
   reg rst_reg;
@@ -232,7 +234,7 @@ default:
       end
   endfunction
 generate
-  genvar subPHY;
+  genvar subPHY,fu,way,line,fuB;
 
 
       reg [31:0] insn_clopp;
@@ -812,7 +814,7 @@ generate
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_pos,index12m_idx,index12m_idx_has);
           bit_find_index pfaff_mod({28'b0,missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]]},missphyfirst,);
           assign missx_en[PHY]=index12m_idx_reg==fu;
-          assign missx_addr[PHY]= fu==index12m_idx_reg ? {1'b0,phy[PHY].dreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 'z;
+          assign missx_addr[PHY]= fu==index12m_idx_reg ? {1'b0,dreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 'z;
           assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]] & {36{index12m_idx==fu && missphyfirst[5:0]==PHY[5:0]}},fu[3:0]};
           bit_find_index indexLSU_ALU_mod(~|wstall & is_flg_ldi ? 1<<ldi2reg[fu][ldi] : rdy[2][fu][63:0]&rdy[1][fu][63:0]&rdy[3][fu][63:0]&rdy[4][fu][63:0]&{64{~index_miss_has[fu] && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
           bit_find_index indexFLG_mod(rdy[3][fu]&{64{~index_miss_has[fu] && ~|miss_reg}},indexFLG,indexFLG_has);
@@ -930,9 +932,9 @@ generate
           /* verilator lint_on WIDTHEXPAND */
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
 
-          assign phy[PHY].opcode_reg[fu]=opcode_reg;
-          assign phy[PHY].dreqmort_flags[PHY]=dreqmort_flags;
-          assign phy[PHY].indexST_has[fu]=indexST_has;
+          assign opcode_reg[fu]=opcode_reg;
+          assign dreqmort_flags[PHY]=dreqmort_flags;
+          assign indexST_has[fu]=indexST_has;
 
           assign res_logic[63:32]=opcode_reg[2:1]==0 && ~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 && ~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
@@ -987,7 +989,7 @@ generate
           assign xalloc[fu]=alloc;
           assign xalloc2[fu]=alloc2;
           assign xdataA[PHY][fu]=dataA;
-          assign phy[PHY].xdreqmort[fu][PHY]=dreqmort[fu];
+          assign xdreqmort[fu][PHY]=dreqmort[fu];
 
           reg [5:0] LDI;
           reg [5:0] LDI_reg;
