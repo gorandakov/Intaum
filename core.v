@@ -244,6 +244,10 @@ generate
       reg [41:0] IP_reg3;
       reg [41:0] IP_reg4;
       reg [15:0] GHT;
+      reg [15:0] GHT_reg;
+      reg [15:0] GHT_reg2;
+      reg [15:0] GHT_reg3;
+      reg [15:0] GHT_reg4;
       wire ccmiss;
       reg lderror;
       integer ldi;
@@ -551,6 +555,8 @@ generate
       assign ccmiss=ifu_stage_valid[3] &&  ~|anyhitC_reg3;
       assign is_cloop[0]=tbufl[0][IP[12:4]][44];
       assign is_cloop[1]=tbufl[1][IP[12:4]][44];
+      wire ret_stall;
+      assign ret_stall=insi==(reti-6'd1);
 
       always @(posedge clk) begin
         ids0_reg<=ids0;
@@ -573,8 +579,9 @@ generate
         if (rst) ifu_stage_valid<=1;
         else if (except) ifu_stage_valid<=1;
         else ifu_stage_valid={ifu_stage_valid[2:0],1'b1};
-      if (irqload|ccmiss|except_ldconfl) begin
+      if (irqload|ccmiss|ret_stall|except_ldconfl) begin
           IP<=irqload ? irq_IP : except_ldconfl ? retSRCIP_reg : IP_reg4;
+          if (ccmiss|ret_stall) GHT<=GHT_reg4;
       end else if (&jen[1:0]) begin
         if (|is_cloop[1:0]) vec<=1'b1;
         if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret ? ret_cookie : {tbufl[0][IP[12:4]][32:4],IP[12:4],tbufl[0][IP[12:4]][3:0]}; 
@@ -612,6 +619,10 @@ generate
               IP<=|jtaken[1] ? retIP[1] : retSRCIP + 32;
          end
       end
+      GHT_reg<=GHT;
+      GHT_reg2<=GHT_reg;
+      GHT_reg3<=GHT_reg2;
+      GHT_reg4<=GHT_reg3;
       end
       assign retIP[0]=jcond0[reti_reg];
       assign retIP[1]=jcond1[reti_reg];
