@@ -193,7 +193,7 @@ generate
   wire [41:0] retSRCIP;
   reg [41:0] retSRCIP_reg; 
   wire [31:0] random;
-  `define wrreq_size 794
+  `define wrreq_size 731
   `define wrAreq_size 164
   wire [1:0][`wrreq_size:0] XH_intf_in[3:0];
   wire [1:0][`wrreq_size:0] XV_intf_in[3:0];
@@ -228,6 +228,8 @@ generate
   wire [35:0]  wren_in;
   wire [35:0][3:0][36:0]  wraddr;
   wire [35:0] wren_out;
+  wire [35:0][39:0] rdphy;
+  wire [35:0][39:0] rdphy0;
 
   always @(posedge clk) begin
     missus_reg<=missus;
@@ -239,9 +241,11 @@ generate
   wire memstall;
   memblk #(tile_X,tile_Y) blkmem(clk,rst,memstall,random[15:0],
     rdaddr0,
+    rdphy0,
     rddata,
     rden_in,
     rdaddr,
+    rdphy,
     rden_out,
     rdaddr0,
     wrdata,
@@ -1490,8 +1494,10 @@ generate
       rdaddr0[PHY][38],
       rdaddr0[PHY][37],
       wren_in[PHY],
-      wrdata[PHY][8*66-1:0],
       rddata[PHY][8*66-1:0],
+      wrdata[PHY][8*66-1:0],
+      rdphy0[PHY],
+      rdphy[PHY],
       rden_out[PHY],
       rddata[PHY][8*66],
       rddata[PHY][8*66+1+:4],
@@ -1520,8 +1526,10 @@ generate
       rdaddr0[PHY][38],
       rdaddr0[PHY][37],
       wren_in[PHY],
-      wrdata[PHY][8*66-1:0],
       rddata[PHY][8*66-1:0],
+      wrdata[PHY][8*66-1:0],
+      rdphy0[PHY],
+      rdphy[PHY],
       rden_out[PHY],
       rddata[PHY][8*66],
       rddata[PHY][8*66+1+:4],
@@ -1550,8 +1558,10 @@ generate
       rdaddr0[PHY][38],
       rdaddr0[PHY][37],
       wren_in[PHY],
-      wrdata[PHY][8*66-1:0],
       rddata[PHY][8*66-1:0],
+      wrdata[PHY][8*66-1:0],
+      rdphy0[PHY],
+      rdphy[PHY],
       rden_out[PHY],
       rddata[PHY][8*66],
       rddata[PHY][8*66+1+:4],
@@ -1580,8 +1590,10 @@ generate
       rdaddr0[PHY][38],
       rdaddr0[PHY][37],
       wren_in[PHY],
-      wrdata[PHY][8*66-1:0],
       rddata[PHY][8*66-1:0],
+      wrdata[PHY][8*66-1:0],
+      rdphy0[PHY],
+      rdphy[PHY],
       rden_out[PHY],
       rddata[PHY][8*66],
       rddata[PHY][8*66+1+:4],

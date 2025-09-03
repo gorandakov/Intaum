@@ -4,10 +4,11 @@ module memblk(
   output reg stall,
   input [15:0] random,  
   input [35:0][38:0] rdaddr0,
- // input [35:0][3:0] rdxdata,
+  input [35:0][39:0] rdphydata0,
   output reg [35:0][8*66+4:0] rddata,
   input [35:0] rden_in,
   output reg [35:0][3:0][36:0] rdaddr,
+  output reg [35:0][39:0] rdphydata,
   output reg [35:0] rden_out,
   input [35:0][38:0] wraddr0,
   input [35:0][8*66+4:0] wrdata,
@@ -27,6 +28,7 @@ module memblk(
   reg [63:0][35:0][66*8-1:0] wrdata_reg;
   reg [63:0][35:0] wren_in_reg;
   reg [63:0][35:0][32:0] rdaddr0_reg;
+  reg [63:0][35:0][39:0] rdphydata0_reg;
   reg [35:0][32:0] rdaddr0_rexx;
   reg [35:0][32:0] rdaddr0_rexx2;
   reg [35:0][3:0][32:0] rdaddr0_xtra;
@@ -71,6 +73,7 @@ module memblk(
         assign wraddr[k][3]={waddr0_xtra[k][3],tileX[1:0],tileY[1:0]};
         assign rden_out[k]=rden_in_reg[47][k];
         assign rddata[k]={ram_blockx[rdaddr0_reg[47][k][24:0]],ram_block[rdaddr0_reg[47][k][24:0]]};
+        assign rdphydata[k]=rdphydata0_reg[47][k];
     end
   endgenerate
   always @* begin
@@ -86,11 +89,13 @@ module memblk(
          wren_in_reg[regcnt]<=wren_in_reg[regcnt-1];
          wrdata_reg[regcnt]<=wrdata_reg[regcnt-1];
          rdaddr0_reg[regcnt]<=rdaddr0_reg[regcnt-1];
+         rdphydata0_reg[regcnt]<=rdphydata0_reg[regcnt-1];
          rden_in_reg[regcnt]<=rden_in_reg[regcnt-1];
          rdxdata_reg[regcnt]<=rdxdata_reg[regcnt-1];
     end
     for(wport=0;wport<36;wport++) begin
           rdaddr0_reg[0][wport]<=rdaddr0[wport][36:4];
+          rdphydata0_reg[0][wport]<=rdphydata0[wport];
           waddr0_reg[0][wport]<=wraddr0[wport][36:4];
           rdxdata_reg[0][wport]<=rdaddr0[wport][3:0];
           wren_in_reg[0][wport]<=wren_in[wport]|rden_in[wport]&rdaddr0[wport][37];
