@@ -4,11 +4,11 @@
 `define wrreq_TX 598:594
 `define wrreq_TY 603:599
 `define wrreq_sz 643:604
-`define wrreq_addr 680:644
-`define wrreq_snd 681
-`define wrreq_expun 682
-`define wrreq_size 683
-`define wrreq_extra 683
+`define wrreq_addr 791:644
+`define wrreq_snd 792
+`define wrreq_expun 793
+`define wrreq_size 794
+`define wrreq_extra 794
 
 `define wrAreq_data 73:0
 `define wrAreq_XDONE 74
@@ -101,7 +101,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
 
   assign sharX={3'b0,shareX};
 
-  assign outen=&shareX || (|pdatacnt0[7:4] || |pdatacnt1[7:4])&(~(sharX[IDX+3]));
+  assign outen=&shareX | (~(sharX[IDX+3])) && (odata_in[0][0] & odata_full[0][0] ||odata_in[1][0] & odata_full[1][0]);
 
   assign wrreq[`wrreq_data]=in_datum;
   assign wrreq[`wrreq_XDONE]=IDX<2;
@@ -112,10 +112,15 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign wrreq[`wrreq_sz]=in_size_reg;
   assign wrreq[`wrreq_expun]=1'b0;
 
-  assign XA_intf_in_chg[0][`wrreq_addr]=XA_intf_in[0][`wrAreq_addr];
-  assign XA_intf_in_chg[0][`wrreq_sz]={2'b11,XA_intf_in[0][`wrAreq_sz]};
-  assign XA_intf_in_chg[1][`wrreq_addr]=XA_intf_in[1][`wrAreq_addr];
-  assign XA_intf_in_chg[1][`wrreq_sz]={2'b11,XA_intf_in[1][`wrAreq_sz]};
+  assign XA_intf_in_chg[0][`wrreq_addr]=fiq_addr_fwd;
+  assign XA_intf_in_chg[0][`wrreq_sz]=fiq_phy_fwd;
+  assign XA_intf_in_chg[0][`wrreq_data]=fiq_data_out;
+  assign XA_intf_in_chg[0][`wrreq_TX]=fiq_fwd_XY[3:2];
+  assign XA_intf_in_chg[0][`wrreq_TY]=fiq_fwd_XY[1:0];
+  assign XA_intf_in_chg[0][`wrreq_snd]=fiq_fwd_en && !fiq_wb;
+
+//  assign XA_intf_in_chg[1][`wrreq_addr]=XA_intf_in[1][`wrAreq_addr];
+//  assign XA_intf_in_chg[1][`wrreq_sz]={2'b11,XA_intf_in[1][`wrAreq_sz]};
 
   assign X_intf_out[0][`wrreq_size-1:0]=in_en_reg & back ? wrreq : queue[0][qposr0];
   assign X_intf_out[1][`wrreq_size-1:0]=in_en_reg & fwd ? wrreq : queue[1][qposr1];
@@ -129,10 +134,13 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign match[0]=IDX<3 ? X_intf_in[0][`wrreq_TX]==tile_X : X_intf_in[0][`wrreq_TY]==tile_Y;
   assign match[1]=IDX<3 ? X_intf_in[1][`wrreq_TX]==tile_X : X_intf_in[1][`wrreq_TY]==tile_Y;
 
-  assign reqmort_data=|odata_in[0] ? oqueue[0][qrpos0][`wrreq_data] : oqueue[1][qrpos1][`wrreq_data];
-  assign reqmortaddr=|odata_in[0] ? {tile_Y[4:0],tile_X[4:0],oqueue[0][qrpos0][`wrreq_addr]} : {tile_Y[4:0],tile_X[4:0],oqueue[1][qrpos1][`wrreq_addr]};
-  assign reqmort_size=|odata_in[0] ? oqueue[0][qrpos0][`wrreq_sz] : oqueue[1][qrpos1][`wrreq_sz];
-  assign reqmort_expun=|odata_in[0] ? oqueue[0][qrpos0][`wrreq_expun] : oqueue[1][qrpos1][`wrreq_expun];
+  assign reqmort_data=odata_in[0][0] && odata_full[0][0] ? oqueue[0][qrpos0][`wrreq_data] : oqueue[1][qrpos1][`wrreq_data];
+  assign reqmortaddr=odata_in[0][0] && odata_full[0][0] ? {tile_Y[4:0],tile_X[4:0],oqueue[0][qrpos0][`wrreq_addr]} : {tile_Y[4:0],tile_X[4:0],oqueue[1][qrpos1][`wrreq_addr]};
+  assign reqmort_size=odata_in[0][0] && odata_full[0][0] ? oqueue[0][qrpos0][-2+`wrreq_sz] : oqueue[1][qrpos1][-2+`wrreq_sz];
+  assign reqmort_expun=odata_in[0][0] && odata_full[0][0] ? oqueue[0][qrpos0][`wrreq_expun] : oqueue[1][qrpos1][`wrreq_expun];
+
+  assign X_intf_out[0]=odata_in[0][0] && !odata_full[0][0] ? oqueue[0][qrpos0] : '0;
+  assign X_intf_out[1]=odata_in[1][0] && !odata_full[1][0] ? oqueue[1][qrpos1] : '0;
 
   popcnt12 pa({4'b0,data_in[0]},datacnt0);
   popcnt12 pb({4'b0,data_in[1]},datacnt1);
