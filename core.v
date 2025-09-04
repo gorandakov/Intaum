@@ -47,15 +47,15 @@ module core (
   inout [31:0] random,
   `define wrreq_size 731
   `define wrAreq_size 164
-  inout [1:0][`wrreq_size:0] XH_intf_in[3:0],
-  inout [1:0][`wrreq_size:0] XV_intf_in[3:0],
-  inout [1:0][`wrreq_size:0] XH_intf_out[3:0],
-  inout [1:0][`wrreq_size:0] XV_intf_out[3:0],
+  inout [1:0][`wrreq_size:0] XH_intf_in,
+  inout [1:0][`wrreq_size:0] XV_intf_in,
+  inout [1:0][`wrreq_size:0] XH_intf_out,
+  inout [1:0][`wrreq_size:0] XV_intf_out,
     
-  inout [1:0][`wrAreq_size:0] AXH_intf_in[3:0],
-  inout [1:0][`wrAreq_size:0] AXV_intf_in[3:0],
-  inout [1:0][`wrAreq_size:0] AXH_intf_out[3:0],
-  inout [1:0][`wrAreq_size:0] AXV_intf_out[3:0],
+  inout [1:0][`wrAreq_size:0] AXH_intf_in,
+  inout [1:0][`wrAreq_size:0] AXV_intf_in,
+  inout [1:0][`wrAreq_size:0] AXH_intf_out,
+  inout [1:0][`wrAreq_size:0] AXV_intf_out,
   inout [1:0][35:0] jretire, 
   inout [1:0][35:0] jtaken, 
   inout [1:0][35:0] jmpmispred,
@@ -262,8 +262,8 @@ generate
       reg [63:0][10:0] rTTOld;
       reg [63:0][10:0] rTTNewm;
       reg [63:0][10:0] rTTOldm;
-      reg [63:0][10:0] rTT_arch;
-      reg [63:0][10:0] rTT_archm;
+      reg [63:0][5:0] rTT_arch;
+      reg [63:0][5:0] rTT_archm;
       reg [63:0] ret_is_alu;
       reg [63:0] ret_is_load;
       wire [11:0] isJump;
@@ -447,11 +447,11 @@ generate
           reg [11:0][63:0] res_reg2;
           reg [11:0][63:0] res_reg3;
           reg [11:0][2:0] ldsize_reg;
-          wire [11:0][20:0] opcode_reg;
+          wire [11:0][20:0] xopcode_reg;
           wire [11:0][39:0] inssr;
           wire [11:0][5:0] xalloc;
           wire [11:0][5:0] xalloc2;
-          wire [11:0][7:0][63:0] dreqmort_flags;
+          wire [11:0][7:0][63:0] xdreqmort_flags;
           wire [11:0][63:0][63:0] xdreqmort;
           wire [11:0] indexST_has;
           wire [3:0] ids0;
@@ -556,7 +556,7 @@ generate
       assign is_cloop[0]=tbufl[0][IP[12:4]][44];
       assign is_cloop[1]=tbufl[1][IP[12:4]][44];
       wire ret_stall;
-      assign ret_stall=insi==(reti-6'd1);
+      assign ret_stall=insi[5:0]==(reti[5:0]-6'd1);
 
       always @(posedge clk) begin
         ids0_reg<=ids0;
@@ -682,21 +682,21 @@ generate
           reg [5:0] indexLSU_ALU_reg3;
           reg indexLSU_ALU_has_reg2;
           reg rA_en_reg3, rB_en_reg3, rT_en_reg3;
-          reg [4+5:0] rA_reg4;
-          reg [4+5:0] rB_reg4;
-          reg [4+5:0] rBX_reg4;
-          reg [4+5:0] rFL_reg4;
-          reg [4+5:0] rFL2_reg4;
-          reg [4+5:0] rT_reg4;
+          reg [4+6:0] rA_reg4;
+          reg [4+6:0] rB_reg4;
+          reg [4+6:0] rBX_reg4;
+          reg [4+6:0] rFL_reg4;
+          reg [4+6:0] rFL2_reg4;
+          reg [4+6:0] rT_reg4;
           reg rA_en_reg4, rB_en_reg4, rT_en_reg4;
           reg rA_en_reg5, rB_en_reg5, rT_en_reg5;
           reg rT_en0_reg,rT_en0_reg2,rT_en0_reg3,rT_en0_reg4,rT_en0_reg5;
           wire rT_en0;
-          reg [4+5:0] rTMem;
-          reg [4+5:0] rTMem_reg;
-          reg [4+5:0] rTMem_reg2;
-          reg [4+5:0] rTMem_reg3;
-          reg [4+5:0] rTMem_reg4;
+          reg [4+6:0] rTMem;
+          reg [4+6:0] rTMem_reg;
+          reg [4+6:0] rTMem_reg2;
+          reg [4+6:0] rTMem_reg3;
+          reg [4+6:0] rTMem_reg4;
           wire [65:0] dataA;
           wire [65:0] dataB;
           wire [65:0] dataBX;
@@ -805,7 +805,7 @@ generate
           wire [5:0] missphyfirst;
           wire [5:0] indexST;
           reg [5:0] indexST_reg;
-          wire indexST_has;
+          wire xindexST_has;
           wire alloc_en,alloc2_en;
           wire [5:0] LQ;
           wire [5:0] LQX;
@@ -825,14 +825,14 @@ generate
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_pos,index12m_idx,index12m_idx_has);
           bit_find_index pfaff_mod({28'b0,missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]]},missphyfirst,);
           assign missx_en[PHY]=index12m_idx_reg==fu;
-          assign missx_addr[PHY]= fu==index12m_idx_reg ? {1'b0,dreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 'z;
+          assign missx_addr[PHY]= fu==index12m_idx_reg ? {1'b0,xdreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 'z;
           assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]] & {36{index12m_idx==fu && missphyfirst[5:0]==PHY[5:0]}},fu[3:0]};
           bit_find_index indexLSU_ALU_mod(~|wstall & is_flg_ldi ? 1<<ldi2reg[fu][ldi] : rdy[2][fu][63:0]&rdy[1][fu][63:0]&rdy[3][fu][63:0]&rdy[4][fu][63:0]&{64{~index_miss_has[fu] && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
           bit_find_index indexFLG_mod(rdy[3][fu]&{64{~index_miss_has[fu] && ~|miss_reg}},indexFLG,indexFLG_has);
           bit_find_index indexLDU_mod(rdy[0][fu][63:0],indexLDU,indexLDU_has);
           bit_find_index indexAlloc(free[fu],alloc[5:0],alloc_en);
         //  bit_find_indexR indexAlloc2(free[fu],alloc2[5:0],alloc2_en);
-          bit_find_index indexST_mod(dreqmort_flags[4][63:0] & dreqmort_flags[2][63:0] ,indexST,indexST_has);
+          bit_find_index indexST_mod(dreqmort_flags[4][63:0] & dreqmort_flags[2][63:0] ,indexST,xindexST_has);
           fpuadd64 Xadd(clk,rst,dataMF,dataBF,1'b1,xaddres);
           fpuprod64 Xmul(clk,rst,dataMF,dataBF,1'b1,xmulres);
           assign ret0[fu][PHY]=!data_retFL[fu][reti][0];
@@ -842,7 +842,7 @@ generate
           assign mxret0[fu][PHY]=dreqmort_flags[5][reti]^dreqmort_flags[4][reti];
           assign mxret1[fu]=&mxret0[fu];
           assign retire_ret=&retire;
-          assign rT[10:6]={fu,1'b0};
+          //assign rT[10:6]={fu,1'b0};
           assign instr_clextra={insn_clopp[31:30],insn_clopp[24],insn_clopp[9:5],insn_clopp[3:0]};
           assign clres={dataA_reg[63:32],dataA_reg2[31:0]}<{dataB_reg[63:32],dataB_reg2[31:0]}-1;
           assign clres2={dataA_reg[63:32],dataA_reg2[31:0]}<{dataB_reg[63:32],dataB_reg2[31:0]};
@@ -943,9 +943,9 @@ generate
           /* verilator lint_on WIDTHEXPAND */
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
 
-          assign opcode_reg[fu]=opcode_reg;
-          assign dreqmort_flags[PHY]=dreqmort_flags;
-          assign indexST_has[fu]=indexST_has;
+          assign xopcode_reg[fu]=opcode_reg;
+          assign xdreqmort_flags[PHY]=dreqmort_flags;
+          assign indexST_has[fu]=xindexST_has;
 
           assign res_logic[63:32]=opcode_reg[2:1]==0 && ~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 && ~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
@@ -1040,7 +1040,7 @@ generate
               rA<=rdyA[fu][indexLSU_ALU];
               rB<=rdyB[fu][indexLSU_ALU];
               rBX<=rdyB[fu][indexLDU];
-              rT<={fu[3:0],indexLSU_ALU};
+              rT<={fu[3:0],1'b0,indexLSU_ALU};
               rTMem<={fu[3:0],rdyM[fu][indexLSU_ALU]};
               opcode<=data_op[fu][indexLSU_ALU];
               opcodex<=data_op[fu][indexLDU];
@@ -1386,28 +1386,28 @@ generate
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[7:4] && inssr[fuZ][39:38]==2)
                        rdyA[fu][alloc]<={fuZ[3:0],1'b1,xalloc2[fuZ]};
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[7:4] && ~^inssr[fuZ][39:38])
-                       rdyA[fu][alloc]<={fuZ[3:0],xalloc[fuZ]};
+                       rdyA[fu][alloc]<={fuZ[3:0],1'b0,xalloc[fuZ]};
                    end
                    rdyB[fu][alloc]<=rTT[{insn_clopp[4]&&~|instr[11:10],insn_clopp[14]|(insn_clopp[4]&&~|instr[11:10]),instr[11:8]}];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[11:8] && inssr[fuZ][39:38]==2)
                        rdyB[fu][alloc]<={fuZ[3:0],1'b1,xalloc2[fuZ]};
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[11:8] && ~^inssr[fuZ][39:38])
-                       rdyB[fu][alloc]<={fuZ[3:0],xalloc[fuZ]};
+                       rdyB[fu][alloc]<={fuZ[3:0],1'b0,xalloc[fuZ]};
                    end
                    rdyFL0[fu][alloc]<=rTT[instr[33]];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && inssr[fuZ][3:0]=={3'b0,instr[33]} && inssr[fuZ][39:32]==2)
                        rdyFL0[fu][alloc]<={fuZ[3:0],1'b1,xalloc2[fuZ]};
                      if(fuZ<fu && inssr[fuZ][3:0]=={3'b0,instr[33]} && ~^inssr[fuZ][39:38])
-                       rdyFL0[fu][alloc]<={fuZ[3:0],xalloc[fuZ]};
+                       rdyFL0[fu][alloc]<={fuZ[3:0],1'b0,xalloc[fuZ]};
                    end
                    rdyFL1[fu][alloc]<=rTT[2];
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && inssr[fuZ][3:0]==2 && inssr[fuZ][39:32]==2)
                        rdyFL1[fu][alloc]<={fuZ[3:0],1'b1,xalloc2[fuZ]};
                      if(fuZ<fu && inssr[fuZ][3:0]==2 && ~^inssr[fuZ][39:38])
-                       rdyFL1[fu][alloc]<={fuZ[3:0],xalloc[fuZ]};
+                       rdyFL1[fu][alloc]<={fuZ[3:0],1'b0,xalloc[fuZ]};
                    end
                    //NOTE: second flag needed only for cloop; correct later
                   {rdy[5][fu][alloc],rdy[4][fu][alloc],rdy[3][fu][alloc],rdy[2][fu][alloc],rdy[1][fu][alloc],rdy[0][fu][alloc]}<={1'b1,instr[39:38]==2'b10,instr[39:38]==2'b10,1'b0,instr[32:27]==3,instr[39:38]!=2'b01};  
@@ -1462,10 +1462,10 @@ generate
   bit_find_index12 ex(~(ret1|mret1),retire,,);
     tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
       clk,rst,
-      XH_intf_in[tile_X], 
-      XH_intf_out[tile_X],
-      AXH_intf_in[tile_X], 
-      AXH_intf_out[tile_X],
+      XH_intf_in, 
+      XH_intf_out,
+      AXH_intf_in, 
+      AXH_intf_out,
       ~random[0],
       expunv_data_reg, 
       expunv_addr_reg[36:0],
@@ -1494,10 +1494,10 @@ generate
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,3) busCLV (
       clk,rst,
-      XV_intf_in[tile_Y], 
-      XV_intf_out[tile_Y],
-      AXV_intf_in[tile_X], 
-      AXV_intf_out[tile_X],
+      XV_intf_in, 
+      XV_intf_out,
+      AXV_intf_in, 
+      AXV_intf_out,
       random[0],
       expunv_data_reg, 
       expunv_addr_reg[36:0],
@@ -1526,10 +1526,10 @@ generate
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,1) busCHH (
       clk,rst,
-      XH_intf_in[tile_X], 
-      XH_intf_out[tile_X],
-      AXH_intf_in[tile_X], 
-      AXH_intf_out[tile_X],
+      XH_intf_in, 
+      XH_intf_out,
+      AXH_intf_in, 
+      AXH_intf_out,
       ~random[0],
       expunh_data_reg, 
       expunh_addr_reg[36:0],
@@ -1558,10 +1558,10 @@ generate
       shareX);
     tileXY_cl_fifo #(tile_X,tile_Y,4) busCHV (
       clk,rst,
-      XV_intf_in[tile_Y], 
-      XV_intf_out[tile_Y],
-      AXV_intf_in[tile_X], 
-      AXV_intf_out[tile_X],
+      XV_intf_in, 
+      XV_intf_out,
+      AXV_intf_in, 
+      AXV_intf_out,
       random[0],
       expunh_data_reg, 
       expunh_addr_reg[36:0],
@@ -1662,7 +1662,7 @@ generate
                 assign poo_e[fuB][63:0]={poo_u[fuB][63:0],line_data[resA_reg[fuB][6:3]][63:0]}>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
                 /* verilator lint_on WIDTHTRUNC */
                 assign {poo_e[fuB][65:64],dummy64}=line_data[resA_reg[fuB][6:3]]>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
-                assign poo_u[fuB]=opcode_reg[fuB][5] ? 0 : line_data[res_reg[fuB][6:3]];
+                assign poo_u[fuB]=xopcode_reg[fuB][5] ? 0 : line_data[res_reg[fuB][6:3]];
                 if (fuB<8) assign poo_c[64*fuB+:64]=line_data[{IP[8],fuB[2:0]}][63:0];
                 if (fuB<8) assign poo_cp[3*fuB+:3]=line_data[{IP[8],fuB[2:0]}][65:63];
                 assign {poo_mask}=(130'h3ffff_ffff_ffff_ffff_00<<(ldsize_reg[fuB][2:0]*8))&{66'h3ffff_ffff_ffff_ffff,64'b0};
@@ -1684,7 +1684,7 @@ generate
                     for (byte_=0;byte_<8;byte_=byte_+1)
                       if (anyhitW[fuB][way] && is_write_reg[fuB] && resX[fuB][12:7]==line[5:0] && byte_<write_size_reg[fuB]); 
                   line_data[resX[fuB][6:3]][8*(byte_+resX[fuB][2:0]-8*write_upper[fuB])+:8]<=resWD[fuB][8*byte_+:8];
-                    if (anyhitE_reg[fuB][way] && srcIPOff[reti_reg2][12:7]==line[5:0] && dreqmort_flags[fuB][7][reti_reg2]); 
+                    if (anyhitE_reg[fuB][way] && srcIPOff[reti_reg2][12:7]==line[5:0] && xdreqmort_flags[fuB][7][reti_reg2]); 
                   line_data[{srcIPOff[reti_reg2][6],3'b111}][fee_undex(fuB)]<=1'b0;
                 //        if (][way] && is_write_reg[fuB] && funit[fuB].resW[2:0]==line[5:3] && byte_<write_size_reg[fuB] &&
                 //            resX[fuB][63:9]=='1); 

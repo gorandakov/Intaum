@@ -28,6 +28,8 @@ module frontend (
   input irqload,
   input [3:0] irqnum
   );
+  parameter tile_X=0;
+  parameter tile_Y=0;
   reg rst=1;
   reg rst0=1;
   reg rst_reg;
@@ -172,9 +174,6 @@ default:
       end
   endfunction
 generate
-  genvar tile_X,tile_Y,subPHY;
-  for(tile_X=0;tile_X<0;tile_X=tile_X+1) 
-  for(tile_Y=0;tile_Y<0;tile_Y=tile_Y+1) begin : HV
   wire iscall,isret;
   wire [1:0] ucjmp;
   reg [7:0] sttop;
@@ -319,7 +318,7 @@ generate
   irq_IP,
   memstall
   );
-    end
+    //end
   end
   endgenerate
 endmodule
