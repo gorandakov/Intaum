@@ -770,6 +770,8 @@ generate
           wire [3:0] cond2;
           wire cond_xtru;
           reg cond_xtru_reg;
+          reg [4:0] ccmiss_reg;
+          reg [3:0][36:0] cmiss;
           integer fu3;
           integer sch;
           wire isand,op_anx,c32,c64,s64,foo,clres,clres2,clres3,res_cloop0,res_cloop1,res_cloop2,res_loop0,res_loop1,res_loop2;
@@ -828,9 +830,12 @@ generate
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_pos,index12m_idx,index12m_idx_has);
           bit_find_index pfaff_mod({28'b0,missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]]},missphyfirst,);
-          assign missx_en[PHY]=index12m_idx_reg==fu;
-          assign missx_addr[PHY]= fu==index12m_idx_reg ? {1'b0,xdreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 'z;
-          assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]] & {36{index12m_idx==fu && missphyfirst[5:0]==PHY[5:0]}},fu[3:0]};
+          assign missx_en[PHY]=index12m_idx_reg==fu && index12m_idx_reg_has || !index12m_idx_reg_has && fu<4 && PHY==0 && ccmiss_reg[fu];
+          assign missx_addr[PHY]= fu==index12m_idx_reg && index12m_idx_reg_has | (fu>3) | PHY!=0? 
+              {1'b0,xdreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 'z;
+          assign missx_addr[PHY]=!index12m_idx_reg_has && fu<4 && PHY==0 ? {2'b0,cmiss[fu]} : 'z;
+          assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]] & {36{index12m_idx==fu && missphyfirst[5:0]==PHY[5:0]}}|
+              {36{!index12m_idx_reg_has && fu<4 && PHY==0}},fu[3:0]};
           bit_find_index indexLSU_ALU_mod(~|wstall & is_flg_ldi ? 1<<ldi2reg[fu][ldi] : rdy[2][fu][63:0]&rdy[1][fu][63:0]&rdy[3][fu][63:0]&rdy[4][fu][63:0]&{64{~index_miss_has[fu] && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
           bit_find_index indexFLG_mod(rdy[3][fu]&{64{~index_miss_has[fu] && ~|miss_reg}},indexFLG,indexFLG_has);
           bit_find_index indexLDU_mod(rdy[0][fu][63:0],indexLDU,indexLDU_has);
@@ -1430,6 +1435,25 @@ generate
                       data_op[fu][alloc][7:0]<=8'b10101001;
                       data_op[fu][alloc]<='0;
                   end 
+              end
+              if (PHY==0) begin
+                 if (!ccmiss_reg[3]) begin
+                     ccmiss_reg[0]<=|ccmiss;
+                     ccmiss_reg[1]<=ccmiss_reg[0];
+                     ccmiss_reg[2]<=ccmiss_reg[1];
+                     ccmiss_reg[3]<=ccmiss_reg[2];
+                 end else if (fu<3 && ccinsert[fu]) begin
+                     ccmiss_reg[fu]<=1'b0;
+                 end end else if (fu==3 &&ccinsert[fu]) begin
+                     ccmiss_reg[4]<=1'b1;
+                     if (ccmiss_reg[2:0]==3'b0) ccmiss_reg[3]<=1'b0;
+                 end else if (ccmiss_reg[2:0]==3'b0 && ccmiss_reg[4]) begin
+                     ccmiss_reg[3]<=1'b0;
+                 end
+                 if (!anyhitC_reg3 && !ccmiss_reg)  cmiss[0]<=IP_reg4;
+                 if (!anyhitC_reg3 && !ccmiss_reg2) cmiss[1]<=IP_reg4;
+                 if (!anyhitC_reg3 && !ccmiss_reg3) cmiss[2]<=IP_reg4;
+                 if (!anyhitC_reg3 && !ccmiss_reg4) cmiss[3]<=IP_reg4;
               end
           end
           always @* begin
