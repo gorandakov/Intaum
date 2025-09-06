@@ -230,14 +230,20 @@ generate
   wire [35:0][39:0] rdphy;
   wire [35:0][39:0] rdphy0;
   wire [41:0] irq_IP={31'b1,irqnum[3:0],7'b0};
+  wire [35:0][11:0] resource_stall;
+  wire [11:0] resource_stallx;
   wire memstall;
-
+  wire [35:0] ccmiss;
+  integer z;
+  
   always @(posedge clk) begin
     missus_reg<=missus;
     missus_reg2<=missus_reg;
     missus_reg3<=missus_reg2;
     missus_reg4<=missus_reg3;
     retSRCIP_reg<=retSRCIP;
+    resource_stallx=12'b0;
+    for(z=0;z<36;z=z+1) resource_stallx=resource_stallx|resource_stall[z];
   end
   memblk #(tile_X,tile_Y) blkmem(clk,rst,memstall,random[15:0],
     rdaddr0,
@@ -316,6 +322,9 @@ generate
   rdphy,
   rdphy0,
   irq_IP,
+  resource_stall[PHY],
+  resource_stallx,
+  ccmiss,
   memstall
   );
     //end

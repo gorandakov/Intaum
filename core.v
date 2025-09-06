@@ -83,6 +83,9 @@ module core (
   inout [35:0][39:0] rdphy,
   inout [35:0][39:0] rdphy0,
   inout [41:0] irq_IP,
+  output [11:0] resource_stall_preregister,
+  input [11:0] resource_stall_external,
+  inout [35:0] ccmiss,
   inout memstall
   );
 /* verilator hier_block */
@@ -469,6 +472,7 @@ generate
       reg [41:0] ret_cookie_reg;
       reg [41:0] ret_cookie_reg2;
       reg [41:0] ret_cookie_reg3;
+      reg [11:0] resource_stall;
       assign ret_cookie=htlb[sttop];
       bit_find_index j0pred({28'b0,~pred_en_reg2[0][35:0]},idxpreda,idxpreda_has);
       bit_find_index j1pred({28'b0,~pred_en_reg2[1][35:0]},idxpredb,idxpredb_has);
@@ -552,11 +556,11 @@ generate
           pppoc2_reg2<=pppoc2_reg;
       end
       wire [1:0] is_cloop;
-      assign ccmiss=ifu_stage_valid[3] &&  ~|anyhitC_reg3;
+      assign ccmiss[PHY]=ifu_stage_valid[3] &&  ~|anyhitC_reg3;
       assign is_cloop[0]=tbufl[0][IP[12:4]][44];
       assign is_cloop[1]=tbufl[1][IP[12:4]][44];
       wire ret_stall;
-      assign ret_stall=insi[5:0]==(reti[5:0]-6'd1);
+      assign ret_stall=insi[5:0]==(reti[5:0]-6'd1) || |resource_stall;
 
       always @(posedge clk) begin
         ids0_reg<=ids0;
@@ -579,9 +583,9 @@ generate
         if (rst) ifu_stage_valid<=1;
         else if (except) ifu_stage_valid<=1;
         else ifu_stage_valid={ifu_stage_valid[2:0],1'b1};
-      if (irqload|ccmiss|ret_stall|except_ldconfl) begin
+      if (irqload| |ccmiss|ret_stall|except_ldconfl) begin
           IP<=irqload ? irq_IP : except_ldconfl ? retSRCIP_reg : IP_reg4;
-          if (ccmiss|ret_stall) GHT<=GHT_reg4;
+          if ( |ccmiss|ret_stall) GHT<=GHT_reg4;
       end else if (&jen[1:0]) begin
         if (|is_cloop[1:0]) vec<=1'b1;
         if (&pred_en[0]) begin GHT<={GHT[14:0],1'b1}; IP<=isret ? ret_cookie : {tbufl[0][IP[12:4]][32:4],IP[12:4],tbufl[0][IP[12:4]][3:0]}; 
@@ -853,6 +857,8 @@ generate
           assign res_loop0=clres;
           assign res_loop1=clres2;
           assign res_loop2=clres3;
+          
+          assign resource_stall_preregister[fu]=indexLSU_ALU_has && ~indexLSU_ALU!=free;
 
           assign rT_en0=indexLSU_ALU_has;
           assign rT_en=opcode[5] && rT_en0;
@@ -1010,6 +1016,7 @@ generate
           assign loopstop=data_loopstop[indexLSU_ALU_reg]==63 ? loopstop_save : data_loopstop[indexLSU_ALU_reg];
           always @(posedge clk) begin
               loopstop_save<=loopstop;
+              resource_stall[fu]<=resource_stall_external[fu];
               dataA_reg[63:32]<=dataA[63:32];
             //  dataA_rexx[31:0]<=dataA[31:0];
               dataA_reg[31:0]<=dataA[31:0];
