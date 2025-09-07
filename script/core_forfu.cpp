@@ -1,5 +1,5 @@
     class funit : module12 {
- core_for.v
+ core_forfu.v
           regwire insn[39:0];
           regwire rA[4+6:0];
           regwire rB[4+6:0];
@@ -109,10 +109,6 @@
       regwire tr[9:0][38:0];
       regwire hway[7:0][3:0];
       regwire vway[7:0][3:0];
-          regwire poo_e_reg[11:0][65:0];
-          regwire line_data[15:0][65:0];
-          regwire tag[1:0][38:0];
-                regwire poo_mask_reg[65:0];
           contwire xmulres[63:0];
           contwire xaddres[63:0];
           contwire alloc[5:0];
@@ -145,8 +141,3 @@ contwire alloc2[5:0];
           contwire loopstop[5:0];
           contwire cond_early[3:0];
   contwire shareX[5:0];
-          contwire poo_e[11:0][65:0];
-          contwire poo_u[11:0][65:0];
-                contwire poo_mask[65:-64];
-                contwire dummy64[63:0];
-                contwire dummy64B[63:0];
