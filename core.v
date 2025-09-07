@@ -830,12 +830,12 @@ generate
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_pos,index12m_idx,index12m_idx_has);
           bit_find_index pfaff_mod({28'b0,missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]]},missphyfirst,);
-          assign missx_en[PHY]=index12m_idx_reg==fu && index12m_idx_reg_has || !index12m_idx_reg_has && fu<4 && PHY==0 && ccmiss_reg[fu];
-          assign missx_addr[PHY]= fu==index12m_idx_reg && index12m_idx_reg_has | (fu>3) | PHY!=0? 
+          assign missx_en[PHY]=index12m_idx_reg==fu && index12m_idx_reg_has || !index12m_idx_reg_has && PHY<4 && fu==0 && ccmiss_reg[PHY];
+          assign missx_addr[PHY]= fu==index12m_idx_reg && index12m_idx_reg_has | (PHY>3) & fu=0 ? 
               {1'b0,xdreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 'z;
-          assign missx_addr[PHY]=!index12m_idx_reg_has && fu<4 && PHY==0 ? {2'b0,cmiss[fu]} : 'z;
-          assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]] & {36{index12m_idx==fu && missphyfirst[5:0]==PHY[5:0]}}|
-              {36{!index12m_idx_reg_has && fu<4 && PHY==0}},fu[3:0]};
+          assign missx_addr[PHY]=!index12m_idx_reg_has && PHY<4 && fu==0 ? {2'b0,cmiss[PHY]} : 'z;
+          assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]] |
+              {36{!index12m_idx_reg_has && PHY<4 && fu==0}},fu[3:0]};
           bit_find_index indexLSU_ALU_mod(~|wstall & is_flg_ldi ? 1<<ldi2reg[fu][ldi] : rdy[2][fu][63:0]&rdy[1][fu][63:0]&rdy[3][fu][63:0]&rdy[4][fu][63:0]&{64{~index_miss_has[fu] && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
           bit_find_index indexFLG_mod(rdy[3][fu]&{64{~index_miss_has[fu] && ~|miss_reg}},indexFLG,indexFLG_has);
           bit_find_index indexLDU_mod(rdy[0][fu][63:0],indexLDU,indexLDU_has);
