@@ -134,16 +134,35 @@ module core (
 
   function [63:0] flconv;
     input [65:0] din;
-    input isdbl;
-    flconv=isdbl ? {din[63:62],din[60:0],din[0]} : {din[31:30],{2{~din[30]}},din[29:0],{2{din[0]}},28'b0};
+    input [2:0] isdbl;
+    case(isbdl)
+      3'd7:  flconv={din[63:62],din[60:0],1'b0};
+      3'd6:  flconv={din[31:30],{2{~din[30]|&din[30:24]}},din[29:0],30'b0};
+      3'd3:  flconv={din[63:61],din[60:0]};
+      3'd1:  flconv={din[15:9],{4{~din[14]|&din[14:9]}},din[8:0],45'b0};
+      3'd0:  begin
+                 casez (din[7:0])
+                   8'b1zzzzzzz: flconv={1'b0,10'h200,din[6:0],46'b0};
+                   8'b01zzzzzz: flconv={1'b0,10'h1ff,din[5:0],47'b0};
+                   8'b001zzzzz: flconv={1'b0,10'h1fe,din[4:0],48'b0};
+                   8'b0001zzzz: flconv={1'b0,10'h1fd,din[3:0],49'b0};
+                   8'b00001zzz: flconv={1'b0,10'h1fc,din[2:0],50'b0};
+                   8'b000001zz: flconv={1'b0,10'h1fb,din[1:0],51'b0};
+                   8'b0000001z: flconv={1'b0,10'h1fa,din[0:0],52'b0};
+                   8'b00000001: flconv={1'b0,10'h1f9,53'b0};
+                   8'b00000000: flconv={1'b0,10'h000,53'b0};
+                 endcase
+             end
+    endcase
   endfunction
   function [65:0] fsconv;
     input [63:0] din;
     input [1:0] sel;
     case (sel)
 
-      0: fsconv={2'b10,din[63:62],~din[62],din[61:1]};
-      1: fsconv={34'b10,din[63:62],din[59:30]};
+      0: fsconv={2'b10,din[63:62],~din[62]|&din[62:53],din[61:1]};
+      1: fsconv={2'b10,32'b0,din[63:62],din[59:30]};
+      2: fsconv={2'b10,{56'b0,|din[62:53],din[53:47]}<<(din[62:53]-10'h1f8)};//vxerilator might compile this line wrong
       default: fsconv={2'b10,din[63:0]};
     endcase
   endfunction               
@@ -1282,7 +1301,7 @@ generate
               if (rT_en_reg2 && opcode_reg2[10] && ~|opcode_reg2[7:6]) data_retFL[fu][LQ_reg]<=opcode_reg2[9]==0 ? {res_loop0,res_loop2,res_loop2,res_loop1,1'b0} : {res_cloop0,res_cloop2,res_cloop2,res_cloop1,1'b0};
               if (rT_en_reg5 &&(opcode_reg4[7:5]==0 && opcode_reg4[4:0]==1 && dataBI_reg4[20])) data_fp[fu][rTMem_reg4[5:0]]<=dataBI_reg4[22] ? dataMF_reg2 : xaddres;
               if (rT_en_reg5 &&(opcode_reg4[7:5]==0 && opcode_reg4[4:0]==1 && dataBI_reg4[21])) data_fp[fu][rTMem_reg4[5:0]]<=xmulres;
-              if (rT_en_reg5 &&(opcode_reg4[7] )) data_fp[fu][rTMem_reg4[5:0]]<=flconv(pppoe_reg3[fu],opcode_reg4[8]);
+              if (rT_en_reg5 &&(opcode_reg4[7] )) data_fp[fu][rTMem_reg4[5:0]]<=flconv(pppoe_reg3[fu],opcode_reg4[10:8]);
               if (rT_en0_reg4 && opcode_reg3[5:3]==7) data_gen[fu][rTMem_reg3[5:0]][65:32]<={1'b0,res_mul[63],res_mul[63:32]};
               if (rT_en0_reg4 && opcode_reg3[7]) data_gen[fu][rTMem_reg2[5:0]][65:32]<=pppoe_reg2[fu][65:32];
               /* verilator lint_off WIDTHTRUNC */
