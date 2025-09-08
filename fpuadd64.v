@@ -4,6 +4,7 @@ module fpuadd64(
   input [63:0] A,
   input [63:0] B,
   input rnd,
+  input pookm,
   output [63:0] res
   );
 
@@ -67,11 +68,11 @@ module fpuadd64(
     res_dn_reg<=res_dn;
     zux_reg<=zux;
   end
-  assign {cAB0,AB0}={1'b1,A[52:0]}-{1'b1,B[52:0]};
-  assign BA0={1'b1,B[52:0]}-{1'b1,A[52:0]};
+  assign {cAB0,AB0}={1'b1,A[52:0]}-{~pookm,B[52:0]};
+  assign BA0={~pookm,B[52:0]}-{1'b1,A[52:0]};
 
-  assign AB1={1'b1,A[52:0],rnd}-{2'b1,B[52:0]};
-  assign BA1={1'b1,B[52:0],rnd}-{2'b1,A[52:0]};
+  assign AB1={1'b1,A[52:0],rnd}-{1'b0,~pookm,B[52:0]};
+  assign BA1={~pookm,B[52:0],rnd}-{2'b1,A[52:0]};
 
  assign {cABExp,ABExp}=A[62:53]-B[62:53];
  assign BAExp=B[62:53]-A[62:53];
@@ -85,14 +86,14 @@ module fpuadd64(
  assign S=!ABeq && age ? AB1[54:1] : 'z;
  assign S=!ABeq && !age ? BA1[54:1] : 'z;
 
- assign shAB=({1'b1,B[52:0],2'b0}^{56{sxor}})>>ABExp;
+ assign shAB=({~pookm,B[52:0],2'b0}^{56{sxor}})>>ABExp;
  assign shBA=({1'b1,A[52:0],2'b0}^{56{sxor}})>>BAExp;
  assign sxor=A[63]^B[63];
 
 bit_find_index nrm({10'b0,S_reg},pfs,s_has);
 assign shar=age ? shAB&bz : shBA&ba;
-assign shn=age ? {1'b1,A[52:0],rnd,1'b0} &ba: {1'b1,B[52:0],rnd,1'b0}&bz;
-assign shn2=age ? {1'b1,A[52:0],1'b0,rnd} : {1'b1,B[52:0],1'b0,rnd};
+assign shn=age ? {1'b1,A[52:0],rnd,1'b0} &ba: {~pookm,B[52:0],rnd,1'b0}&bz;
+assign shn2=age ? {1'b1,A[52:0],1'b0,rnd} : {~pookm,B[52:0],1'b0,rnd};
 assign res_sh=shn_reg + shar_reg[55:0];
 assign res_sh2=shn2_reg + shar_reg;
 assign res_dn=S_reg << pfs;
