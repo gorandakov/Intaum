@@ -1254,7 +1254,7 @@ generate
               if (rT_en0_reg | rT_en_reg && |opcode_reg[7:6]) begin
                   dreqmort[LQ][31:0]<=res[31:0];
                   {dreqmort_flags[6][LQ],dreqmort_flags[5][LQ],dreqmort_flags[4][LQ],
-                   dreqmort_flags[3][LQ],dreqmort_flags[2][LQ],dreqmort_flags[1][LQ],dreqmort_flags[0][LQ]}<={~opcode_reg[20],~chk&~opcode_reg[5]||~chkA,1'b0,opcode_reg[7:6],opcode_reg[9:8]};
+                   dreqmort_flags[3][LQ],dreqmort_flags[2][LQ],dreqmort_flags[1][LQ],dreqmort_flags[0][LQ]}<={~opcode_reg[20],~chk&~opcode_reg[5]||~chkA,opcode_reg[20]&opcode_reg[7],opcode_reg[7:6],opcode_reg[9:8]};
               end
               if (rT_en0_reg2 | rT_en_reg2 && |opcode_reg2[7:6]) begin
                   dreqmort[LQ][63:32]<=res[63:32];
@@ -1294,7 +1294,7 @@ generate
               if (rT_en_reg && opcode[10] | opcode[5]) data_gen[fu][rT_reg[6:0]][31:0]<=res[31:0]&{16'hff_ff,{8{opcode[7:0]!=0 || dataBI[31]}},{8{opcode[7:0]!=0 || dataBI[30]}}};
               if (rT_en0_reg3 && opcode_reg2[7]) data_gen[fu][rTMem_reg2[5:0]][31:0]<=pppoe_reg[fu][31:0];
               if (rT_en0_reg3 && opcode_reg2[5:3]==7) data_gen[fu][rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
-              if (rT_en_reg2 && opcode_reg[10] | opcode_reg[5]) data_gen[fu][rT_reg[6:0]][65:32]<={chk ? res[63] : c64,chk ? ~res[63]:s64,res[63:32]}&{34{opcode_reg[20]}};
+              if (rT_en_reg2 && opcode_reg[10] | opcode_reg[5]) data_gen[fu][rT_reg[6:0]][65:32]<={chk ? res[63] : c64,chk ? ~res[63]:s64,res[63:32]}&{34{opcode_reg[20]|opcode_reg[7]}};
               if (rT_en_reg2) data_genFL[fu][rT_reg2[6:0]][3:0]<=opcode_reg2[7:0]==1 && dataBI_reg2[22] ? {1'b0,dataMF_reg[63],dataMF_reg[63],~|dataMF_reg[62:53]} : opcode_reg2[7] ? {1'b0,pppoe_reg3[fu][63],pppoe_reg3[fu][63],~|pppoe_reg3[fu][63:0]}:
                   {chk_reg2 ? res_reg2[fu][63] : c64_reg2,chk_reg2 ? ~res_reg2[fu][63]:s64_reg2,res_reg2[fu][63],~|res_reg2[fu][63:0]};
               if (rT_en_reg2) data_retFL[fu][LQ_reg]<=opcode_reg2[7:5]==0 ? {1'b0,dataMF[63],dataMF[63],~|dataMF[62:53],1'b0} : {chk ? res[63] : c64,chk ? ~res[63]:s64,res[63],~|res[63:0],1'b0};
