@@ -1254,7 +1254,7 @@ generate
               if (rT_en0_reg | rT_en_reg && |opcode_reg[7:6]) begin
                   dreqmort[LQ][31:0]<=res[31:0];
                   {dreqmort_flags[6][LQ],dreqmort_flags[5][LQ],dreqmort_flags[4][LQ],
-                   dreqmort_flags[3][LQ],dreqmort_flags[2][LQ],dreqmort_flags[1][LQ],dreqmort_flags[0][LQ]}<={~opcode_reg[20],~chk&~opcode_reg[5]||~chkA,opcode_reg[20]&opcode_reg[7],opcode_reg[7:6],opcode_reg[9:8]};
+                   dreqmort_flags[3][LQ],dreqmort_flags[2][LQ],dreqmort_flags[1][LQ],dreqmort_flags[0][LQ]}<={~opcode_reg[20],~chk&~opcode_reg[5]||~chkA,opcode_reg[20]&opcode_reg[7],opcode_reg[7]&~opcode_reg[20],opcode_reg[6],opcode_reg[9:8]};
               end
               if (rT_en0_reg2 | rT_en_reg2 && |opcode_reg2[7:6]) begin
                   dreqmort[LQ][63:32]<=res[63:32];
@@ -1352,7 +1352,7 @@ generate
                       if (instr[12]) data_imm_phy[fu][alloc]=vec_reg3 ? 36 : PHY+5'd1;
                       else data_imm_phy[fu][alloc]=1;
                       if (!instr[34]) begin
-                        data_imm[fu][alloc]= - (64'b1<<instr[36:35]);
+                        data_imm[fu][alloc]= 0;
                         data_imm2[fu][alloc]=instr[32:13];
                         data_imm_phy[fu][alloc]=1;
                       end
@@ -1360,7 +1360,7 @@ generate
                   if (&instr[39:38]) begin
                     data_op[fu][alloc][4:0]={instr[37:34],instr[14]};
                       data_op[fu][alloc][5]=1'b1;
-                    data_cond[fu][alloc][3:0]=instr[12:9];
+                    data_cond[fu][alloc][3:0]=instr[11:8];
                     data_imm[fu][alloc]={{46{instr[32]}},instr[32:15]};
                     data_op[fu][alloc][8]=1'b1;
                     if (!instr_clextra[fu]) begin
