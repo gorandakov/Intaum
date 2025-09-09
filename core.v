@@ -135,7 +135,7 @@ module core (
   function [63:0] flconv;
     input [65:0] din;
     input [2:0] isdbl;
-    case(isbdl)
+    case(isdbl)
       3'd7:  flconv={din[63:62],din[60:0],1'b0};
       3'd6:  flconv={din[31:30],{2{~din[30]|&din[30:24]}},din[29:0],30'b0};
       3'd3:  flconv={din[63:61],din[60:0]};
@@ -270,7 +270,7 @@ generate
       reg [15:0] GHT_reg2;
       reg [15:0] GHT_reg3;
       reg [15:0] GHT_reg4;
-      wire ccmiss;
+      //wire ccmiss;
       reg lderror;
       integer ldi;
       integer insi;
@@ -850,7 +850,7 @@ generate
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_pos,index12m_idx,index12m_idx_has);
           bit_find_index pfaff_mod({28'b0,missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]]},missphyfirst,);
           assign missx_en[PHY]=index12m_idx_reg==fu && index12m_idx_reg_has || !index12m_idx_reg_has && PHY<4 && fu==0 && ccmiss_reg[PHY];
-          assign missx_addr[PHY]= fu==index12m_idx_reg && index12m_idx_reg_has | (PHY>3) & fu=0 ? 
+          assign missx_addr[PHY]= fu==index12m_idx_reg && index12m_idx_reg_has | (PHY>3) & fu==0 ? 
               {1'b0,xdreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 'z;
           assign missx_addr[PHY]=!index12m_idx_reg_has && PHY<4 && fu==0 ? {2'b0,cmiss[PHY]} : 'z;
           assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]] |
@@ -1508,6 +1508,7 @@ generate
                     if (!anyhit_reg[fu] && opcode_reg2[7] && ldi[5:0]==indexLSU_ALU_reg3) missrs[ldi[5:0]]=missrs[ldi[5:0]]| |missus[res_reg[fu][18:11]];
                   end
           end
+      end
   wire [5:0] shareX;
   bit_find_index12 ex(~(ret1|mret1),retire,,);
     tileXY_cl_fifo #(tile_X,tile_Y,0) busCLH (
@@ -1638,7 +1639,6 @@ generate
       rddata[PHY][8*66+1+:4],
       rdaddr[PHY],
       shareX);
-      end
       reg [9:0][38:0] tr;
       reg [7:0][3:0] hway;
       reg [7:0][3:0] vway;
@@ -1700,7 +1700,7 @@ generate
                       expunv_addr<={tag[insetrv_addr[0][6]][38],~tag[insetrv_addr[0][6]][38],tag[insetrv_addr[0][6]][36:0]};
                       expunv_phy<=1;
                  end
-             end
+                end
              end
              for(fuB=0;fuB<12;fuB=fuB+1) begin : funit2
                 wire [65:-64] poo_mask;
