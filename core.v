@@ -861,8 +861,8 @@ generate
           bit_find_index indexAlloc(free[fu],alloc[5:0],alloc_en);
         //  bit_find_indexR indexAlloc2(free[fu],alloc2[5:0],alloc2_en);
           bit_find_index indexST_mod(dreqmort_flags[4][63:0] & dreqmort_flags[2][63:0] ,indexST,xindexST_has);
-          fpuadd64 Xadd(clk,rst,dataMF,dataBF,dataBI[23],dataBI[24],xaddres);
-          fpuprod64 Xmul(clk,rst,dataMF,dataBF,dataBI[25],dataBI[26],xmulres);
+          fpuadd64 Xadd(clk,rst,dataMF,dataBF,dataBI_reg[23],dataBI_reg[24],xaddres);
+          fpuprod64 Xmul(clk,rst,dataMF,dataBF,dataBI_reg[25],dataBI_reg[26],xmulres);
           assign ret0[fu][PHY]=!data_retFL[fu][reti][0];
           assign ret1[fu]=&ret0[fu];
           assign mret0[fu][PHY]=dreqmort_flags[5][reti] & dreqmort_flags[5][reti];
