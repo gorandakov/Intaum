@@ -480,6 +480,9 @@ generate
           wire [3:0] ids1;
           wire ids0_has;
           wire ids1_has;
+          wire [11:0] rlim;
+          wire hit_pltpage;
+          reg hit_pltpage_reg,hit_pltpage_reg2,hit_pltpage_reg3;
           wire [11:0] ids0p;
           wire [11:0] ids1p;
           reg irqload_reg;
@@ -863,8 +866,10 @@ generate
           bit_find_index indexST_mod(dreqmort_flags[4][63:0] & dreqmort_flags[2][63:0] ,indexST,xindexST_has);
           fpuadd64 Xadd(clk,rst,dataMF,dataBF,dataBI_reg[23],dataBI_reg[24],xaddres);
           fpuprod64 Xmul(clk,rst,dataMF,dataBF,dataBI_reg[25],dataBI_reg[26],xmulres);
+          popcnt12 rl(rlim&(12'hfff>>(11-fu)),rlx);
           assign ret0[fu][PHY]=!data_retFL[fu][reti][0];
           assign ret1[fu]=&ret0[fu];
+          assign rlim[fu]=~^instr[39:38] && (&instr[37:36] || ~|instr[39:38] && instr[37:34]==8 && !instr[12]);
           assign mret0[fu][PHY]=dreqmort_flags[5][reti] & dreqmort_flags[5][reti];
           assign mret1[fu]=&mret0[fu];
           assign mxret0[fu][PHY]=dreqmort_flags[5][reti]^dreqmort_flags[4][reti];
@@ -1454,6 +1459,7 @@ generate
                       data_op[fu][alloc][7:0]<=8'b10101001;
                       data_op[fu][alloc]<='0;
                   end 
+                  if (|rlx[12:7]) data_op[7:0]==8'd32;
               end
               if (PHY==0) begin
                  if (!ccmiss_reg[3]) begin
