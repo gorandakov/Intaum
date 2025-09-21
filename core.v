@@ -547,6 +547,9 @@ generate
           pppoe_reg2<=pppoe_reg;
           pppoe_reg3<=pppoe_reg2;
           anyhit_reg<=vaff(anyhit);
+          anyhit_pltpage_reg<=anyhit_pltpage;
+          anyhit_pltpage_reg2<=anyhit_pltpage_reg;
+          anyhit_pltpage_reg3<=anyhit_pltpage_reg2;
           anyhitW_reg<=vaff(anyhitW);
           anyhitC_reg<=vaff(anyhitC);
           anyhitC_reg2<=anyhitC_reg;
