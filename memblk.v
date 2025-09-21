@@ -21,8 +21,8 @@ module memblk(
 
   reg [63:0][35:0][1:0] wsz0_reg;
   reg [63:0][35:0][32:0] waddr0_reg;
-  reg [35:0][3:0][32:0] waddr0_xtra;
-  reg [35:0][3:0][32:0] waddr0_xtra_reg;
+  reg [35:0][3:0][33:0] waddr0_xtra;
+  reg [35:0][3:0][33:0] waddr0_xtra_reg;
   reg [35:0][32:0] waddr0_rexx;
   reg [35:0][32:0] waddr0_rexx2;
   reg [63:0][35:0][66*8-1:0] wrdata_reg;
@@ -31,8 +31,8 @@ module memblk(
   reg [63:0][35:0][39:0] rdphydata0_reg;
   reg [35:0][32:0] rdaddr0_rexx;
   reg [35:0][32:0] rdaddr0_rexx2;
-  reg [35:0][3:0][32:0] rdaddr0_xtra;
-  reg [35:0][3:0][32:0] rdaddr0_xtra_reg;
+  reg [35:0][3:0][33:0] rdaddr0_xtra;
+  reg [35:0][3:0][33:0] rdaddr0_xtra_reg;
   reg [63:0][35:0] rden_in_reg;
   reg [63:0][35:0][32:0] rdaddr_reg;
   reg [63:0][35:0][3:0] rdxdata_reg;
@@ -111,7 +111,7 @@ module memblk(
                   rdaddr0_reg[45][wport]<={tlbdata[wport][66*tlbptr+16+:16],rdaddr0_reg[44][wport][16:0]};
               end
               if (tlbdata_reg[wport][66*tlbptr+17+:16]=={rdaddr0_reg[wport][45][32:17]} && rden_in_reg[45][wport] && tlbdata_reg[wport][66*tlbptr+16]) begin
-                  rdaddr0_xtra[wport][tlbptr]<={tlbdata_reg[wport][66*tlbptr+:16],rdaddr0_reg[wport][45][16:0]};
+                rdaddr0_xtra[wport][tlbptr]<={tlbdata_reg[wport][66*tlbptr+63],tlbdata_reg[wport][66*tlbptr+:16],rdaddr0_reg[wport][45][16:0]};
               end
               if (rdaddr0_xtra[wport][tlbptr]==rdaddr0_rexx2[wport]) begin
                   rdaddr0_xtra_reg[wport][0]<=rdaddr0_xtra[wport][tlbptr];
@@ -121,7 +121,7 @@ module memblk(
                   waddr0_reg[45][wport]<={tlbdataw[wport][66*tlbptr+16+:16],waddr0_reg[44][wport][16:0]};
               end
               if (tlbdataw_reg[wport][66*tlbptr+17+:16]=={waddr0_reg[45][wport][32:17]} && wren_in_reg[45][wport] && tlbdataw_reg[wport][66*tlbptr+16]) begin
-                  waddr0_xtra[wport][tlbptr]<={tlbdataw_reg[wport][66*tlbptr+:16],waddr0_reg[45][wport][16:0]};
+                waddr0_xtra[wport][tlbptr]<={tlbdataw_reg[wport][66*tlbptr+63],tlbdataw_reg[wport][66*tlbptr+:16],waddr0_reg[45][wport][16:0]};
               end
               if (waddr0_xtra[wport][tlbptr]==waddr0_rexx2[wport]) begin
                   waddr0_xtra_reg[wport][0]<=waddr0_xtra[wport][tlbptr];
