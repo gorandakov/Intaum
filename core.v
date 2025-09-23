@@ -234,21 +234,21 @@ default:
       reg byzero,byminus;
       reg [42:0] val1;
       begin
-          boogie=addend>>cookie[5:0];
-          val1=val0>>cookie[5:0];
-          on_low=boogie[8]==cookie[20];
+        boogie=addend>>cookie[4:0];
+        val1=val0>>cookie[4:0];
+        on_low=boogie[8]==cookie[19];
           byone=(boogie>>7)==1;
           byminus=(boogie>>7)=='1;
           byzero=(boogie>>7)=='0;
           if (on_low) begin
-            addition_check=(boogie[6:0]+val1[6:0])>=cookie[19:13]-{6'b0,!protect_cookie};
-              if (cookie[12:6]>cookie[19:13] && (boogie[6:0]+val1[6:0])>cookie[12:6])
+            addition_check=(boogie[6:0]+val1[6:0])>=cookie[18:12]-{6'b0,!protect_cookie};
+            if (cookie[11:5]>cookie[18:12] && (boogie[6:0]+val1[6:0])>cookie[11:5])
                   addition_check=0;
             if (!byone && !byzero || isand & byminus)
                 addition_check=0;
           end else begin
-            addition_check=(boogie[7:0]+val1[7:0])>=cookie[20:13]-{7'b0,!protect_cookie};
-              if (cookie[12:6]>cookie[19:13] && (boogie[6:0]+val1[6:0])>cookie[12:6])
+            addition_check=(boogie[7:0]+val1[7:0])>=cookie[19:13]-{7'b0,!protect_cookie};
+            if (cookie[11:5]>cookie[18:12] && (boogie[6:0]+val1[6:0])>cookie[11:5])
                   addition_check=0;
             if (!byminus && !byzero&!isand)
                 addition_check=0;
