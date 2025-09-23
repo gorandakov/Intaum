@@ -216,7 +216,10 @@ default:
   function bndnonred;
       input [20:0] from;
       input [20:0] to;
-      bndnonred=to[5:0]<=from[5:0] && {1'b0,from[19:13]}<={from[20]^to[20],to[19:13]} && from[12:6]>=to[12:6];
+      begin
+          msk=8'hff>>(from[4:0]-to[4:0]);
+          bndnonred=to[4:0]<=from[4:0] && ({1'b0,from[18:12]}&msk)<=({from[19]^to[19],to[18:12]}&msk) && (from[11:5]&msk[6:0])>=(to[11:5]&msk[6:0]);
+      end
   endfunction
   function [20:0] spgcookie;
      input [7:0] on_low;
