@@ -126,7 +126,7 @@ module core (
       10: flcond=cond[1];
       11: flcond=1'b1;
       12: flcond=cond[1]^1;
-      13: flcond=cond[1]^1&~cond[0];
+      13: flcond=~cond[3]^cond[2]&&^cond[2:1]&cond[1];
       14: flcond=~cond[3]^cond[2]&&^cond[2:1];//pointer set
       15: flcond=!(~cond[3]^cond[2]&&^cond[2:1]); //pointer clear
     endcase
