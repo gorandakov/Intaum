@@ -217,7 +217,7 @@ default:
       input [20:0] from;
       input [20:0] to;
       begin
-          msk=8'hff>>(from[4:0]-to[4:0]);
+          msk=8'hff<<(from[4:0]-to[4:0]);
           bndnonred=to[4:0]<=from[4:0] && ({1'b0,from[18:12]}&msk)<=({from[19]^to[19],to[18:12]}&msk) && (from[11:5]&msk[6:0])>=(to[11:5]&msk[6:0]);
       end
   endfunction
