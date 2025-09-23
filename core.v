@@ -966,7 +966,8 @@ generate
             {1'b0,dataBI[31:0]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && ~opcode[8] && cond_tru ?
             {1'b0,dataB[31:0]} : 'z;
-          assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand)
+        assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand) &&
+          bndnonred(dataA[63:43],res_logic [63:43],dataA [38:0])|opcode_reg[7:3]==5'd6
              || ~dataA_reg[65]^dataA_reg[64] || ^dataA_reg[64:63];
           assign chkA=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIXH[42:32],dataBIXH_reg[31:0]},opcode_reg[11],isand)
              || ~dataA_reg[65]^dataA_reg[64] || ^dataA_reg[64:63];
