@@ -1304,10 +1304,10 @@ generate
               instr<=pppoc_reg2[fu*40+:40];
               insn_clopp<=pppoc_reg2[255-32+:32];
               insn_isptr<=pppoc2_reg2;
-              if (rT_en_reg && opcode[10] | opcode[5]) data_gen[fu][rT_reg[6:0]][31:0]<=res[31:0];
+            if (rT_en_reg && opcode[10] | opcode[5]) data_gen[fu][rT_reg[6:0]][31:0]<=res[31:0]&{{8{opcode[7:0]==32 && dataBI[29]}},{8{opcode[7:0]==32 && dataBI[28]}},{8{opcode[7:0]==32 && dataBI[27]}},{8{opcode[7:0]==32 && dataBI[26]}}};
               if (rT_en0_reg3 && opcode_reg2[7]) data_gen[fu][rTMem_reg2[5:0]][31:0]<=pppoe_reg[fu][31:0];
               if (rT_en0_reg3 && opcode_reg2[5:3]==7) data_gen[fu][rTMem_reg2[5:0]][31:0]<=res_mul[31:0];
-              if (rT_en_reg2 && opcode_reg[10] | opcode_reg[5]) data_gen[fu][rT_reg[6:0]][65:32]<={chk ? res[63] : c64,chk ? ~res[63]:s64,res[63:32]};
+            if (rT_en_reg2 && opcode_reg[10] | opcode_reg[5]) data_gen[fu][rT_reg[6:0]][65:32]<={chk ? res[63] : c64,chk ? ~res[63]:s64,res[63:32]}&{34{opcode_reg[20]}};
               if (rT_en_reg2) data_genFL[fu][rT_reg2[6:0]][3:0]<=opcode_reg2[7:0]==1 && dataBI_reg2[22] ? {1'b0,dataMF_reg[63],dataMF_reg[63],~|dataMF_reg[62:53]} : opcode_reg2[7] ? {1'b0,pppoe_reg3[fu][63],pppoe_reg3[fu][63],~|pppoe_reg3[fu][63:0]}:
                   {chk_reg2 ? res_reg2[fu][63] : c64_reg2,chk_reg2 ? ~res_reg2[fu][63]:s64_reg2,res_reg2[fu][63],~|res_reg2[fu][63:0]};
               if (rT_en_reg2) data_retFL[fu][LQ_reg]<=opcode_reg2[7:5]==0 ? {1'b0,dataMF[63],dataMF[63],~|dataMF[62:53],1'b0} : {chk ? res[63] : c64,chk ? ~res[63]:s64,res[63],~|res[63:0],1'b0};
