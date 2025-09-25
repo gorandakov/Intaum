@@ -990,7 +990,7 @@ generate
           assign xdreqmort_flags[PHY]=dreqmort_flags;
           assign indexST_has[fu]=xindexST_has;
 
-          assign res_logic[63:32]=opcode_reg[2:1]==0 && ~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
+          assign res_logic[63:32]=opcode_reg[2:1]==0 && ~foo_reg ? dataA[63:32]&dataB[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 && ~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
         assign res_logic[63:32]=opcode_reg[2:0]==6 && ~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
         assign res_logic[63:32]=opcode_reg[2:0]==7 && ~foo_reg ? dataA[63:32]|{16'b0,dataBI[47:32]} : 'z;
