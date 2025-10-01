@@ -871,8 +871,8 @@ generate
           bit_find_index indexAlloc(free[fu],alloc[5:0],alloc_en);
         //  bit_find_indexR indexAlloc2(free[fu],alloc2[5:0],alloc2_en);
           bit_find_index indexST_mod(dreqmort_flags[4][63:0] & dreqmort_flags[2][63:0] ,indexST,xindexST_has);
-          fpuadd64 Xadd(clk,rst,dataMF,dataBF,dataBI_reg[23],dataBI_reg[24],xaddres);
-          fpuprod64 Xmul(clk,rst,dataMF,dataBF,dataBI_reg[25],dataBI_reg[26],xmulres);
+        fpuadd64 Xadd(clk,rst,dataMF,dataBF,dataBI_reg[23],dataBI_reg[24],xaddres,res2);
+        fpuprod64 Xmul(clk,rst,dataMF,dataBF,dataBI_reg[25],dataBI_reg[26],xmulres,res2);
           popcnt12 rl(rlim&(12'hfff>>(11-fu)),rlx);
           assign ret0[fu][PHY]=!data_retFL[fu][reti][0];
           assign ret1[fu]=&ret0[fu];
@@ -1426,14 +1426,14 @@ generate
                        //rTMem[insi]<=alloc;
                   end
                    data_retFL[fu][insi]<=1;
-                   rdyA[fu][alloc]<=rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? insn_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : insn_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}];
+                 rdyA[fu][alloc]<=(rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? insn_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : insn_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}])^{instr[39:37]==0 && instr[18],6'b0};
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[7:4])
                        rdyA[fu][alloc]<={fuZ[3:0],inssr[fuZ][39:38]==2 || inssr[fuZ][39:35]==6'b00111 || inssr[fuZ][39:35]==6'b11111,xalloc2[fuZ]};
                      if(fuZ<fu && inssr[fuZ][7:4]==instr[7:4] && ^inssr[fuZ][39:38])
                        rdyA[fu][alloc]<={fuZ[3:0],1'b0,xalloc[fuZ]};
                    end
-                   rdyB[fu][alloc]<=rTT[{insn_clopp[4]&&~|instr[11:10],insn_clopp[14]|(insn_clopp[4]&&~|instr[11:10]),instr[11:8]}];
+                 rdyB[fu][alloc]<=(rTT[{insn_clopp[4]&&~|instr[11:10],insn_clopp[14]|(insn_clopp[4]&&~|instr[11:10]),instr[11:8]}])^{instr[39:37]==0 && instr[18],6'd0};
                    for(fuZ=0;fuZ<12;fuZ++) begin
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[11:8])
                        rdyB[fu][alloc]<={fuZ[3:0],inssr[fuZ][39:38]==2 || inssr[fuZ][39:35]==6'b00111 || inssr[fuZ][39:35]==6'b11111,xalloc2[fuZ]};
