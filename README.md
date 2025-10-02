@@ -14,4 +14,4 @@ one conditional branch disambiguiation should be possible such as executing a lo
 in parallel with a return based on condition and cancelling computing one of the 
 branches earlier than the other completes.
 
-1nm possible with full 22ghz and 72 vector but double speak in documents will be searchable.
+
