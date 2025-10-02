@@ -14,4 +14,4 @@ one conditional branch disambiguiation should be possible such as executing a lo
 in parallel with a return based on condition and cancelling computing one of the 
 branches earlier than the other completes.
 
-
+14a possible with full 22GHz but will require splitting data between upper (<6) and lower (>6) levels which would make it impossible to half split the data.
