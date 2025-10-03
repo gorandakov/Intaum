@@ -5,13 +5,11 @@ module fpuadd64(
   input [63:0] B,
   input rnd,
   input pookm,
-  output [63:0] res
+  output [63:0] res, 
+  output [63:0] res2
   );
 
-  wire [53:0] AB0;
-  wire [53:0] BA0;
-  wire [54:0] AB1;
-  wire [54:0] BA1;
+  
 
   wire [9:0] ABExp;
   wire cABExp;
@@ -48,7 +46,10 @@ module fpuadd64(
   reg [55:0] res_sh2_reg;
   reg [53:0] res_dn_reg;
   reg [9:0] zux_reg;
+  reg [127:0][63:0] dsqtbl;
   wire s_has;
+  assign buth=dsqtbl[{rnd,A[47+rnd+:6]}];
+  // rsqrt and div table
   always @(posedge clk) begin
     shar_reg<=shar;
     shn_reg<=shn;
@@ -69,11 +70,7 @@ module fpuadd64(
     zux_reg<=zux;
   end
   assign {cAB0,AB0}={1'b1,A[52:0]}-{~pookm,B[52:0]};
-  assign BA0={~pookm,B[52:0]}-{1'b1,A[52:0]};
-
-  assign AB1={1'b1,A[52:0],rnd}-{1'b0,~pookm,B[52:0]};
-  assign BA1={~pookm,B[52:0],rnd}-{2'b1,A[52:0]};
-
+  
  assign {cABExp,ABExp}=A[62:53]-B[62:53];
  assign BAExp=B[62:53]-A[62:53];
  assign age=cABExp && !ABeq | cAB0;
@@ -81,22 +78,18 @@ module fpuadd64(
 
  assign aegis=cABExp ? B[62:53] : A[62:53];
 
- assign S=ABeq && age ? AB0 : 'z;
- assign S=ABeq && !age ? BA0 : 'z;
- assign S=!ABeq && age ? AB1[54:1] : 'z;
- assign S=!ABeq && !age ? BA1[54:1] : 'z;
-
+ 
  assign shAB=({~pookm,B[52:0],2'b0}^{56{sxor}})>>ABExp;
  assign shBA=({1'b1,A[52:0],2'b0}^{56{sxor}})>>BAExp;
  assign sxor=A[63]^B[63];
 
-bit_find_index nrm({10'b0,S_reg},pfs,s_has);
+  bit_find_index nrm({10'b0,res_sh},pfs,s_has);
 assign shar=age ? shAB&bz : shBA&ba;
 assign shn=age ? {1'b1,A[52:0],rnd,1'b0} &ba: {~pookm,B[52:0],rnd,1'b0}&bz;
 assign shn2=age ? {1'b1,A[52:0],1'b0,rnd} : {~pookm,B[52:0],1'b0,rnd};
 assign res_sh=shn_reg + shar_reg[55:0];
 assign res_sh2=shn2_reg + shar_reg;
-assign res_dn=S_reg << pfs;
+assign res_dn=res_sh << pfs;
 assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54]  ? res_sh_reg[54:2] : 'z;
 assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==2'd1  ? res_sh_reg[53:1] : 'z;
 assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==2'd0  ? res_sh2_reg[52:0] : 'z;
