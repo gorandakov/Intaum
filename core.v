@@ -980,9 +980,9 @@ generate
           assign res_logic[31:0]=opcode[2:1]==1 && ~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==3 && ~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
           /* verilator lint_off WIDTHEXPAND */
-        assign res_logic[31:0]=opcode[2:0]==4 && ~foo ? xdataA[fu][({1'b0,loopstop[5:0]}+{1'b0,dataB[5:0]}%6'd36][31:0] 
+        assign res_logic[31:0]=opcode[2:0]==4 && ~foo ? xdataA[fu][({2'b0,loopstop[6:0]}+{2'b0,dataB[6:0]}%7'd72][31:0] 
               : 'z;
-                                                                    assign res_logic[31:0]=opcode[2:0]==5 && ~foo ? xdataA[fu][({1'b0,PHY[5:0]}+{1'b0,dataBI[5:0]}%6'd36][31:0]
+                                                                    assign res_logic[31:0]=opcode[2:0]==5 && ~foo ? xdataA[fu][({2'b0,PHY[6:0]}+{2'b0,dataBI[6:0]}%7'd72][31:0]
               : 'z;
           /* verilator lint_on WIDTHEXPAND */
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
@@ -996,7 +996,7 @@ generate
         assign res_logic[63:32]=opcode_reg[2:0]==6 && ~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
         assign res_logic[63:32]=opcode_reg[2:0]==7 && ~foo_reg ? dataA[63:32]|dataBIX [63:32] : 'z;
              /* verilator lint_off WIDTHEXPAND */
-                                                                                                                                assign res_logic[63:32]=opcode_reg[2:0]==4 && ~foo_reg ? xdataA[fu][({1'b0,loopstop[5:0]}+{1'b0,dataB_reg[5:0]})%6'd36][63:32] 
+                                                                                                                                assign res_logic[63:32]=opcode_reg[2:0]==4 && ~foo_reg ? xdataA[fu][({2'b0,loopstop[6:0]}+{1'b0,dataB_reg[5:0]})%6'd36][63:32] 
               : 'z;
                                                                                                                                 assign res_logic[63:32]=opcode_reg[2:0]==5 && ~foo_reg ? xdataA[fu][({1'b0,PHY[5:0]}+{1'b0,dataBI_reg[5:0]})%6'd36][63:32]
               : 'z;
