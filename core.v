@@ -25,6 +25,7 @@ not accept free hint on debugging in exchange of the entire core.
 
 module core (
   input clk,
+  input [6:0] PHY,
   input irqload,
   input [3:0] irqnum,
   inout iscall,isret,
