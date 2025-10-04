@@ -50,6 +50,7 @@ module fpuadd64(
   wire s_has;
   assign buth=dsqtbl[{rnd,A[47+rnd+:6]}];
   // rsqrt and div table
+  assign res2=pookg ? buth_reg2 : 'z;
   always @(posedge clk) begin
     shar_reg<=shar;
     shn_reg<=shn;
@@ -68,6 +69,8 @@ module fpuadd64(
     res_sh2_reg<=res_sh2;
     res_dn_reg<=res_dn;
     zux_reg<=zux;
+    buth_reg<=buth;
+    buth_reg2<=buth_reg;
   end
   assign {cAB0,AB0}={1'b1,A[52:0]}-{~pookm,B[52:0]};
   
@@ -90,17 +93,10 @@ assign shn2=age ? {1'b1,A[52:0],1'b0,rnd} : {~pookm,B[52:0],1'b0,rnd};
 assign res_sh=shn_reg + shar_reg[55:0];
 assign res_sh2=shn2_reg + shar_reg;
 assign res_dn=res_sh << pfs;
-assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54]  ? res_sh_reg[54:2] : 'z;
-assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==2'd1  ? res_sh_reg[53:1] : 'z;
-assign res[52:0]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==2'd0  ? res_sh2_reg[52:0] : 'z;
-assign res[52:0]=!(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 )   ? res_dn_reg[52:0] : 'z;
-
-assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54]  ? aegis_reg2 + 10'd1: 'z;
-assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==2'd1  ? aegis_reg2: 'z;
-assign res[62:53]=(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 ) && res_sh_reg[54:53]==2'd0  ? aegis_reg2-10'd1 : 'z;
-assign res[62:53]=!(!ABeq_reg2 && !ABOne_reg2 || !sxor_reg2 )  ? (aegis_reg2-{4'b0,pfs_reg})&zux_reg : 'z;
 assign zux=aegis_reg<{4'b0,pfs} ? '0 : '1;
-
+  assign res[52:0]=res_dn[52:0];
+  assign res[62:53]=aegis>pfs ?aegis-pfs:0;
+  assign res[63]=age ? A_reg2[63] : B_reg2[63];
 assign bz=B[62:53]==10'd0 ? '0 : '1;
 
 assign ba=A[62:53]==10'd0 ? '0 : '1;
