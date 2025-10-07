@@ -675,6 +675,7 @@ generate
           wire [63:0] xaddres;
           reg [4+6:0] rA;
           reg [4+6:0] rB;
+          reg [4+6:0] rF;
           reg [4+6:0] rBX;
           reg [4+6:0] rFL;
           reg [4+6:0] rFL2;
@@ -956,9 +957,9 @@ generate
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
           /* verilator lint_off WIDTHEXPAND */
-          assign {c32a,resA[fu][31:0]}=dataA[31:0]+(dataBI[31:0]+({32{opcode[11]}}&data_imm[rT[9:6]][rT[5:0]][31:0]));
+        assign {c32a,resA[fu][31:0]}=dataA[31:0]+(dataBI[31:0]+({32{opcode[11]}}&data_imm[rT[9:6]][rT[5:0]][7:0]*dataF[31:0]));
           /* verilator lint_off WIDTHTRUNC */
-          assign resA[fu][63:32]=(dataA_reg[63:0]+({dataBI[63:32],dataBI_reg[31:0]}+({32{opcode_reg[11]}}&data_imm[rT[9:6]][rT[5:0]][31:0])))>>32;
+        assign resA[fu][63:32]=(dataA_reg[63:0]+({dataBI[63:32],dataBI_reg[31:0]}+({32{opcode_reg[11]}}&data_imm[rT[9:6]][rT[5:0]][7:0]*{dataF[63:32],dataF_reg[31:0]})))>>32;
           /* verilator lint_on WIDTHTRUNC */
           assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[32])&& cond_tru_reg ?
             {dataA[63],dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[fu][31] :c32_reg) : 'z;
