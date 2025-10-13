@@ -15,3 +15,4 @@ in parallel with a return based on condition and cancelling computing one of the
 branches earlier than the other completes.
 
 14a is now possible with full 22GHz but will require splitting data between upper (<6) and lower (>6) levels which would make it impossible to half split the data.
+but for "true" atheism layer of reality it can do max 9 Ghz and at 36 vector means zero gold layer.
