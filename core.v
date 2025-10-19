@@ -984,9 +984,9 @@ generate
           assign res_logic[31:0]=opcode[2:1]==1 && ~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
           assign res_logic[31:0]=opcode[2:1]==3 && ~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
           /* verilator lint_off WIDTHEXPAND */
-        assign res_logic[31:0]=opcode[2:0]==4 && ~foo ? xdataA[fu][({2'b0,loopstop[6:0]}+{2'b0,dataB[6:0]}%7'd72][31:0] 
+          assign res_logic[31:0]=opcode[2:0]==4 && ~foo ? xdataA[fu][loopstop[4:0]+dataB[4:0]][31:0] 
               : 'z;
-                                                                    assign res_logic[31:0]=opcode[2:0]==5 && ~foo ? xdataA[fu][({2'b0,PHY[6:0]}+{2'b0,dataBI[6:0]}%7'd72][31:0]
+          assign res_logic[31:0]=opcode[2:0]==5 && ~foo ? xdataA[fu][PHY[4:0]}+dataBI[4:0]][31:0]
               : 'z;
           /* verilator lint_on WIDTHEXPAND */
           assign res_logic[31:0]=foo ? dataA[31:0] :'z;
@@ -995,14 +995,13 @@ generate
           assign xdreqmort_flags[PHY]=dreqmort_flags;
           assign indexST_has[fu]=xindexST_has;
 
-        assign res_logic[63:32]=opcode_reg[2:1]==0 && ~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
+          assign res_logic[63:32]=opcode_reg[2:1]==0 && ~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
           assign res_logic[63:32]=opcode_reg[2:1]==1 && ~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
-        assign res_logic[63:32]=opcode_reg[2:0]==6 && ~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
-        assign res_logic[63:32]=opcode_reg[2:0]==7 && ~foo_reg ? dataA[63:32]|dataBIX [63:32] : 'z;
+          assign res_logic[63:32]=opcode_reg[2:1]==3 && ~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
              /* verilator lint_off WIDTHEXPAND */
-                                                                                                                                assign res_logic[63:32]=opcode_reg[2:0]==4 && ~foo_reg ? xdataA[fu][({2'b0,loopstop[6:0]}+{1'b0,dataB_reg[5:0]})%6'd36][63:32] 
+          assign res_logic[63:32]=opcode_reg[2:0]==4 && ~foo_reg ? xdataA[fu][loopstop[4:0]+dataB_reg[4:0]][63:32] 
               : 'z;
-                                                                                                                                assign res_logic[63:32]=opcode_reg[2:0]==5 && ~foo_reg ? xdataA[fu][({1'b0,PHY[5:0]}+{1'b0,dataBI_reg[5:0]})%6'd36][63:32]
+          assign res_logic[63:32]=opcode_reg[2:0]==5 && ~foo_reg ? xdataA[fu][PHY[4:0]+dataBI_reg[4:0]][63:32]
               : 'z;
           /* verilator lint_on WIDTHEXPAND */
           assign res_logic[63:32]=foo_reg && dataA[58:43]>13 ? {dataA_reg[12:5],dataA_reg[11:5]+dataBI_reg[11:5],6'd5,dataA[42:32]} : 'z; //stackframe alloc; chunks of 32 bytes up to 127
@@ -1012,12 +1011,15 @@ generate
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
           /* verilator lint_off WIDTHTRUNC */
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 'z;
-          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 'z;
+          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6:5]==2 ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 'z;
+          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6:5]==3 ? (dataAS_reg3[7:0]>>dataBIXS_reg3[7:0])+
+            (dataAS_reg3[15:8]>>dataBIXS_reg3[15:8])+(dataAS_reg3[23:16]>>dataBIXS_reg3[23:16])+(dataAS_reg3[31:24]>>dataBIXS_reg3[31:24]): 'z;
           assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
           assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==1 ? dataA_reg4[31:0]*dataBIX_reg4[31:0]>>32 : 'z;
           assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
           assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6] ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6:5]==2 ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 'z;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6:5]==3 ? {32{res_mul_reg[31]}} : 'z;
           /* verilator lint_on WIDTHTRUNC */
           assign val_else[31:0]=opcode[12:11]==0 ? dataA[31:0] : 'z;
           assign val_else[31:0]=opcode[12:11]==1 ? 1 : 'z;
