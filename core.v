@@ -753,6 +753,7 @@ generate
           wire signed [65:0] dataBI;
           reg [65:0] dataA_reg;
           reg [65:0] dataB_reg;
+          reg [65:0] dataF_reg;
           reg [65:0] dataBIX_reg;
           reg signed [65:0] dataBI_reg;
           reg [65:0] dataA_reg2;
@@ -873,8 +874,8 @@ generate
           bit_find_index indexAlloc(free[fu],alloc[5:0],alloc_en);
         //  bit_find_indexR indexAlloc2(free[fu],alloc2[5:0],alloc2_en);
           bit_find_index indexST_mod(dreqmort_flags[4][63:0] & dreqmort_flags[2][63:0] ,indexST,xindexST_has);
-        fpuadd64 Xadd(clk,rst,dataMF,dataBF,dataBI_reg[23],dataBI_reg[24],xaddres,res2);
-        fpuprod64 Xmul(clk,rst,dataMF,dataBF,dataBI_reg[25],dataBI_reg[26],xmulres,res2);
+          fpuadd64 Xadd(clk,rst,dataMF,dataBF,dataBI_reg[23],dataBI_reg[24],xaddres,res2);
+          fpuprod64 Xmul(clk,rst,dataMF,dataBF,dataBI_reg[25],dataBI_reg[26],xmulres,res2);
           popcnt12 rl(rlim&(12'hfff>>(11-fu)),rlx);
           assign ret0[fu][PHY]=!data_retFL[fu][reti][0];
           assign ret1[fu]=&ret0[fu];
@@ -909,8 +910,9 @@ generate
          // assign jindir=fu!=10 && !opcode[10];
           assign dataA[31:0]=data_gen[rA[10:7]][rA[6:0]][31:0] & {32{opand}};
           assign dataB[31:0]=data_gen[rB[10:7]][rB[6:0]][31:0];
+          assign dataF[31:0]=data_gen[rF[10:7]][rF[6:0]][31:0];
           /* verilator lint_off WIDTHTRUNC */
-          assign dataBI[31:0]=opcode[11] ?data_imm2[rT[9:6]][rT[5:0]][9:0]*(data_phy): data_imm[rT[9:6]][rT[5:0]][31:0];
+          assign dataBI[31:0]=data_imm[rT[9:6]][rT[5:0]][31:0];
           /* verilator lint_on WIDTHTRUNC */
           assign data_phy[5:0]=data_imm_phy[rT[9:6]][rT[5:0]][5:0];
           assign dataBX[31:0]=data_gen[rBX[9:6]][rBX[5:0]][31:0];
@@ -918,10 +920,11 @@ generate
           assign dataBIXH[31:0]=dataBI_reg[31:0]+({32{opcode[11]}}&data_imm[rT[9:6]][rT[5:0]][31:0]);
           assign dataA[65:32]=data_gen[rA_reg[10:7]][rA_reg[6:0]][65:32] & {34{opand_reg}};
           assign dataB[65:32]=data_gen[rB_reg[10:7]][rB_reg[6:0]][65:32];
+          assign dataF[65:32]=data_gen[rF_reg[10:7]][rF_reg[6:0]][65:32];
           assign dataMF[63:0]=data_fp[rA_reg3[10:7]][rA_reg2[6:0]][63:0];
           assign dataBF[63:0]=data_fp[rB_reg3[10:7]][rB_reg2[6:0]][63:0];
           /* verilator lint_off WIDTHTRUNC */
-          assign dataBI[63:32]=opcode[11] ? data_imm[rT_reg[9:6]][rT_reg[5:0]][63:32] : data_imm2[rT_reg[9:6]][rT_reg[5:0]]*(data_phy_reg)>>32;
+          assign dataBI[63:32]=data_imm[rT_reg[9:6]][rT_reg[5:0]][63:32];
           /* verilator lint_on WIDTHTRUNC */
           assign dataBX[63:32]=data_gen[rBX_reg[9:6]][rBX_reg[5:0]][63:32];
           assign dataBIX[63:32]=opcode_reg[0] || opcode_reg[7:0]==2 ? dataBI[63:32] : dataBX[63:32];
@@ -957,9 +960,9 @@ generate
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
             dataA[31:0]+dataBI[31:0] : 'z;
           /* verilator lint_off WIDTHEXPAND */
-        assign {c32a,resA[fu][31:0]}=dataA[31:0]+(dataBI[31:0]+({32{opcode[11]}}&data_imm[rT[9:6]][rT[5:0]][6:0]*dataF[31:0]));
+          assign {c32a,resA[fu][31:0]}=dataA[31:0]+(dataBI[31:0]+({32{opcode[11]}}&data_imm2[rT[9:6]][rT[5:0]][6:0]*dataF[31:0]));
           /* verilator lint_off WIDTHTRUNC */
-        assign resA[fu][63:32]=(dataA_reg[63:0]+({dataBI[63:32],dataBI_reg[31:0]}+({32{opcode_reg[11]}}&data_imm[rT[9:6]][rT[5:0]][6:0]*{dataF[63:32],dataF_reg[31:0]})))>>32;
+          assign resA[fu][63:32]=(dataA_reg[63:0]+({dataBI[63:32],dataBI_reg[31:0]}+({32{opcode_reg[11]}}&data_imm[rT[9:6]][rT[5:0]][6:0]*{dataF[63:32],dataF_reg[31:0]})))>>32;
           /* verilator lint_on WIDTHTRUNC */
           assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[32])&& cond_tru_reg ?
             {dataA[63],dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[fu][31] :c32_reg) : 'z;
@@ -968,7 +971,7 @@ generate
             {1'b0,dataBI[31:0]} : 'z;
           assign {c32,res[31:0]}=opcode[7:0]==3 && ~opcode[8] && cond_tru ?
             {1'b0,dataB[31:0]} : 'z;
-        assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand) &&
+          assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand) &&
           bndnonred(dataA[63:43],res_logic [63:43],dataA [38:0])|opcode_reg[7:3]==5'd6
              || ~dataA_reg[65]^dataA_reg[64] || ^dataA_reg[64:63];
           assign chkA=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIXH[42:32],dataBIXH_reg[31:0]},opcode_reg[11],isand)
@@ -1359,7 +1362,7 @@ generate
                    retJTYPE[insi]={instr[25],&instr[34:33],instr[12]};
                  end else if (^instr[39:38]) begin
                       data_op[fu][alloc][10:8]=instr[37:35];
-                      data_op[fu][alloc][5]=instr[34];
+                      data_op[fu][alloc][5]=1'b0;//instr[34];
                       data_op[fu][alloc][4:0]=5'b1;
                       data_op[fu][alloc][11]=instr[34];
                       data_imm[fu][alloc]={{52{instr[24]}},instr[24:13]};
