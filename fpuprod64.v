@@ -5,8 +5,7 @@ module fpuprod64(
   input [63:0] B,
   input rnd,
   input pookg,
-  output [63:0] res,
-  output [63:0] res2
+  output [63:0] res
 );
   localparam [9:0] bias=10'h200;
 
@@ -52,12 +51,11 @@ assign prodB={1'b1,A[52:0]}*{1'b1,B[52:0]}+{107'b0,rnd}<<52;
 
 assign res[52:0]=prodA_reg2[107] | prodB_reg2[107] && ~pookg_reg2 ? prodA_reg2[106:54] : 53'bz;
 assign res[52:0]=~(prodA_reg2[107] | prodB_reg2[107]) && ~pookg_reg2 ? prodB_reg2[105:53] : 53'bz;
-assign res2[52:0]=prodA_reg2[107] | prodB_reg2[107] && pookg_reg2 ? prodA_reg2[53:1] : 53'bz;
-assign res2[52:0]=~(prodA_reg2[107] | prodB_reg2[107]) && pookg_reg2 ? prodB_reg2[52:0] : 53'bz;
+assign res[52:0]=prodA_reg2[107] | prodB_reg2[107] && pookg_reg2 ? prodA_reg2[53:1] : 53'bz;
+assign res[52:0]=~(prodA_reg2[107] | prodB_reg2[107]) && pookg_reg2 ? prodB_reg2[52:0] : 53'bz;
 assign {c,ae}=A[62:53]+B[62:53]-bias;
-assign res[62:53]= ae_reg2|{10{c_reg2}};
+assign res[62:53]=~pookg ? ae_reg2|{10{c_reg2}} : 10'bz;
 assign res[63]=A_reg2[63]^B_reg2[63];
-assign res2[62:53]=(ae_reg2-10'd53)|{10{c_reg2}};
-assign res2[63]=A_reg2[63]^B_reg2[63];
+assign res[62:53]=pookg ? (ae_reg2-10'd53)|{10{c_reg2}} :  10'bz;
 endmodule
 

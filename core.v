@@ -885,7 +885,7 @@ generate
           bit_find_index indexAlloc(free[fu],alloc1[5:0],alloc1_en);
           bit_find_indexR indexAlloc2(free[fu],alloc2[5:0],alloc2_en);
           bit_find_index indexST_mod(dreqmort_flags[4][63:0] & dreqmort_flags[2][63:0] ,indexST,xindexST_has);
-          fpuadd64 Xadd(clk,rst,dataMF,dataBF,dataBI_reg[23],dataBI_reg[24],xaddres);
+          fpuadd64 Xadd(clk,rst,dataMF,dataBF,dataBI_reg[23],dataBI_reg[24],dataBI_reg[27],xaddres);
           fpuprod64 Xmul(clk,rst,dataMF,dataBF,dataBI_reg[25],dataBI_reg[26],xmulres);
           popcnt12 rl(rlim&(12'hfff>>(11-fu)),rlx);
           assign ret0[fu][PHY]=!data_retFL[fu][reti][0];

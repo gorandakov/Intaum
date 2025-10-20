@@ -5,10 +5,10 @@ module fpuadd64(
   input [63:0] B,
   input rnd,
   input pookm,
-  output [63:0] res, 
-  output [63:0] res2
+  input pookg,
+  output [63:0] res
   );
-
+  localparam [9:0] bias=10'h200;
   
 
   wire [9:0] ABExp;
@@ -48,9 +48,9 @@ module fpuadd64(
   reg [9:0] zux_reg;
   reg [127:0][63:0] dsqtbl;
   wire s_has;
-  assign buth=dsqtbl[{rnd,A[47+rnd+:6]}];
+  assign buth={A[63],bias[9:0] - (A[62:53]>>rnd),sqtbl[{rnd,A[47+rnd+:6]}][52:0]};
   // rsqrt and div table
-  assign res2=pookg ? buth_reg2 : 64'bz;
+  assign res=pookg ? buth_reg2 : 64'bz;
   always @(posedge clk) begin
     shar_reg<=shar;
     shn_reg<=shn;
@@ -94,9 +94,9 @@ assign res_sh=shn_reg + shar_reg[55:0];
 assign res_sh2=shn2_reg + shar_reg;
 assign res_dn=res_sh << pfs;
 assign zux=aegis_reg<{4'b0,pfs} ? 57'b0 : {57{1'b1}};
-  assign res[52:0]=res_dn[52:0];
-  assign res[62:53]=aegis>pfs ?aegis-pfs:0;
-  assign res[63]=age ? A_reg2[63] : B_reg2[63];
+  assign res[52:0]=~pookg ? res_dn[52:0] : 53'bz;
+  assign res[62:53]=~pookg ? (aegis>pfs ?aegis-pfs:0) : 10'bz;
+  assign res[63]=~pookg ? (age ? A_reg2[63] : B_reg2[63]) : 1'bz;
 assign bz=B[62:53]==10'd0 ? 0 : {10{1'b1}};
 
 assign ba=A[62:53]==10'd0 ? 0 : {10{1'b1}};
