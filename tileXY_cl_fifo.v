@@ -116,7 +116,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign wrreq[`wrreq_data]=in_datum;
   assign wrreq[`wrreq_XDONE]=IDX<2;
   assign wrreq[`wrreq_YDONE]=IDX>=2;
-  assign wrreq[`wrreq_TX]={3'b0,in_addr_reg`range_x};
+  assign wrreq[`wrreq_TX]={3'b0,in_addr_reg`range_X};
   assign wrreq[`wrreq_TY]={3'b0,in_addr_reg`range_Y};
   assign wrreq[`wrreq_addr]={4{in_addr_reg[36:0]}};
   assign wrreq[`wrreq_sz]=in_size_reg[39:0];
@@ -245,8 +245,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign wrAreq2[`wrAreq_data]=Aqueue[Aqposr0];
   assign wrAreq2[`wrAreq_XDONE]=IDX<2;
   assign wrAreq2[`wrAreq_YDONE]=IDX>=2;
-  assign wrAreq2[`wrAreq_TX]=~|Aqueue[Aqposr0]`range_addr ? tile_X`range_X : Aqueue[Aqposr0]`range_X;
-  assign wrAreq2[`wrAreq_TY]=~|Aqueue[Aqposr0]`range_addr ? tile_Y`range_Y : Aqueue[Aqposr0]`range_Y;
+  assign wrAreq2[`wrAreq_TX]=~|Aqueue[Aqposr0]`range_address ? tile_X`range_X : Aqueue[Aqposr0]`range_X;
+  assign wrAreq2[`wrAreq_TY]=~|Aqueue[Aqposr0]`range_address ? tile_Y`range_Y : Aqueue[Aqposr0]`range_Y;
   assign wrAreq2[`wrAreq_sz]=Aoqueue[Aqposr0];
 
   assign wrAreq3[`wrAreq_data]=Aqueue[Aqposr1];

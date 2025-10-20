@@ -219,6 +219,7 @@ default:
       input [20:0] from;
       input [20:0] to;
       input [38:0] a;
+      reg [7:0] msk;
       begin
           msk=8'hff<<(from[4:0]-to[4:0]);
         bndnonred=to[4:0]<=from[4:0] && ({1'b0,from[18:12]}&msk)<=({from[19]^to[19]&&a[7+from[4:0]]==from[19],to[18:12]}&msk) && (from[11:5]&msk[6:0])>=(to[11:5]&msk[6:0]);
@@ -365,6 +366,10 @@ generate
       reg [11:0] anyhitC_reg;
       reg [11:0] anyhitC_reg2;
       reg [11:0] anyhitC_reg3;
+      reg [11:0][7:0] anyhit_pltpage;
+      reg [11:0] anyhit_pltpage_reg;
+      reg [11:0] anyhit_pltpage_reg2;
+      reg [11:0] anyhit_pltpage_reg3;
       reg [11:0][7:0] anyhitE_reg;
       wire tbuf_error;
       reg [3:0] ifu_stage_valid;
@@ -482,6 +487,7 @@ generate
           wire [11:0][7:0][63:0] xdreqmort_flags;
           wire [11:0][63:0][63:0] xdreqmort;
           wire [11:0] indexST_has;
+          wire [11:0] ccinsert;
           wire [3:0] ids0;
           wire [3:0] ids1;
           wire ids0_has;
@@ -496,6 +502,7 @@ generate
           reg irqload_reg3;
           reg irqload_reg4;
           reg irqload_reg5; 
+          wire [11:0] rlx;
       wire [41:0] ret_cookie;
       reg [41:0] ret_cookie_reg;
       reg [41:0] ret_cookie_reg2;
@@ -688,6 +695,7 @@ generate
           reg [4+6:0] rFL_reg;
           reg [4+6:0] rFL2_reg;
           reg [4+6:0] rT_reg;
+          reg [4+6:0] rF_reg;
           reg rA_en_reg, rB_en_reg, rT_en_reg;
           reg [4+6:0] rA_reg2;
           reg [4+6:0] rB_reg2;
@@ -736,6 +744,7 @@ generate
           reg [4+6:0] rTMem_reg4;
           wire [65:0] dataA;
           wire [65:0] dataB;
+          wire [65:0] dataF;
           wire [65:0] dataBX;
           wire [65:0] dataBIX;
           wire [63:0] dataBIXH;
@@ -805,6 +814,9 @@ generate
           wire cond_xtru;
           reg cond_xtru_reg;
           reg [4:0] ccmiss_reg;
+          reg [4:0] ccmiss_reg2;
+          reg [4:0] ccmiss_reg3;
+          reg [4:0] ccmiss_reg4;
           reg [3:0][36:0] cmiss;
           integer fu3;
           integer sch;
@@ -864,12 +876,12 @@ generate
           bit_find_index indexMiss(miss_reg2,index_miss[fu],index_miss_has[fu]);
           bit_find_index12 index12Miss(index_miss_has_reg2,index12m_pos,index12m_idx,index12m_idx_has);
           bit_find_index pfaff_mod({28'b0,missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]]},missphyfirst,);
-          assign missx_en[PHY]=index12m_idx_reg==fu && index12m_idx_reg_has || !index12m_idx_reg_has && PHY<4 && fu==0 && ccmiss_reg[PHY];
-          assign missx_addr[PHY]= fu==index12m_idx_reg && index12m_idx_reg_has | (PHY>3) & fu==0 ? 
+          assign missx_en[PHY]=index12m_idx_reg==fu && index12m_idx_has_reg || !index12m_idx_has_reg && PHY<4 && fu==0 && ccmiss_reg[PHY];
+          assign missx_addr[PHY]= fu==index12m_idx_reg && index12m_idx_has_reg | (PHY>3) & fu==0 ? 
               {1'b0,xdreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 36'bz;
-          assign missx_addr[PHY]=!index12m_idx_reg_has && PHY<4 && fu==0 ? {2'b0,cmiss[PHY]} : 3'bz;
+          assign missx_addr[PHY]=!index12m_idx_has_reg && PHY<4 && fu==0 ? {2'b0,cmiss[PHY]} : 3'bz;
           assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]] |
-              {36{!index12m_idx_reg_has && PHY<4 && fu==0}},fu[3:0]};
+              {36{!index12m_idx_has_reg && PHY<4 && fu==0}},fu[3:0]};
           bit_find_index indexLSU_ALU_mod(~|wstall & is_flg_ldi ? 1<<ldi2reg[fu][ldi] : rdy[2][fu][63:0]&rdy[1][fu][63:0]&rdy[3][fu][63:0]&rdy[4][fu][63:0]&{64{~index_miss_has[fu] && ~|miss_reg}},indexLSU_ALUA,indexLSU_ALUA_has);
           bit_find_index indexLSU_ALU_mod(~|wstall & is_flg_ldi ? 1<<ldi2reg[fu][ldi] : rdy[2][fu][127:64]&rdy[1][fu][127:64]&rdy[3][fu][127:64]&rdy[4][fu][127:64]&{64{~index_miss_has[fu] && ~|miss_reg}},indexLSU_ALUB,indexLSU_ALUB_has);
           assign indexLSU_ALU=indexLSU_ALUA_has ? {1'b0,indexLSU_ALUA} : {1'b1,indexLSU_ALUB};
@@ -928,7 +940,7 @@ generate
           /* verilator lint_off WIDTHTRUNC */
           assign dataBI[31:0]=data_imm[rT[9:6]][rT[5:0]][31:0];
           /* verilator lint_on WIDTHTRUNC */
-          assign data_phy[5:0]=data_imm_phy[rT[9:6]][rT[5:0]][5:0];
+          //assign data_phy[5:0]=data_imm_phy[rT[9:6]][rT[5:0]][5:0];
           assign dataBX[31:0]=data_gen[rBX[9:6]][rBX[5:0]][31:0];
           assign dataBIX[31:0]=opcode[0] || opcode[7:0]==2 ? dataBI[31:0] : dataBX[31:0];
           assign dataBIXH[31:0]=dataBI_reg[31:0]+({32{opcode[11]}}&data_imm[rT[9:6]][rT[5:0]][31:0]);
@@ -1289,7 +1301,8 @@ generate
               if (rT_en0_reg | rT_en_reg && |opcode_reg[7:6]) begin
                   dreqmort[LQ][31:0]<=res[31:0];
                   {dreqmort_flags[6][LQ],dreqmort_flags[5][LQ],dreqmort_flags[4][LQ],
-                   dreqmort_flags[3][LQ],dreqmort_flags[2][LQ],dreqmort_flags[1][LQ],dreqmort_flags[0][LQ]}<={~opcode_reg[20],~chk&~opcode_reg[5]||~chkA,opcode_reg[20]&opcode_reg[7],opcode_reg[7]&~opcode_reg[20],opcode_reg[6],op};
+                   dreqmort_flags[3][LQ],dreqmort_flags[2][LQ],dreqmort_flags[1][LQ],dreqmort_flags[0][LQ]}<={~opcode_reg[20],~chk&~opcode_reg[5]||~chkA,opcode_reg[20]&opcode_reg[7],
+                   opcode_reg[7]&~opcode_reg[20],opcode_reg[6],opcode_reg[9:8]};
               end
               if (rT_en0_reg2 | rT_en_reg2 && |opcode_reg2[7:6]) begin
                   dreqmort[LQ][63:32]<=res[63:32];
@@ -1381,15 +1394,14 @@ generate
                       data_op[fu][alloc][5]=1'b0;//instr[34];
                       data_op[fu][alloc][4:0]=5'b1;
                       data_op[fu][alloc][11]=instr[34];
-                      data_imm[fu][alloc]={{52{instr[24]}},instr[24:13]};
-                      data_imm2[fu][alloc]={12'b0,instr[32:25]};
+                      data_imm[fu][alloc]={{51{instr[25]}},instr[25:13]};
+                      data_imm2[fu][alloc]={13'b0,instr[32:26]};
                       if (!instr[12] && !instr[34]) data_imm[fu][alloc]={{44{instr[32]}},instr[32:13]};
-                      if (instr[12]) data_imm_phy[fu][alloc]=vec_reg3 ? 36 : PHY;
-                      else data_imm_phy[fu][alloc]=1;
+                      //if (instr[12]) data_imm_phy[fu][alloc]=vec_reg3 ? 36 : PHY;
+                      //else data_imm_phy[fu][alloc]=1;
                       if (!instr[34]) begin
                         data_imm[fu][alloc]= 0;
                         data_imm2[fu][alloc]=instr[32:13];
-                        data_imm_phy[fu][alloc]=1;
                       end
                   end
                   if (&instr[39:38]) begin
