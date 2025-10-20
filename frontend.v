@@ -129,7 +129,7 @@ default:
   function [11:0] vaff;
       input [11:0][7:0] din;
       integer k;
-      for(k=0;k<12;k++) vaff[k]=|din[k];
+      for(k=0;k<12;k=k+1) vaff[k]=|din[k];
   endfunction
   function bndnonred;
       input [20:0] from;
@@ -156,8 +156,8 @@ default:
           val1=val0>>cookie[5:0];
           on_low=boogie[8]==cookie[20];
           byone=(boogie>>7)==1;
-          byminus=(boogie>>7)=='1;
-          byzero=(boogie>>7)=='0;
+          byminus=(boogie>>7)=={43{1'b1}};
+          byzero=(boogie>>7)==0;
           if (on_low) begin
             addition_check=(boogie[6:0]+val1[6:0])>=cookie[19:13]-{6'b0,!protect_cookie};
               if (cookie[12:6]>cookie[19:13] && (boogie[6:0]+val1[6:0])>cookie[12:6])

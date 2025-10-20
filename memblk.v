@@ -16,8 +16,8 @@ module memblk(
   output reg [35:0][3:0][36:0] wraddr,
   output reg [35:0] wren_out
 );
-  parameter [1:0] tileX;
-  parameter [1:0] tileY;
+  parameter [1:0] tileX=0;
+  parameter [1:0] tileY=0;
 
   reg [63:0][35:0][1:0] wsz0_reg;
   reg [63:0][35:0][32:0] waddr0_reg;
@@ -84,7 +84,7 @@ module memblk(
   end
   always @(posedge clk) if (!stall) begin
     //     wrdata_reg[0]<=wrdata;    
-    for(regcnt=1;regcnt<(48+16);regcnt++) begin
+    for(regcnt=1;regcnt<(48+16);regcnt=regcnt+1) begin
          waddr0_reg[regcnt]<=waddr0_reg[regcnt-1];
          wren_in_reg[regcnt]<=wren_in_reg[regcnt-1];
          wrdata_reg[regcnt]<=wrdata_reg[regcnt-1];
@@ -93,7 +93,7 @@ module memblk(
          rden_in_reg[regcnt]<=rden_in_reg[regcnt-1];
          rdxdata_reg[regcnt]<=rdxdata_reg[regcnt-1];
     end
-    for(wport=0;wport<36;wport++) begin
+    for(wport=0;wport<36;wport=wport+1) begin
           rdaddr0_reg[0][wport]<=rdaddr0[wport][36:4];
           rdphydata0_reg[0][wport]<=rdphydata0[wport];
           waddr0_reg[0][wport]<=wraddr0[wport][36:4];

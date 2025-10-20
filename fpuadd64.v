@@ -50,7 +50,7 @@ module fpuadd64(
   wire s_has;
   assign buth=dsqtbl[{rnd,A[47+rnd+:6]}];
   // rsqrt and div table
-  assign res2=pookg ? buth_reg2 : 'z;
+  assign res2=pookg ? buth_reg2 : 64'bz;
   always @(posedge clk) begin
     shar_reg<=shar;
     shn_reg<=shn;
@@ -93,12 +93,12 @@ assign shn2=age ? {1'b1,A[52:0],1'b0,rnd} : {~pookm,B[52:0],1'b0,rnd};
 assign res_sh=shn_reg + shar_reg[55:0];
 assign res_sh2=shn2_reg + shar_reg;
 assign res_dn=res_sh << pfs;
-assign zux=aegis_reg<{4'b0,pfs} ? '0 : '1;
+assign zux=aegis_reg<{4'b0,pfs} ? 57'b0 : {57{1'b1}};
   assign res[52:0]=res_dn[52:0];
   assign res[62:53]=aegis>pfs ?aegis-pfs:0;
   assign res[63]=age ? A_reg2[63] : B_reg2[63];
-assign bz=B[62:53]==10'd0 ? '0 : '1;
+assign bz=B[62:53]==10'd0 ? 0 : {10{1'b1}};
 
-assign ba=A[62:53]==10'd0 ? '0 : '1;
+assign ba=A[62:53]==10'd0 ? 0 : {10{1'b1}};
 
 endmodule
