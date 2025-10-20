@@ -45,10 +45,15 @@ module fpuadd64(
   reg [55:0] res_sh_reg;
   reg [55:0] res_sh2_reg;
   reg [53:0] res_dn_reg;
+  reg [53:0] AB0;
+  reg [63:0] A_reg;
+  reg [63:0] A_reg2;
+  reg [63:0] B_reg;
+  reg [63:0] B_reg2;
   reg [9:0] zux_reg;
   reg [127:0][63:0] dsqtbl;
   wire s_has;
-  assign buth={A[63],bias[9:0] - (A[62:53]>>rnd),sqtbl[{rnd,A[47+rnd+:6]}][52:0]};
+  assign buth={A[63],bias[9:0] - (A[62:53]>>rnd),dsqtbl[{rnd,A[47+rnd+:6]}][52:0]};
   // rsqrt and div table
   assign res=pookg ? buth_reg2 : 64'bz;
   always @(posedge clk) begin
@@ -71,6 +76,10 @@ module fpuadd64(
     zux_reg<=zux;
     buth_reg<=buth;
     buth_reg2<=buth_reg;
+	 A_reg<=A;
+	 B_reg<=B;
+	 A_reg2<=A_reg;
+	 B_reg2<=B_reg;
   end
   assign {cAB0,AB0}={1'b1,A[52:0]}-{~pookm,B[52:0]};
   
