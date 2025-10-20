@@ -18,12 +18,12 @@ module bit_find_index #(ALLOC=0) (
                 assign tmp1[a]=|sel[8*a+:8];
                 assign {tmp2,dummy2}=255<<a;
             for(b=0;b<8;b=b+1) begin
-                assign lo0[b]=tmp2==sel[8*b+:8] ? a[2:0] : 'z;
+                assign lo0[b]=tmp2==sel[8*b+:8] ? a[2:0] : 3'bz;
           
             end
-            assign lo0[a]=sel[8*a+:8]==8'b0 ? '0 : 'z;
-            assign lo=hi==a ? lo0[a] : 'z;
-            assign hi=tmp2==tmp1 ? a[2:0] : 'z;
+            assign lo0[a]=sel[8*a+:8]==8'b0 ? 3'b0 : 3'bz;
+            assign lo=hi==a ? lo0[a] : 3'bz;
+            assign hi=tmp2==tmp1 ? a[2:0] : 3'bz;
         end
     end else begin : SHEDULE_IN
         for(a=0;a<8;a=a+1) begin
@@ -35,16 +35,16 @@ module bit_find_index #(ALLOC=0) (
                 assign {tmp2,dummy2}=255<<a;
                 assign {dummy3,tmp3}=255*256>>a;
             for(b=0;b<8;b=b+1) begin
-                assign lo0[b]=tmp2==sel[8*b+:8] ? a[2:0] : 'z;
+                assign lo0[b]=tmp2==sel[8*b+:8] ? a[2:0] : 3'bz;
           
             end
-            assign lo0[a]=sel[8*a+:8]==8'b0 ? '0 : 'z;
-            assign lo=hi==a ? lo0[a] : 'z;
-            assign hi=tmp3==tmp1 ? a[2:0] : 'z;
+            assign lo0[a]=sel[8*a+:8]==8'b0 ? 3'b0 : 3'bz;
+            assign lo=hi==a ? lo0[a] : 3'bz;
+            assign hi=tmp3==tmp1 ? a[2:0] : 3'bz;
         end
     end
   endgenerate
 
   assign hasany=|sel;
-  assign dout={hasany ? hi : '0,lo};
+  assign dout={hi,lo};
 endmodule

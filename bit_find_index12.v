@@ -7,11 +7,11 @@ module bit_find_index12(
 
   generate
     genvar a;
-    for(a=0;a<12;a++) begin
+    for(a=0;a<12;a=a+1) begin
         assign dout0[a]=din[a:0]==1<<a;
-        assign dout=dout0[a] ? a[3:0] : 'z;
+        assign dout=dout0[a] ? a[3:0] : 4'bz;
     end
   endgenerate
-  assign dout=|din ? 'z : '0;
+  assign dout=|din ? 4'bz : 4'b0;
   assign has=|din;
 endmodule

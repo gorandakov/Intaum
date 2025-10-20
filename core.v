@@ -213,7 +213,7 @@ default:
   function [11:0] vaff;
       input [11:0][7:0] din;
       integer k;
-      for(k=0;k<12;k++) vaff[k]=|din[k];
+      for(k=0;k<12;k=k+1) vaff[k]=|din[k];
   endfunction
   function bndnonred;
       input [20:0] from;
@@ -244,8 +244,8 @@ default:
         val1=val0>>cookie[4:0];
         on_low=boogie[8]==cookie[19];
           byone=(boogie>>7)==1;
-          byminus=(boogie>>7)=='1;
-          byzero=(boogie>>7)=='0;
+          byminus=(boogie>>7)=={43{1'b1}};
+          byzero=(boogie>>7)==43'b0;
           if (on_low) begin
             addition_check=(boogie[6:0]+val1[6:0])>=cookie[18:12]-{6'b0,!protect_cookie};
             if (cookie[11:5]>cookie[18:12] && (boogie[6:0]+val1[6:0])>cookie[11:5])
@@ -520,7 +520,7 @@ generate
       assign retSRCIP=retIP0[reti_reg];
       assign retJTYp=retJTYPE[reti_reg];
       always @(posedge clk) begin
-          if (isret) sttop--;
+          if (isret) sttop=sttop-1;
           if (iscall|irqload) begin
               htlb[sttop+1]<=irqload? IP[41:0] : {IP_reg4[41:5]+36'd1,5'b0};
               sttop=sttop+1;
@@ -636,9 +636,9 @@ generate
       if (|jretire[0] && except) begin
           tbufl[0][IP[12:4]]={retJTYp&{3{~jhas[reti_reg][1]}},retSRCIP[41:13],retSRCIP[3:0],retIP[0][41:13],retIP[0][3:0]};
           if (|jmpmispred[0]) begin
-              if ((random&3)==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b1;
-              if (random[3:0]==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b1;
-              if (random[7:0]==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b1;
+              if ((random&3)==3) predA[{retSRCIP[13:0],retGHT[1:0]}]=predA[{retSRCIP[13:0],retGHT[1:0]}]^2'b1;
+              if (random[3:0]==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]=predB[{retSRCIP[7:0],retGHT[7:0]}]^2'b1;
+              if (random[7:0]==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]=predC[{retSRCIP[1:0],retGHT[13:0]}]^2'b1;
               GHT<=retGHT;
               //tbufl[retSRCIP[13:5]][0]={retJPR0,1'b1,retSRCIP,retIPA};
               IP<=|jtaken[0] ? retIP[0] : retSRCIP + 32;
@@ -646,9 +646,9 @@ generate
       end else if (|jretire[1] && except) begin
           tbufl[1][IP[12:4]]={retJTYp,retSRCIP[41:13],retSRCIP[3:0],retIP[1][41:13],retIP[1][3:0]};
           if (|jmpmispred[1]) begin
-              if ((random&3)==3) predA[{retSRCIP[13:0],retGHT[1:0]}]^=2'b10;
-              if (random[3:0]==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]^=2'b10;
-              if (random[7:0]==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]^=2'b10;
+              if ((random&3)==3) predA[{retSRCIP[13:0],retGHT[1:0]}]=predA[{retSRCIP[13:0],retGHT[1:0]}]^2'b10;
+              if (random[3:0]==4'hf) predB[{retSRCIP[7:0],retGHT[7:0]}]=predB[{retSRCIP[7:0],retGHT[7:0]}]^2'b10;
+              if (random[7:0]==8'hff) predC[{retSRCIP[1:0],retGHT[13:0]}]=predC[{retSRCIP[1:0],retGHT[13:0]}]^2'b10;
               GHT<=retGHT;
             //tbufl[retSRCIP[13:5]][1]={retJPR1,1'b1,retSRCIP,retIPB  };                 
               IP<=|jtaken[1] ? retIP[1] : retSRCIP + 32;
@@ -865,8 +865,8 @@ generate
           bit_find_index pfaff_mod({28'b0,missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]]},missphyfirst,);
           assign missx_en[PHY]=index12m_idx_reg==fu && index12m_idx_reg_has || !index12m_idx_reg_has && PHY<4 && fu==0 && ccmiss_reg[PHY];
           assign missx_addr[PHY]= fu==index12m_idx_reg && index12m_idx_reg_has | (PHY>3) & fu==0 ? 
-              {1'b0,xdreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 'z;
-          assign missx_addr[PHY]=!index12m_idx_reg_has && PHY<4 && fu==0 ? {2'b0,cmiss[PHY]} : 'z;
+              {1'b0,xdreqmort_flags[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][2],xdreqmort[index12m_idx_reg][index_miss_reg3[index12m_idx_reg]][36:0]} : 36'bz;
+          assign missx_addr[PHY]=!index12m_idx_reg_has && PHY<4 && fu==0 ? {2'b0,cmiss[PHY]} : 3'bz;
           assign missx_phy[fu]={missus_reg4[dreqmort[index_miss_reg4[fu]][18:11]] |
               {36{!index12m_idx_reg_has && PHY<4 && fu==0}},fu[3:0]};
           bit_find_index indexLSU_ALU_mod(~|wstall & is_flg_ldi ? 1<<ldi2reg[fu][ldi] : rdy[2][fu][63:0]&rdy[1][fu][63:0]&rdy[3][fu][63:0]&rdy[4][fu][63:0]&{64{~index_miss_has[fu] && ~|miss_reg}},indexLSU_ALU,indexLSU_ALU_has);
@@ -939,111 +939,111 @@ generate
           assign cond_tru=flcond(cond[3:0],dataFL);
           assign cond_xtru=flcond(cond2[3:0],dataFL2);
           assign {c32,res[31:0]}=opcode[7:0]==0 && cond_tru && !dataBI[32] ?
-          dataA[31:0]+dataB[31:0]^{32{dataBI[33]}}+{31'b0,dataBI[33]} : 'z;
+          dataA[31:0]+dataB[31:0]^{32{dataBI[33]}}+{31'b0,dataBI[33]} : 32'bz;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==0 && cond_tru_reg ?
              {dataA[63],dataA[63:32]}+{dataBI_reg[34],dataB[63]&dataBI_reg[34],dataB[63:32]}^
-          {33{dataBI_reg[33]}}+{32'b0,c32_reg} : 'z;
+          {33{dataBI_reg[33]}}+{32'b0,c32_reg} : 34'bz;
           assign {c32,res[31:0]}=(opcode[7:2]==1 || opcode[4:3]==1) 
                && cond_tru  ?
-             res_shift[32:0] : 'z;
+             res_shift[32:0] : 33'bz;
           assign {c64,s64,res[63:32]}=(opcode_reg[7:2]==1 || opcode_reg[4:3]==1) 
               && cond_tru_reg ?
-             {1'b0,res_shift[63],res_shift[63:32]}&{34{opcode[7:2]==1}}|{34{opcode[7:2]!=1 && res_shift_reg[31]}} : 'z;
+             {1'b0,res_shift[63],res_shift[63:32]}&{34{opcode[7:2]==1}}|{34{opcode[7:2]!=1 && res_shift_reg[31]}} : 34'bz;
           assign {c32,res[31:0]}=opcode[4:3]==2 && cond_tru ?
-             {1'b0,res_logic[31:0]} : 'z;
+             {1'b0,res_logic[31:0]} : 33'bz;
           assign isand=opcode[7:1]==8;
           assign {c64,s64,res[63:32]}=opcode_reg[4:3]==2 && cond_tru_reg ?
-          {dataA_reg[65:64]|{!isand_reg|!chk,1'b0},res_logic[63:32]} : 'z;
+          {dataA_reg[65:64]|{!isand_reg|!chk,1'b0},res_logic[63:32]} : 34'bz;
           assign {c32,res[31:0]}=opcode[7:0]==1 && cond_tru ?
-          {1'b0,val_sxt[31:0]} : 'z;
+          {1'b0,val_sxt[31:0]} : 33'bz;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==1 && cond_tru_reg ?
-          {1'b0,val_sxt[63],val_sxt[63:32]} : 'z;
+          {1'b0,val_sxt[63],val_sxt[63:32]} : 34'bz;
           assign {c32,res[31:0]}=opcode[7:0]==2 && cond_tru ?
-            dataA[31:0]+dataBI[31:0] : 'z;
+            dataA[31:0]+dataBI[31:0] : 33'bz;
           /* verilator lint_off WIDTHEXPAND */
           assign {c32a,resA[fu][31:0]}=dataA[31:0]+(dataBI[31:0]+({32{opcode[11]}}&data_imm2[rT[9:6]][rT[5:0]][6:0]*dataF[31:0]));
           /* verilator lint_off WIDTHTRUNC */
           assign resA[fu][63:32]=(dataA_reg[63:0]+({dataBI[63:32],dataBI_reg[31:0]}+({32{opcode_reg[11]}}&data_imm[rT[9:6]][rT[5:0]][6:0]*{dataF[63:32],dataF_reg[31:0]})))>>32;
           /* verilator lint_on WIDTHTRUNC */
           assign {c64,s64,res[63:32]}=(opcode_reg[7:0]==2 || opcode_reg[7:0]==0 && dataBI_reg[32])&& cond_tru_reg ?
-            {dataA[63],dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[fu][31] :c32_reg) : 'z;
+            {dataA[63],dataA[63:32]}+{dataBI_reg[63],dataBI_reg[63:32]} + (dataBI_reg[32] ? !res_reg[fu][31] :c32_reg) : 34'bz;
           /* verilator lint_on WIDTHEXPAND */
           assign {c32,res[31:0]}=opcode[7:0]==3 && opcode[8] && cond_tru ?
-            {1'b0,dataBI[31:0]} : 'z;
+            {1'b0,dataBI[31:0]} : 33'bz;
           assign {c32,res[31:0]}=opcode[7:0]==3 && ~opcode[8] && cond_tru ?
-            {1'b0,dataB[31:0]} : 'z;
+            {1'b0,dataB[31:0]} : 33'bz;
           assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand) &&
           bndnonred(dataA[63:43],res_logic [63:43],dataA [38:0])|opcode_reg[7:3]==5'd6
              || ~dataA_reg[65]^dataA_reg[64] || ^dataA_reg[64:63];
           assign chkA=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIXH[42:32],dataBIXH_reg[31:0]},opcode_reg[11],isand)
              || ~dataA_reg[65]^dataA_reg[64] || ^dataA_reg[64:63];
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && opcode_reg[8] && cond_tru_reg ?
-          {1'b0,dataBI_reg[63],dataBI_reg[63:32]} : 'z;
+          {1'b0,dataBI_reg[63],dataBI_reg[63:32]} : 34'bz;
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && ~opcode_reg[8] && cond_tru_reg ?
-          {1'b0,dataB_reg[63],dataB_reg[63:32]} : 'z;
-          assign res_logic[31:0]=opcode[2:1]==0 && ~foo ? dataA[31:0]&dataBIX[31:0] : 'z;
-          assign res_logic[31:0]=opcode[2:1]==1 && ~foo ? dataA[31:0]^dataBIX[31:0] : 'z;
-          assign res_logic[31:0]=opcode[2:1]==3 && ~foo ? dataA[31:0]|dataBIX[31:0] : 'z;
+          {1'b0,dataB_reg[63],dataB_reg[63:32]} : 34'bz;
+          assign res_logic[31:0]=opcode[2:1]==0 && ~foo ? dataA[31:0]&dataBIX[31:0] : 32'bz;
+          assign res_logic[31:0]=opcode[2:1]==1 && ~foo ? dataA[31:0]^dataBIX[31:0] : 32'bz;
+          assign res_logic[31:0]=opcode[2:1]==3 && ~foo ? dataA[31:0]|dataBIX[31:0] : 32'bz;
           /* verilator lint_off WIDTHEXPAND */
           assign res_logic[31:0]=opcode[2:0]==4 && ~foo ? xdataA[fu][loopstop[4:0]+dataB[4:0]][31:0] 
-              : 'z;
-          assign res_logic[31:0]=opcode[2:0]==5 && ~foo ? xdataA[fu][PHY[4:0]}+dataBI[4:0]][31:0]
-              : 'z;
+              : 32'bz;
+          assign res_logic[31:0]=opcode[2:0]==5 && ~foo ? xdataA[fu][PHY[4:0]+dataBI[4:0]][31:0]
+              : 32'bz;
           /* verilator lint_on WIDTHEXPAND */
-          assign res_logic[31:0]=foo ? dataA[31:0] :'z;
+          assign res_logic[31:0]=foo ? dataA[31:0] :32'bz;
 
           assign xopcode_reg[fu]=opcode_reg;
           assign xdreqmort_flags[PHY]=dreqmort_flags;
           assign indexST_has[fu]=xindexST_has;
 
-          assign res_logic[63:32]=opcode_reg[2:1]==0 && ~foo_reg ? dataA[63:32]&dataBIX[63:32] : 'z;
-          assign res_logic[63:32]=opcode_reg[2:1]==1 && ~foo_reg ? dataA[63:32]^dataBIX[63:32] : 'z;
-          assign res_logic[63:32]=opcode_reg[2:1]==3 && ~foo_reg ? dataA[63:32]|dataBIX[63:32] : 'z;
+          assign res_logic[63:32]=opcode_reg[2:1]==0 && ~foo_reg ? dataA[63:32]&dataBIX[63:32] : 32'bz;
+          assign res_logic[63:32]=opcode_reg[2:1]==1 && ~foo_reg ? dataA[63:32]^dataBIX[63:32] : 32'bz;
+          assign res_logic[63:32]=opcode_reg[2:1]==3 && ~foo_reg ? dataA[63:32]|dataBIX[63:32] : 32'bz;
              /* verilator lint_off WIDTHEXPAND */
           assign res_logic[63:32]=opcode_reg[2:0]==4 && ~foo_reg ? xdataA[fu][loopstop[4:0]+dataB_reg[4:0]][63:32] 
-              : 'z;
+              : 32'bz;
           assign res_logic[63:32]=opcode_reg[2:0]==5 && ~foo_reg ? xdataA[fu][PHY[4:0]+dataBI_reg[4:0]][63:32]
-              : 'z;
+              : 32'bz;
           /* verilator lint_on WIDTHEXPAND */
-          assign res_logic[63:32]=foo_reg && dataA[58:43]>13 ? {dataA_reg[12:5],dataA_reg[11:5]+dataBI_reg[11:5],6'd5,dataA[42:32]} : 'z; //stackframe alloc; chunks of 32 bytes up to 127
-          assign res_logic[63:32]=foo_reg && dataA[58:43]<=13 ? {dataA[63:32]} : 'z; //stackframe alloc; chunks of 64 bytes up to 127
+          assign res_logic[63:32]=foo_reg && dataA[58:43]>13 ? {dataA_reg[12:5],dataA_reg[11:5]+dataBI_reg[11:5],6'd5,dataA[42:32]} : 34'bz; //stackframe alloc; chunks of 32 bytes up to 127
+          assign res_logic[63:32]=foo_reg && dataA[58:43]<=13 ? {dataA[63:32]} : 34'bz; //stackframe alloc; chunks of 64 bytes up to 127
 
-          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 'z;
-          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 'z;
+          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 32'bz;
+          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 32'bz;
           /* verilator lint_off WIDTHTRUNC */
-          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 'z;
-          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6:5]==2 ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 'z;
+          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 32'bz;
+          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6:5]==2 ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 32'bz;
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6:5]==3 ? (dataAS_reg3[7:0]>>dataBIXS_reg3[7:0])+
-            (dataAS_reg3[15:8]>>dataBIXS_reg3[15:8])+(dataAS_reg3[23:16]>>dataBIXS_reg3[23:16])+(dataAS_reg3[31:24]>>dataBIXS_reg3[31:24]): 'z;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==1 ? dataA_reg4[31:0]*dataBIX_reg4[31:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6:5]==2 ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 'z;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6:5]==3 ? {32{res_mul_reg[31]}} : 'z;
+            (dataAS_reg3[15:8]>>dataBIXS_reg3[15:8])+(dataAS_reg3[23:16]>>dataBIXS_reg3[23:16])+(dataAS_reg3[31:24]>>dataBIXS_reg3[31:24]): 32'bz;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 32'bz;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==1 ? dataA_reg4[31:0]*dataBIX_reg4[31:0]>>32 : 32'bz;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 32'bz;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 32'bz;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6:5]==2 ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 32'bz;
+          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6:5]==3 ? {32{res_mul_reg[31]}} : 32'bz;
           /* verilator lint_on WIDTHTRUNC */
-          assign val_else[31:0]=opcode[12:11]==0 ? dataA[31:0] : 'z;
-          assign val_else[31:0]=opcode[12:11]==1 ? 1 : 'z;
-          assign val_else[31:0]=opcode[12:11]==2 ? 0: 'z;
-          assign val_else[31:0]=opcode[12:11]==3 ? '1 : 'z;
-          assign val_else[65:32]=opcode[12:11]==0 ? dataA[65:32] : 'z;
-          assign val_else[65:32]=opcode[12:11]==1 ? 1<<33+1 : 'z;
-          assign val_else[65:32]=opcode[12:11]==2 ? 1<<33 : 'z;
-          assign val_else[65:32]=opcode[12:11]==3 ? 34'h1_ffff_ffff : 'z;
+          assign val_else[31:0]=opcode[12:11]==0 ? dataA[31:0] : 32'bz;
+          assign val_else[31:0]=opcode[12:11]==1 ? 1 : 32'bz;
+          assign val_else[31:0]=opcode[12:11]==2 ? 0: 32'bz;
+          assign val_else[31:0]=opcode[12:11]==3 ? -1 : 32'bz;
+          assign val_else[65:32]=opcode[12:11]==0 ? dataA[65:32] : 34'bz;
+          assign val_else[65:32]=opcode[12:11]==1 ? 1<<33+1 : 34'bz;
+          assign val_else[65:32]=opcode[12:11]==2 ? 1<<33 : 34'bz;
+          assign val_else[65:32]=opcode[12:11]==3 ? 34'h1_ffff_ffff : 34'bz;
           assign val_sxt[31:0]=dataBI[25:24]!=3 ? dataA[31:0]<<(4'd8*{1'b0,dataBI[25:24]})>>>(4'd8*{1'b0,dataBI[25:24]}) : {dataA[7:0],dataA[15:8],dataA[23:16],dataA[31:24]};
           assign val_sxt[63:32]=dataBI_reg[25:24]!=3 ? dataA_reg[31:0]<<(4'd8*{1'b0,dataBI[25:24]})>>>(4'd8*{1'b0,dataBI[25:24]})>>>32 : {32{dataA_reg[31]}};
-          assign res_shift[31:0]=opcode[3:1]==2 ? dataA[31:0]<<dataB[5:0] : 'z;
-          assign res_shift[31:0]=opcode[3:1]==3 ? dataA[31:0]<<dataBI[5:0] : 'z;
-          assign res_shift[31:0]=opcode[3:0]==8 ? dataA[31:0]>>dataB[5:0] : 'z;
-          assign res_shift[31:0]=opcode[3:0]==9 ? dataA[31:0]>>dataBI[5:0] : 'z;
-          assign res_shift[31:0]=opcode[3:0]==10 ? dataA[31:0]>>>dataB[5:0] : 'z;
-          assign res_shift[31:0]=opcode[3:0]==11 ? dataA[31:0]>>>dataBI[5:0] : 'z;
+          assign res_shift[31:0]=opcode[3:1]==2 ? dataA[31:0]<<dataB[5:0] : 32'bz;
+          assign res_shift[31:0]=opcode[3:1]==3 ? dataA[31:0]<<dataBI[5:0] : 32'bz;
+          assign res_shift[31:0]=opcode[3:0]==8 ? dataA[31:0]>>dataB[5:0] : 32'bz;
+          assign res_shift[31:0]=opcode[3:0]==9 ? dataA[31:0]>>dataBI[5:0] : 32'bz;
+          assign res_shift[31:0]=opcode[3:0]==10 ? dataA[31:0]>>>dataB[5:0] : 32'bz;
+          assign res_shift[31:0]=opcode[3:0]==11 ? dataA[31:0]>>>dataBI[5:0] : 32'bz;
           /* verilator lint_off WIDTHTRUNC */
-          assign res_shift[63:32]=opcode[3:0]==4 ? {dataA[63:32],dataA_reg[31:0]}<<dataB_reg[5:0] : 'z;
-          assign res_shift[63:32]=opcode[3:0]==5 ? {dataA[63:32],dataA_reg[31:0]}<<dataBI_reg[5:0] : 'z;
+          assign res_shift[63:32]=opcode[3:0]==4 ? {dataA[63:32],dataA_reg[31:0]}<<dataB_reg[5:0] : 32'bz;
+          assign res_shift[63:32]=opcode[3:0]==5 ? {dataA[63:32],dataA_reg[31:0]}<<dataBI_reg[5:0] : 32'bz;
           /* verilator lint_on WIDTHTRUNC */
-          assign res_shift[63:32]=opcode[3:0]==6 ? {32{res_shift_reg[31]}} : 'z;
-          assign res_shift[63:32]=opcode[3:0]>=7 ? {32{res_shift_reg[31]}} : 'z;
+          assign res_shift[63:32]=opcode[3:0]==6 ? {32{res_shift_reg[31]}} : 32'bz;
+          assign res_shift[63:32]=opcode[3:0]>=7 ? {32{res_shift_reg[31]}} : 32'bz;
           assign cond=data_cond[fu][indexLSU_ALU_reg];
           assign cond2=data_cond2[fu][indexLSU_ALU_reg];
           assign cond_early=data_cond[fu][indexFLG_reg];
@@ -1262,8 +1262,8 @@ generate
               end
               if (except) begin 
                   rTT<=rTTB;
-                  rTTE<='1;
-                  rdy<='0;
+                  rTTE<=-1;
+                  rdy<=0;
               end
               if (&retire && retire_bndl && retire_ret) begin
                   if (ret_is_alu[reti]) begin
@@ -1290,7 +1290,7 @@ generate
                   dreqdata[LQX][65:32]<=dataB[65:32];
                   //dreqdata_flags[LQX]<={2'b01,2'b0};
               end
-              for(fu3=0;fu3<12;fu3++) for(sch=0;sch<64;sch=sch+1) begin
+              for(fu3=0;fu3<12;fu3=fu3+1) for(sch=0;sch<64;sch=sch+1) begin
                   if (rT_en && rdyB[fu3][sch]==rT && rdy[fu3][sch][5]) rdy[fu3][sch][2]=1'b1; 
                   if (rT_en && rdyB[fu3][sch]==rT && rdy[fu3][sch][3]) rdy[fu3][sch][0]=1'b1;
                   if (rT_en && rdyA[fu3][sch]==rT && rdy[fu3][sch][4]) rdy[fu3][sch][1]=1'b1;
@@ -1393,7 +1393,7 @@ generate
                       else data_imm[fu][alloc]<={8'h0,7'h1,6'd3,43'b0};
                     end  
                   end
-                  if (!|instr[39:38]) begin
+                  if (! (|instr[39:38])) begin
                     data_op[fu][alloc][4:0]={instr[37:34],instr[12]};
                       data_op[fu][alloc][5]=instr[37:34]==0 || instr[37:34]==8 && !instr[12] ? instr[26] /*fpuinsn*/ : 1'b1;
                       data_cond[fu][alloc]=instr[32:29];
@@ -1433,30 +1433,30 @@ generate
                        ret_is_alu[insi]<=1'b1;
                        //rTMem[insi]<=alloc;
                   end
-                   data_retFL[fu][insi]<=1;
-                 rdyA[fu][alloc]<=(rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? insn_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : insn_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}])^{instr[39:37]==0 && instr[18],6'b0};
-                   for(fuZ=0;fuZ<12;fuZ++) begin
+                  data_retFL[fu][insi]<=1;
+                  rdyA[fu][alloc]<=(rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? insn_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : insn_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}])^{instr[39:37]==0 && instr[18],6'b0};
+                  for(fuZ=0;fuZ<12;fuZ=fuZ+1) begin
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[7:4])
                        rdyA[fu][alloc]<={fuZ[3:0],inssr[fuZ][39:38]==2 || inssr[fuZ][39:35]==6'b00111 || inssr[fuZ][39:35]==6'b11111,xalloc2[fuZ]};
                      if(fuZ<fu && inssr[fuZ][7:4]==instr[7:4] && ^inssr[fuZ][39:38])
                        rdyA[fu][alloc]<={fuZ[3:0],1'b0,xalloc[fuZ]};
-                   end
-                 rdyB[fu][alloc]<=(rTT[{insn_clopp[4]&&~|instr[11:10],insn_clopp[14]|(insn_clopp[4]&&~|instr[11:10]),instr[11:8]}])^{instr[39:37]==0 && instr[18],6'd0};
-                   for(fuZ=0;fuZ<12;fuZ++) begin
+                  end
+                  rdyB[fu][alloc]<=(rTT[{insn_clopp[4]&&~|instr[11:10],insn_clopp[14]|(insn_clopp[4]&&~|instr[11:10]),instr[11:8]}])^{instr[39:37]==0 && instr[18],6'd0};
+                   for(fuZ=0;fuZ<12;fuZ=fuZ+1) begin
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[11:8])
                        rdyB[fu][alloc]<={fuZ[3:0],inssr[fuZ][39:38]==2 || inssr[fuZ][39:35]==6'b00111 || inssr[fuZ][39:35]==6'b11111,xalloc2[fuZ]};
                      if(fuZ<fu && inssr[fuZ][7:4]==instr[11:8] && ^inssr[fuZ][39:38])
                        rdyB[fu][alloc]<={fuZ[3:0],1'b0,xalloc[fuZ]};
                    end
                    rdyFL0[fu][alloc]<=rTT[instr[33]];
-                   for(fuZ=0;fuZ<12;fuZ++) begin
+                   for(fuZ=0;fuZ<12;fuZ=fuZ+1) begin
                      if(fuZ<fu && inssr[fuZ][3:0]=={3'b0,instr[33]})
                        rdyFL0[fu][alloc]<={fuZ[3:0],inssr[fuZ][39:38]==2 || inssr[fuZ][39:35]==6'b00111 || inssr[fuZ][39:35]==6'b11111,xalloc2[fuZ]};
                      if(fuZ<fu && inssr[fuZ][7:4]=={3'b0,instr[33]} && ^inssr[fuZ][39:38])
                        rdyFL0[fu][alloc]<={fuZ[3:0],1'b0,xalloc[fuZ]};
                    end
                    rdyFL1[fu][alloc]<=rTT[2];
-                   for(fuZ=0;fuZ<12;fuZ++) begin
+                   for(fuZ=0;fuZ<12;fuZ=fuZ+1) begin
                      if(fuZ<fu && inssr[fuZ][3:0]==2)
                        rdyFL1[fu][alloc]<={fuZ[3:0],inssr[fuZ][39:38]==2 || inssr[fuZ][39:35]==6'b00111 || inssr[fuZ][39:35]==6'b11111,xalloc2[fuZ]};
                      if(fuZ<fu && inssr[fuZ][7:4]==2 && ^inssr[fuZ][39:38])
@@ -1474,10 +1474,10 @@ generate
                   if (instr[35]|instr[34]&~instr[12] && &instr[39:38]) jhas[insi]={jhas[insi][0],1'b1};
                   if (instr[37:34]==0 && !instr[12] || instr[37:34]==8 && !instr[12]) begin
                       data_op[fu][alloc][7:0]<=8'b10101001;
-                      data_op[fu][alloc]<='0;
+                      data_op[fu][alloc]<=0;
                   end 
-                  if (|rlx[12:7]) data_op[7:0]==8'd32;
-              end
+                  if (|rlx[12:7]) data_op[7:0]=8'd32;
+              //end
               if (PHY==0) begin
                  if (!ccmiss_reg[3]) begin
                      ccmiss_reg[0]<=|ccmiss;
@@ -1503,7 +1503,7 @@ generate
                   lderror<=1'b0;
                   missus=0;
                   miss=0;
-                  for(ldi=0;ldi<64;ldi++) begin
+                  for(ldi=0;ldi<64;ldi=ldi+1) begin
                       if (is_wconfl(dreqmort[LDI_reg],{dreqmort_flags[7][LDI_reg],dreqmort_flags[6][LDI_reg],dreqmort_flags[5][LDI_reg],
                           dreqmort_flags[4][LDI_reg],dreqmort_flags[3][LDI_reg],dreqmort_flags[2][LDI_reg],dreqmort_flags[1][LDI_reg],
                           dreqmort_flags[0][LDI_reg]},dreqmort[ldi],{dreqmort_flags[7][ldi],dreqmort_flags[6][ldi],dreqmort_flags[5][ldi],
@@ -1526,7 +1526,7 @@ generate
                       end
                   end
                   missrs=0;
-                  for(ldi=0;ldi<64;ldi++) begin
+                  for(ldi=0;ldi<64;ldi=ldi+1) begin
                     if (!anyhitW_reg[fu] && opcode_reg2[6] && ldi[5:0]==indexLSU_ALU_reg3) missrs[ldi[5:0]]=missrs[ldi[5:0]]| |missus[resX_reg[fu][18:11]];
                     if (!anyhit_reg[fu] && opcode_reg2[7] && ldi[5:0]==indexLSU_ALU_reg3) missrs[ldi[5:0]]=missrs[ldi[5:0]]| |missus[res_reg[fu][18:11]];
                   end
@@ -1740,7 +1740,7 @@ generate
                 if (fuB<8) assign poo_cp[3*fuB+:3]=line_data[{IP[8],fuB[2:0]}][65:63];
                 assign {poo_mask}=(130'h3ffff_ffff_ffff_ffff_00<<(ldsize_reg[fuB][2:0]*8))&{66'h3ffff_ffff_ffff_ffff,64'b0};
                 assign pppoe[fuB]=anyhit[fuB][way]   ? 
-                   poo_e_reg[fuB] & poo_mask_reg[65:0] : 'z;
+                   poo_e_reg[fuB] & poo_mask_reg[65:0] : 66'bz;
                 assign anyhitU[fuB][way]=line==res_reg2[fuB][12:7] ? tag[res_reg2[fuB][6]][37]&&tag[res_reg2[fuB][6]][36:0]=={res_reg[fuB][42:32],res_reg2[fuB][31:6]} : 1'bz;
                 assign anyhit[fuB][way] =line==resA_reg2[12:7] ? tag[resA_reg2[fuB][6]][37]&&tag[resA_reg2[fuB][6]][36:0]=={resA_reg[fuB][42:32],resA_reg2[fuB][31:6]} : 1'bz;
                 assign anyhitW[fuB][way]=line==resX[12:7] ? tag[resX[fuB][6]][38]&&tag[resX[fuB][6]][36:0]==resX[fuB][42:6] : 1'bz;
@@ -1748,8 +1748,8 @@ generate
                 assign anyhitC[fuB][way]=line==IP_reg[12:6] ? tag[IP_reg[5]][37]&&tag[IP_reg[5]][36:0]==IP_reg[41:5] : 1'bz;
                 assign anyhit_pltpage=tag[IP_reg[5]][39] && anyhitC;
                //  if (line==4) assign tlbhit=tr_reg[resX[fuB][31:22]][37:6]==resX[fuB][63:37] && tr_reg[resX[fuB][31:22]][38];
-                if (fuB<8) assign pppoc[64*fuB+:64]=anyhitC[fuB][way ]&& line==IP_reg[11:6] ? poo_c_reg[64*fuB+:64] : 'z;
-                if (fuB<8) assign pppoc2[3*fuB+:3]=anyhitC[fuB][way ]&& line==IP_reg[11:6] ? poo_cp_reg[3*fuB+:3] : 'z;
+                if (fuB<8) assign pppoc[64*fuB+:64]=anyhitC[fuB][way ]&& line==IP_reg[11:6] ? poo_c_reg[64*fuB+:64] : 64'bz;
+                if (fuB<8) assign pppoc2[3*fuB+:3]=anyhitC[fuB][way ]&& line==IP_reg[11:6] ? poo_cp_reg[3*fuB+:3] : 3'bz;
               //  assign pppoc2[64*fuB+:64]=anyhitC&& line==IP_reg[11:6] ? poo_c_reg[66*fuB+64+:2] : 'z;
                 always @(posedge clk) begin
                   poo_mask_reg<=poo_mask[65:0];
