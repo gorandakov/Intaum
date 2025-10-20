@@ -34,6 +34,9 @@ module fpuadd64(
   wire [9:0] aegis;
   wire [5:0] pfs;
   wire [9:0] zux;
+  wire [63:0] buth;
+  reg [63:0] buth_reg;
+  reg [63:0] buth_reg2;
   reg [5:0] pfs_reg;
   reg [55:0] shar_reg;
   reg [55:0] shn_reg;
