@@ -134,8 +134,10 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
 //  assign XA_intf_in_chg[1][`wrreq_addr]=XA_intf_in[1][`wrAreq_addr];
 //  assign XA_intf_in_chg[1][`wrreq_sz]={2'b11,XA_intf_in[1][`wrAreq_sz]};
 
-  assign X_intf_out[0][`wrreq_size-1:0]=in_en_reg & back ? wrreq : queue[0][qposr0];
-  assign X_intf_out[1][`wrreq_size-1:0]=in_en_reg & fwd ? wrreq : queue[1][qposr1];
+  assign X_intf_out[0][`wrreq_size-1:0]=in_en_reg & back ? wrreq : `wrreq_size'bz;
+  assign X_intf_out[0][`wrreq_size-1:0]=in_en_reg & back || odata_in[0][0] && !odata_full[0][0]? 	`wrreq_size'bz : queue[0][qposr0];
+  assign X_intf_out[1][`wrreq_size-1:0]=in_en_reg & fwd ? wrreq : `wrreq_size'bz;
+  assign X_intf_out[1][`wrreq_size-1:0]=in_en_reg & fwd ||odata_in[1][0] && !odata_full[1][0]?  `wrreq_size'bz : queue[1][qposr1];
 
   assign fwd=IDX<2 ? in_addr_reg`range_X>tile_X : in_addr_reg`range_Y>tile_Y;
   assign back=IDX<2 ? in_addr_reg`range_X<=tile_X : in_addr_reg`range_Y<=tile_Y;
@@ -156,8 +158,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
      oqueue[0][qrpos0][`wrreq_sz]} : {oqueue[1][qrpos1][`wrreq_shared],~oqueue[1][qrpos1][`wrreq_shared],oqueue[1][qrpos1][`wrreq_sz]};
   assign reqmort_expun=odata_in[0][qrpos0] && odata_full[0][0] ? oqueue[0][qrpos0][`wrreq_expun] : oqueue[1][qrpos1][`wrreq_expun];
 
-  assign X_intf_out[0][`wrreq_size-1:0]=odata_in[0][0] && !odata_full[0][0] ? oqueue[0][qrpos0] : '0;
-  assign X_intf_out[1][`wrreq_size-1:0]=odata_in[1][0] && !odata_full[1][0] ? oqueue[1][qrpos1] : '0;
+  assign X_intf_out[0][`wrreq_size-1:0]=odata_in[0][0] && !odata_full[0][0] ? oqueue[0][qrpos0] : `wrreq_size'bz;
+  assign X_intf_out[1][`wrreq_size-1:0]=odata_in[1][0] && !odata_full[1][0] ? oqueue[1][qrpos1] : `wrreq_size'bz;
 
   popcnt12 pa({4'b0,data_in[0]},datacnt0);
   popcnt12 pb({4'b0,data_in[1]},datacnt1);
@@ -167,8 +169,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
 
   always @(posedge clk) begin
       if (rst) begin
-          data_in<='0;
-          in_en_reg<='0;
+          data_in<=0;
+          in_en_reg<=0;
       end else begin
           if (in_en_reg && X_intf_in[0][`wrreq_snd]) begin
               queue[0][qpos0]=X_intf_in[0][`wrreq_size-1:0];
@@ -262,10 +264,10 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign missue0_en[2:0]=missue_en;
   assign {missue0[3],missue0_phy[3]}={Aqueue[Aqposr0],Aoqueue[Aqposr0]};
   assign missue0_en[3]=Aqposr0!=Aqpos0;
-  assign missue_idx_first=missue_en[0] ? 0 : 'z;
-  assign missue_idx_first=missue_en[1:0]==2'b10 ? 1 : 'z;
-  assign missue_idx_first=missue_en[2:0]==3'b100 ? 2 : 'z;
-  assign missue_idx_first=missue_en[2:0]==3'b0 ? 3 : 'z;
+  assign missue_idx_first=missue_en[0] ? 0 : 2'bz;
+  assign missue_idx_first=missue_en[1:0]==2'b10 ? 1 : 2'bz;
+  assign missue_idx_first=missue_en[2:0]==3'b100 ? 2 : 2'bz;
+  assign missue_idx_first=missue_en[2:0]==3'b0 ? 3 : 3'bz;
 /* verilator lint_off WIDTHEXPAND */
   assign mqueue[0]=missue0[missue_idx_first+2'd1];
   assign mqueue[1]=missue0[missue_idx_first+2'd2];
@@ -298,8 +300,8 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
 
   always @(posedge clk) begin
       if (rst) begin
-          Adata_in<='0;
-          inA_en_reg<='0;
+          Adata_in<=0;
+          inA_en_reg<=0;
       end else begin
           if (mqueue_en[0]) begin
               Aqueue[Aqpos0]=mqueue[0];
