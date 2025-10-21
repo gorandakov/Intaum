@@ -267,7 +267,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
   assign missue_idx_first=missue_en[0] ? 0 : 2'bz;
   assign missue_idx_first=missue_en[1:0]==2'b10 ? 1 : 2'bz;
   assign missue_idx_first=missue_en[2:0]==3'b100 ? 2 : 2'bz;
-  assign missue_idx_first=missue_en[2:0]==3'b0 ? 3 : 3'bz;
+  assign missue_idx_first=missue_en[2:0]==3'b0 ? 3 : 2'bz;
 /* verilator lint_off WIDTHEXPAND */
   assign mqueue[0]=missue0[missue_idx_first+2'd1];
   assign mqueue[1]=missue0[missue_idx_first+2'd2];
