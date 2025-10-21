@@ -1392,7 +1392,7 @@ generate
                   if (&instr[39:38]) data_op[fu][alloc][7:6]=2'b0;
                  if (instr[39:38]==2'b10 && instr[33]|instr[34]&~instr[12]) begin
                    data_imm[fu][alloc]=&instr[34:33] ? {22'b0,ret_cookie_reg3} : {22'b0,{{42{instr[24]}}^{5'b0,insn_clopp[31],13'b0,instr[24:14],instr[11:0]}}};
-                   data_op[fu][alloc][11]<=instr[13]; //1=call 0=jump
+                   data_op[fu][alloc][11]=instr[13]; //1=call 0=jump
                    data_cond[fu][alloc]={instr[37:35],instr[32]};
                    data_cond2[fu][alloc]=instr[31:28];
                    data_op[fu][alloc][10:8]=instr[27:25];
