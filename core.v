@@ -1510,8 +1510,8 @@ generate
                   if (fu==0) jhas[insi]=2'b0;
                   if (instr[35]|instr[34]&~instr[12] && &instr[39:38]) jhas[insi]={jhas[insi][0],1'b1};
                   if (instr[37:34]==0 && !instr[12] || instr[37:34]==8 && !instr[12]) begin
-                      data_op[fu][alloc][7:0]<=8'b10101001;
-                      data_op[fu][alloc]<=0;
+                      //data_op[fu][alloc][7:0]=8'b10101001;
+                      data_op[fu][alloc]=0;
                   end 
                   if (|rlx[12:7]) data_op[7:0]=8'd32;
               //end
