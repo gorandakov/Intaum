@@ -216,10 +216,10 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
           end
           if (outen && |odata_in[0]) begin
               qrpos0<=qrpos0+1;
-              odata_in[0][qrpos0]<=1'b0;
+              odata_in[0][qrpos0]=1'b0;
           end else if (outen) begin
               qrpos1<=qrpos1+1;
-              odata_in[1][qrpos1]<=1'b0;
+              odata_in[1][qrpos1]=1'b0;
           end
           in_addr_reg<=in_addr;
           in_en_reg<=in_en;
@@ -300,7 +300,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
 
   always @(posedge clk) begin
       if (rst) begin
-          Adata_in<=0;
+          Adata_in=0;
           inA_en_reg<=0;
       end else begin
           if (mqueue_en[0]) begin
@@ -318,7 +318,7 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
           if (fwdA) begin
             if (!mqueue_en[0] && XA_intf_out[0][`wrAreq_extra]) begin
                   Aqposr0=Aqposr0+1;
-                  Adata_in[Aqposr0]<=1'b0;
+                  Adata_in[Aqposr0]=1'b0;
               end
           end
           if (backA) begin
@@ -327,26 +327,6 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
                   Adata_in[Aqposr1]=1'b0;
               end
           end
-/*          if (amatch[0]) begin
-              Aoqueue[0][Aqpos0]<=XA_intf_in[0];
-              Aodata_in[Aqpos0]<=1'b1;
-              Aqpos0<=Aqpos0+1;
-          end
-          if (amatch[1]) begin
-              Aoqueue[1][Aqpos1]<=XA_intf_in[1];
-              Aodata_in[Aqpos1]<=1'b1;
-              Aqpos1<=Aqpos1+1;
-          end
-          if (Aouten && |Aodata_in[0]) begin
-              Aqrpos0<=Aqrpos0+1;
-              Aodata_in[0][Aqrpos0]<=1'b0;
-          end else if (Aouten) begin
-              Aqrpos1<=Aqrpos1+1;
-              Aodata_in[1][Aqrpos1]<=1'b0;
-          end
-          //inA_addr_reg<=inA_addr;
-          //inA_en_reg<=inA_en;
-          //inA_size_reg<=inA_size;*/
       end
   end
 endmodule
