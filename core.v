@@ -1130,7 +1130,7 @@ generate
               rA<=rdyA[fu][indexLSU_ALU];
               rB<=rdyB[fu][indexLSU_ALU];
               rBX<=rdyB[fu][indexLDU];
-              rT<={fu[3:0],1'b0,indexLSU_ALU};
+              rT<={fu[3:0],indexLSU_ALU};
               rTMem<={fu[3:0],rdyM[fu][indexLSU_ALU]};
               opcode<=data_op[fu][indexLSU_ALU];
               opcodex<=data_op[fu][indexLDU];
