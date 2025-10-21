@@ -26,7 +26,7 @@ i'm not a vessel of the grace of the royals.
 
 module core (
   input clk,
-  input [6:0] PHY,
+  input [5:0] PHY,
   input irqload,
   input [3:0] irqnum,
   inout iscall,isret,
@@ -94,7 +94,7 @@ module core (
 
   parameter tile_X=0;
   parameter tile_Y=0;
-  parameter PHY=0;
+//  parameter PHY=0;
   reg rst=1;
   reg rst0=1;
   reg rst_reg;
