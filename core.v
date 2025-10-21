@@ -638,7 +638,7 @@ generate
         //else if (pred_en[1]) begin GHT<={GHT[13:0],2'b1}; IP<=tbuf[1][IP[12:4]][42:0]; end
           else begin GHT<={GHT[13:0],2'b0}; IP<=IP+32; vec<=1'b0; end
       end else begin
-          IP=IP+32;
+          IP<=IP+32;
       end
       if (|jretire[0] && except) begin
           tbufl[0][IP[12:4]]={retJTYp&{3{~jhas[reti_reg][1]}},retSRCIP[41:13],retSRCIP[3:0],retIP[0][41:13],retIP[0][3:0]};
