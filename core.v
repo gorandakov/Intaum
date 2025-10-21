@@ -1050,8 +1050,8 @@ generate
           /* verilator lint_off WIDTHTRUNC */
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 32'bz;
           assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6:5]==2 ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 32'bz;
-          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6:5]==3 ? (dataAS_reg3[7:0]>>dataBIXS_reg3[7:0])+
-            (dataAS_reg3[15:8]>>dataBIXS_reg3[15:8])+(dataAS_reg3[23:16]>>dataBIXS_reg3[23:16])+(dataAS_reg3[31:24]>>dataBIXS_reg3[31:24]): 32'bz;
+          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6:5]==3 ? (dataAS_reg3[7:0]*dataBIXS_reg3[7:0])+
+            (dataAS_reg3[15:8]*dataBIXS_reg3[15:8])+(dataAS_reg3[23:16]*dataBIXS_reg3[23:16])+(dataAS_reg3[31:24]*dataBIXS_reg3[31:24]): 32'bz;
           assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 32'bz;
           assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==1 ? dataA_reg4[31:0]*dataBIX_reg4[31:0]>>32 : 32'bz;
           assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 32'bz;
