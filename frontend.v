@@ -264,8 +264,9 @@ generate
       genvar line;
       genvar PHY;
     for(PHY=0;PHY<36;PHY=PHY+1) begin : phy
-    core #(tile_X,tile_Y,PHY) one(
+    core #(tile_X,tile_Y) one(
   clk,
+  PHY[5:0],
   irqload,
   irqnum,
   iscall,isret,
