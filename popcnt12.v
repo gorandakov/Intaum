@@ -43,6 +43,7 @@ module popcnt12(
   popcnt6 A(din[5:0],tmp1);
   popcnt6 B(din[11:6],tmp2);
   always @* begin
+      dout=0;
       for(kl=0;kl<7;kl=kl+1) if (tmp1[kl]) dout={6'b0,tmp2}<<kl;
   end
 endmodule
