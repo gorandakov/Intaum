@@ -102,7 +102,7 @@ module fpuadd64(
  assign shBA=({1'b1,A[52:0],2'b0}^{56{sxor}})>>BAExp;
  assign sxor=A[63]^B[63];
 
-  bit_find_index nrm({10'b0,res_sh},pfs,s_has);
+	bit_find_index nrm({8'b0,res_sh},pfs,s_has);
 assign shar=age ? shAB&bz : shBA&ba;
 assign shn=age ? {1'b1,A[52:0],rnd,1'b0} &ba: {~pookm,B[52:0],rnd,1'b0}&bz;
 assign shn2=age ? {1'b1,A[52:0],1'b0,rnd} : {~pookm,B[52:0],1'b0,rnd};
