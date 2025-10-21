@@ -1779,8 +1779,8 @@ generate
                 assign pppoe[fuB]=anyhit[fuB][way]   ? 
                    poo_e_reg[fuB] & poo_mask_reg[65:0] : 66'bz;
                 assign anyhitU[fuB][way]=line==res_reg2[fuB][12:7] ? tag[res_reg2[fuB][6]][37]&&tag[res_reg2[fuB][6]][36:0]=={res_reg[fuB][42:32],res_reg2[fuB][31:6]} : 1'bz;
-                assign anyhit[fuB][way] =line==resA_reg2[12:7] ? tag[resA_reg2[fuB][6]][37]&&tag[resA_reg2[fuB][6]][36:0]=={resA_reg[fuB][42:32],resA_reg2[fuB][31:6]} : 1'bz;
-                assign anyhitW[fuB][way]=line==resX[12:7] ? tag[resX[fuB][6]][38]&&tag[resX[fuB][6]][36:0]==resX[fuB][42:6] : 1'bz;
+               assign anyhit[fuB][way] =line==resA_reg2[fuB][12:7] ? tag[resA_reg2[fuB][6]][37]&&tag[resA_reg2[fuB][6]][36:0]=={resA_reg[fuB][42:32],resA_reg2[fuB][31:6]} : 1'bz;
+               assign anyhitW[fuB][way]=line==resX[fuB][12:7] ? tag[resX[fuB][6]][38]&&tag[resX[fuB][6]][36:0]==resX[fuB][42:6] : 1'bz;
                 assign anyhitE[fuB][way]=line==srcIPOff[reti_reg][11:6] ? tag[srcIPOff[reti_reg][5]][38]&&tag[srcIPOff[reti_reg][5]][36:0]==srcIPOff[reti_reg][41:5] : 1'bz;
                 assign anyhitC[fuB][way]=line==IP_reg[12:6] ? tag[IP_reg[5]][37]&&tag[IP_reg[5]][36:0]==IP_reg[41:5] : 1'bz;
                 assign anyhit_pltpage=tag[IP_reg[5]][39] && anyhitC;
