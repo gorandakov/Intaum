@@ -867,6 +867,7 @@ generate
           reg [6:0] indexFLG_reg;
           reg indexFLG_has_reg;
           wire [5:0] missphyfirst;
+          reg [3:0] isplt;
           wire [5:0] indexST;
           reg [5:0] indexST_reg;
           wire xindexST_has;
@@ -1386,6 +1387,8 @@ generate
                    if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ][41:0]+res_reg3[fu][41:0];
                    jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {1'b0,dataMF_reg3[63],dataMF_reg3[63],~|dataMF_reg3[62:53],1'b0} : {chk_reg3 ? res_reg3[fu][63] : c64_reg3,chk_reg3 ? ~res_reg3[fu][63]:s64_reg3,res_reg3[fu][63],~|res_reg3[fu][63:0],1'b0};
                end
+               
+            if (!fu) isplt<=0;
                if (insert_en && (fu>=insn_clopp[13:10] && IP[4:0]==insn_clopp[19:15])|
                     (fu>=insn_clopp[23:10] && IP[4:0]==insn_clopp[29:25])  ) begin
                   data_op[fu][alloc][7:6]=instr[39:38];
@@ -1396,7 +1399,10 @@ generate
                    data_cond[fu][alloc]={instr[37:35],instr[32]};
                    data_cond2[fu][alloc]=instr[31:28];
                    data_op[fu][alloc][10:8]=instr[27:25];
-                   if (instr[34:33]==2 && !instr[25]) data_imm[fu][alloc]={62'b0,instr[1:0]};
+                   if (instr[34:33]==2 && !instr[25]) begin
+                     data_imm[fu][alloc]={62'b0,instr[1:0]};
+                     isplt=vec_reg4&vec_reg3 ? instr[5:4] : vec_reg3 ? instr[9:8]  : 0; 
+                   end
                    if (instr[25]) data_imm[fu][alloc]=0;
                    data_op[7:0] = instr[25] || instr[34:33]==2 ? 0 : 3;
                    if (instr[27]) data_loopstop[PHY]=idxpreda_has_reg3 ? idxpreda_reg3 : idxpredb_has_reg3 ? idxpredb_reg3 : 63;
