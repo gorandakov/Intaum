@@ -142,7 +142,7 @@ module core (
       3'd6:  flconv={din[31:30],{2{~din[30]|&din[30:24]}},din[29:0],30'b0};
       3'd3:  flconv={din[63:61],din[60:0]};
       3'd1:  flconv={din[15:9],{4{~din[14]|&din[14:9]}},din[8:0],45'b0};
-      3'd0:  begin
+      default:  begin
                  casez (din[7:0])
                    8'b1zzzzzzz: flconv={1'b0,10'h200,din[6:0],46'b0};
                    8'b01zzzzzz: flconv={1'b0,10'h1ff,din[5:0],47'b0};
@@ -227,7 +227,7 @@ default:
   endfunction
   function [20:0] spgcookie;
      input [7:0] on_low;
-     spgcookie={on_low,on_low[6:0],6'd17};
+     spgcookie={on_low,on_low[6:0],6'd18};
   endfunction
   function addition_check;
       input [20:0] cookie;
@@ -1424,10 +1424,10 @@ generate
                     data_op[fu][alloc][8]=1'b1;
                     if (!instr_clextra[fu]) begin
                       data_op[fu][alloc][8]=1'b0;
-                      if (rst_reg5 || IP_reg4[41:5]==1) data_imm[fu][alloc]<={8'h0,7'h7f,6'd36,43'b0};
-                      else if (irqload_reg5) data_imm[fu][alloc]<={15'b0,6'd63,1'b0,IP_reg4};
-                      else if (anyhit_pltpage_reg3) data_imm[fu][alloc]={spgcookie({instr[17:15],instr[8:4]}),3'b0,instr[32:15],instr[8:4],17'b0};
-                      else data_imm[fu][alloc]<={8'h0,7'h1,6'd3,43'b0};
+                      if (rst_reg5 || IP_reg4[41:5]==1) data_imm[fu][alloc]={8'h0,7'h7f,6'd36,43'b0};
+                      else if (irqload_reg5) data_imm[fu][alloc]={15'b0,6'd63,1'b0,IP_reg4};
+                      else if (anyhit_pltpage_reg3) data_imm[fu][alloc]={spgcookie({instr[17:15],instr[8:4]}),2'b0,instr[32:15],instr[8:4],1'b1,17'b0};
+                      else data_imm[fu][alloc]={8'h0,7'h1,6'd3,43'b0};
                     end  
                   end
                   if (! (|instr[39:38])) begin
