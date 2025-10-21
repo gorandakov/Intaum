@@ -1093,7 +1093,7 @@ generate
 
           reg [5:0] LDI;
           reg [5:0] LDI_reg;
-          reg [63:0] miss_rvi;
+          reg [127:0] miss_rvi;
           reg [39:0] instr;
           reg [23:0] insn_isptr;
           assign loopstop=data_loopstop[indexLSU_ALU_reg]==63 ? loopstop_save : data_loopstop[indexLSU_ALU_reg];
