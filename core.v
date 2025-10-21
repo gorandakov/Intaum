@@ -1471,7 +1471,7 @@ generate
                        //rTMem[insi]<=alloc;
                   end
                   data_retFL[fu][insi]<=1;
-                  rdyA[fu][alloc]<=(rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? insn_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : insn_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}])^{instr[39:37]==0 && instr[18],6'b0};
+                  rdyA[fu][alloc]<=(rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? insn_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : insn_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}]);
                   for(fuZ=0;fuZ<12;fuZ=fuZ+1) begin
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[7:4])
                        rdyA[fu][alloc]<={fuZ[3:0],inssr[fuZ][39:38]==2 || inssr[fuZ][39:35]==6'b00111 || inssr[fuZ][39:35]==6'b11111,xalloc2[fuZ]};
