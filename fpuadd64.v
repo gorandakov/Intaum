@@ -27,7 +27,7 @@ module fpuadd64(
   wire [55:0] shn2;
   wire [55:0] res_sh;
   wire [55:0] res_sh2;
-  wire [53:0] res_dn;
+  wire [55:0] res_dn;
   wire [55:0] bz;
   wire [55:0] ba;
   wire ABOne;
