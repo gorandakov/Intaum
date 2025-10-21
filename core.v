@@ -1402,10 +1402,12 @@ generate
                    if (instr[34:33]==2 && !instr[25]) begin
                      data_imm[fu][alloc]={62'b0,instr[1:0]};
                      isplt=vec_reg4&vec_reg3 ? instr[5:4] : vec_reg3 ? instr[9:8]  : 0; 
+                     data_imm2[fu][alloc]=instr[21:14];
+                     data_op[fu][alloc][11]=vec_reg3& !vec_reg4;
                    end
                    if (instr[25]) data_imm[fu][alloc]=0;
                    data_op[7:0] = instr[25] || instr[34:33]==2 ? 0 : 3;
-                   if (instr[27]) data_loopstop[PHY]=idxpreda_has_reg3 ? idxpreda_reg3 : idxpredb_has_reg3 ? idxpredb_reg3 : 63;
+                   if (instr[27]) data_loopstop[PHY]=!idxpreda_has_reg3 ? idxpreda_reg3 : idxpredb_has_reg3 ? idxpredb_reg3 : 63;
                    retJTYPE[insi]={instr[25],&instr[34:33],instr[12]};
                  end else if (^instr[39:38]) begin
                       data_op[fu][alloc][10:8]=instr[37:35];
