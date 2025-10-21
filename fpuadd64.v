@@ -56,7 +56,11 @@ module fpuadd64(
   reg [9:0] zux_reg;
   reg [127:0][63:0] dsqtbl;
   wire s_has;
+	//verilator lint_off WIDTHEXPAND
+	
   assign buth={A[63],bias[9:0] - (A[62:53]>>rnd),dsqtbl[{rnd,A[47+rnd+:6]}][52:0]};
+
+	//verilator lint_on WIDTHEXPAND
   // rsqrt and div table
   assign res=pookg ? buth_reg2 : 64'bz;
   always @(posedge clk) begin
