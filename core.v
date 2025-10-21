@@ -620,7 +620,7 @@ generate
         vec_reg3<=vec_reg2;
         if (rst) ifu_stage_valid<=1;
         else if (except) ifu_stage_valid<=1;
-        else ifu_stage_valid={ifu_stage_valid[2:0],1'b1};
+        else ifu_stage_valid<={ifu_stage_valid[2:0],1'b1};
       if (irqload| |ccmiss |ret_stall|except_ldconfl) begin
           IP<=irqload ? irq_IP : except_ldconfl ? retSRCIP_reg : IP_reg4;
           if ( |ccmiss |ret_stall) GHT<=GHT_reg4;
