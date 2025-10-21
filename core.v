@@ -1474,21 +1474,21 @@ generate
                   rdyA[fu][alloc]<=(rTT[{insn_clopp[4]&&~|instr[7:6],instr[39:38]==2 ? insn_clopp [24]|(insn_clopp[4]&&~|instr[7:6]) : insn_clopp[14]|(insn_clopp[4]&&~|instr[7:6]),instr[7:4]}]);
                   for(fuZ=0;fuZ<12;fuZ=fuZ+1) begin
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[7:4])
-                       rdyA[fu][alloc]<={fuZ[3:0],inssr[fuZ][39:38]==2 || inssr[fuZ][39:35]==6'b00111 || inssr[fuZ][39:35]==6'b11111,xalloc2[fuZ]};
+                       rdyA[fu][alloc]<={fuZ[3:0],xalloc[fuZ]};
                      if(fuZ<fu && inssr[fuZ][7:4]==instr[7:4] && ^inssr[fuZ][39:38])
                        rdyA[fu][alloc]<={fuZ[3:0],1'b0,xalloc[fuZ]};
                   end
                   rdyB[fu][alloc]<=(rTT[{insn_clopp[4]&&~|instr[11:10],insn_clopp[14]|(insn_clopp[4]&&~|instr[11:10]),instr[11:8]}])^{instr[39:37]==0 && instr[18],6'd0};
                    for(fuZ=0;fuZ<12;fuZ=fuZ+1) begin
                      if(fuZ<fu && inssr[fuZ][3:0]==instr[11:8])
-                       rdyB[fu][alloc]<={fuZ[3:0],xalloc2[fuZ]};
+                       rdyB[fu][alloc]<={fuZ[3:0],xalloc[fuZ]};
                      if(fuZ<fu && inssr[fuZ][7:4]==instr[11:8] && ^inssr[fuZ][39:38])
                        rdyB[fu][alloc]<={fuZ[3:0],xalloc[fuZ]};
                    end
                    rdyFL0[fu][alloc]<=rTT[instr[33]];
                    for(fuZ=0;fuZ<12;fuZ=fuZ+1) begin
                      if(fuZ<fu && inssr[fuZ][3:0]=={3'b0,instr[33]})
-                       rdyFL0[fu][alloc]<={fuZ[3:0],xalloc2[fuZ]};
+                       rdyFL0[fu][alloc]<={fuZ[3:0],xalloc[fuZ]};
                      if(fuZ<fu && inssr[fuZ][7:4]=={3'b0,instr[33]} && ^inssr[fuZ][39:38])
                        rdyFL0[fu][alloc]<={fuZ[3:0],xalloc[fuZ]};
                    end
