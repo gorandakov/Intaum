@@ -1500,7 +1500,7 @@ generate
                        rdyFL1[fu][alloc]<={fuZ[3:0],xalloc[fuZ]};
                    end
                    //NOTE: second flag needed only for cloop; correct later
-                  {rdy[5][fu][alloc],rdy[4][fu][alloc],rdy[3][fu][alloc],rdy[2][fu][alloc],rdy[1][fu][alloc],rdy[0][fu][alloc]}<={1'b1,instr[39:38]==2'b10,instr[39:38]==2'b10,1'b0,instr[32:27]==3,instr[39:38]!=2'b01};  
+                  {rdy[5][fu][alloc],rdy[4][fu][alloc],rdy[3][fu][alloc],rdy[2][fu][alloc],rdy[1][fu][alloc],rdy[0][fu][alloc]}={1'b1,instr[39:38]==2'b10,instr[39:38]==2'b10,1'b0,instr[32:27]==3,instr[39:38]!=2'b01};  
                   data_op[fu][alloc][12:11]=instr[13:12];
                   data_op[fu][alloc][19:14]=insi[5:0];
                   retIP0[insi]<=IP_reg4[41:0];
