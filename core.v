@@ -1538,8 +1538,8 @@ generate
               end
           end
           always @* begin
-                  wstall[PHY][fu]<=1'b0;
-                  lderror<=1'b0;
+                  wstall[PHY][fu]=1'b0;
+                  lderror=1'b0;
                   missus=0;
                   miss=0;
                   for(ldi=0;ldi<64;ldi=ldi+1) begin
@@ -1547,14 +1547,14 @@ generate
                           dreqmort_flags[4][LDI_reg],dreqmort_flags[3][LDI_reg],dreqmort_flags[2][LDI_reg],dreqmort_flags[1][LDI_reg],
                           dreqmort_flags[0][LDI_reg]},dreqmort[ldi],{dreqmort_flags[7][ldi],dreqmort_flags[6][ldi],dreqmort_flags[5][ldi],
                           dreqmort_flags[4][ldi],dreqmort_flags[3][ldi],dreqmort_flags[2][ldi],dreqmort_flags[1][ldi],dreqmort_flags[0][ldi]}))
-                          wstall[PHY][fu]<=1'b1;
+                          wstall[PHY][fu]=1'b1;
                       if (is_lconfl(dreqmort[indexLSU_ALU],{dreqmort_flags[7][indexLSU_ALU],
                           dreqmort_flags[6][indexLSU_ALU],dreqmort_flags[5][indexLSU_ALU],
                           dreqmort_flags[4][indexLSU_ALU],dreqmort_flags[3][indexLSU_ALU],dreqmort_flags[2][indexLSU_ALU],
                           dreqmort_flags[1][indexLSU_ALU],dreqmort_flags[0][indexLSU_ALU]},
                           dreqmort[ldi[5:0]],{dreqmort_flags[7][ldi[5:0]],dreqmort_flags[6][ldi[5:0]],dreqmort_flags[5][ldi[5:0]],
                           dreqmort_flags[4][ldi[5:0]],dreqmort_flags[3][ldi[5:0]],dreqmort_flags[2][ldi[5:0]],dreqmort_flags[1][ldi[5:0]],dreqmort_flags[0][ldi[5:0]]}))
-                          lderror<=1'b1;
+                          lderror=1'b1;
                       if (!anyhitW_reg[fu] && opcode_reg2[6] && ldi[5:0]==indexLSU_ALU_reg3) begin
                           miss[ldi[5:0]]=1;
                           missus[res[18:11]][PHY]=1;
