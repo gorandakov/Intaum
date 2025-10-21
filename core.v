@@ -1292,9 +1292,9 @@ generate
               end
               if (indexFLG_has_reg) begin
                   if (flcond(cond_early,data_cond[fu][indexFLG_reg])) begin
-                      if (data_op[indexFLG_reg][4:0]==3) rdy[fu][1][indexFLG_reg]=1'b1;
+                      if (data_op[indexFLG_reg][4:0]==3) rdy[1][fu][indexFLG_reg]=1'b1;
                   end else begin
-                      rdy[fu][2][indexFLG_reg]=1'b1;
+                      rdy[2][fu][indexFLG_reg]=1'b1;
                   end
               end
               if (except) begin 
