@@ -1396,8 +1396,8 @@ generate
                    data_cond[fu][alloc]={instr[37:35],instr[32]};
                    data_cond2[fu][alloc]=instr[31:28];
                    data_op[fu][alloc][10:8]=instr[27:25];
-                   if (instr[34:33]==2 && !instr[25]) data_imm[fu][alloc]<={62'b0,instr[1:0]};
-                   if (instr[25]) data_imm[fu][alloc]<=0;
+                   if (instr[34:33]==2 && !instr[25]) data_imm[fu][alloc]={62'b0,instr[1:0]};
+                   if (instr[25]) data_imm[fu][alloc]=0;
                    data_op[7:0] = instr[25] || instr[34:33]==2 ? 0 : 3;
                    if (instr[27]) data_loopstop[PHY]=idxpreda_has_reg3 ? idxpreda_reg3 : idxpredb_has_reg3 ? idxpredb_reg3 : 63;
                    retJTYPE[insi]={instr[25],&instr[34:33],instr[12]};
