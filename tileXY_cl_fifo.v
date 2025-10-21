@@ -175,12 +175,12 @@ module tileXY_cl_fifo #(tile_X,tile_Y,IDX) (
           if (in_en_reg && X_intf_in[0][`wrreq_snd]) begin
               queue[0][qpos0]=X_intf_in[0][`wrreq_size-1:0];
               data_in[0][qpos0]<=1'b1;
-              qpos0<=qpos0+1;
+              qpos0=qpos0+1;
           end
           if (in_en_reg && X_intf_in[1][`wrreq_snd]) begin
               queue[1][qpos1]=X_intf_in[1][`wrreq_size-1:0];
               data_in[1][qpos1]<=1'b1;
-              qpos1<=qpos1+1;
+              qpos1=qpos1+1;
           end
           if (!in_en_reg || fwd) begin
               if (data_in[0]!=0 && X_intf_out[0][`wrreq_extra]) begin
