@@ -1300,7 +1300,7 @@ generate
               if (except) begin 
                   rTT<=rTTB;
                   rTTE<=-1;
-                  rdy<=0;
+                  rdy=0;
               end
               if (&retire && retire_bndl && retire_ret) begin
                   if (ret_is_alu[reti]) begin
@@ -1522,7 +1522,9 @@ generate
                      ccmiss_reg[2]<=ccmiss_reg[1];
                      ccmiss_reg[3]<=ccmiss_reg[2];
                  end else if (fu<3 && ccinsert[fu]) begin
-                     ccmiss_reg[fu]<=1'b0;
+                   if (fu==0) ccmiss_reg[0]<=1'b0;
+                   if (fu==1) ccmiss_reg[2]<=1'b0;
+                   if (fu==2) ccmiss_reg[3]<=1'b0;
                  end end else if (fu==3 &&ccinsert[fu]) begin
                      ccmiss_reg[4]<=1'b1;
                      if (ccmiss_reg[2:0]==3'b0) ccmiss_reg[3]<=1'b0;
