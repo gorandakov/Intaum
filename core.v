@@ -443,7 +443,7 @@ generate
       wire [511:0] poo_c;
       wire [23:0] poo_cp;
       reg [23:0] poo_cp_reg;
-      reg vec,vec_reg,vec_reg2,vec_reg3;
+      reg vec,vec_reg,vec_reg2,vec_reg3,vec_reg4;
           reg [11:0][127:0][65:0] data_gen;
           reg [11:0][127:0][63:0] data_fp;
           reg [11:0][127:0][4:0] data_genFL;
@@ -618,6 +618,7 @@ generate
         vec_reg<=vec;
         vec_reg2<=vec_reg;
         vec_reg3<=vec_reg2;
+        vec_reg4<=vec_reg3;
         if (rst) ifu_stage_valid<=1;
         else if (except) ifu_stage_valid<=1;
         else ifu_stage_valid<={ifu_stage_valid[2:0],1'b1};
