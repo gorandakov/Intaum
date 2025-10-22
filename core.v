@@ -133,7 +133,10 @@ module core (
       15: flcond=!(~cond[3]^cond[2]&&^cond[2:1]); //pointer clear
     endcase
   endfunction
-
+  function [63:0] cbswp;
+    input [63:0] d;
+    input sel;
+    cbswp=sel ? {d[7:0],d[15:8],d[23:16],d[31:24],d[39:32], d[47:40], d[55:48], d[63:56]} : d;
   function [63:0] flconv;
     input [65:0] din;
     input [2:0] isdbl;
@@ -1720,7 +1723,7 @@ generate
                 
                 assign poo_e[fuB][63:0]=line_data[resA_reg[fuB][6:3]][63:0]>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
                 
-                assign {poo_e[fuB][65:64],dummy64}=line_data[resA_reg[fuB][6:3]]>>(resA_reg[fuB][2:0]*8)<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8);
+               assign {poo_e[fuB][65:64],dummy64}=cbswp(line_data[resA_reg[fuB][6:3]]>>(resA_reg[fuB][2:0]*8&{6 { ~&opcode_reg[10:8]}})<<(56-ldsizes[fuB][2:0]*8)>>>(56-ldsizes[fuB][2:0]*8),&opcode_reg[10:8]);
                // assign poo_u[fuB]=xopcode_reg[fuB][5] ? 0 : line_data[res_reg[fuB][6:3]];
                 if (fuB<8) assign poo_c[64*fuB+:64]=line_data[{IP[8],fuB[2:0]}][63:0];
                 if (fuB<8) assign poo_cp[3*fuB+:3]=line_data[{IP[8],fuB[2:0]}][65:63];
