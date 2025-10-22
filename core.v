@@ -179,7 +179,6 @@ module core (
           if (addrl[2:0]>(addr_aligned[2:0]+(1<<flag_aligned[1:0]))) is_wconfl=0;
       end
   endfunction
-
   function [6:0] fee_undex;
 //{insn_clopp[31:30],insn_clopp[24],insn_clopp[9:5],insn_clopp[3:0]}
       input [3:0] inp;
@@ -1047,19 +1046,22 @@ generate
           assign res_logic[63:32]=foo_reg && dataA[58:43]>13 ? {dataA_reg[12:5],dataA_reg[11:5]+dataBI_reg[11:5],6'd5,dataA[42:32]} : 34'bz; //stackframe alloc; chunks of 32 bytes up to 127
           assign res_logic[63:32]=foo_reg && dataA[58:43]<=13 ? {dataA[63:32]} : 34'bz; //stackframe alloc; chunks of 64 bytes up to 127
 
-          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2]==0 ? dataA_reg3[31:0]*dataBIX_reg3[31:0] : 32'bz;
-          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b10 ? dataAS_reg3[31:0]*dataBIXS_reg3[31:0] : 32'bz;
+        assign res_mul[31:0]=opcode_reg[4:3]==3 && opcode_reg[2]==0 ? dataA_reg2[31:0]*dataBIX_reg2[31:0] : 32'bz;
+        assign res_mul[31:0]=opcode_reg[4:3]==3 && opcode_reg[2:1]==2'b10 ? dataAS_reg2[31:0]*dataBIXS_reg2[31:0] : 32'bz;
           /* verilator lint_off WIDTHTRUNC */
-          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]: 32'bz;
-          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6:5]==2 ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]: 32'bz;
-          assign res_mul[31:0]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg4[6:5]==3 ? (dataAS_reg3[7:0]*dataBIXS_reg3[7:0])+
-            (dataAS_reg3[15:8]*dataBIXS_reg3[15:8])+(dataAS_reg3[23:16]*dataBIXS_reg3[23:16])+(dataAS_reg3[31:24]*dataBIXS_reg3[31:24]): 32'bz;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==0 ? dataA_reg4[63:0]*dataBIX_reg4[63:0]>>32 : 64'bz;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==1 ? dataA_reg4[31:0]*dataBIX_reg4[31:0]>>32 : 64'bz;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b10 ? dataAS_reg4[63:0]*dataBIXS_reg4[63:0]>>32 : 64'bz;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && !dataBI_reg4[6] ? dataAS_reg4[63:0]>>>dataBIXS_reg4[5:0]>>>32 : 64'bz;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6:5]==2 ? dataAS_reg4[63:0]>>dataBIXS_reg4[5:0]>>32 : 64'bz;
-          assign res_mul[63:32]=opcode_reg3[4:3]==3 && opcode_reg3[2:1]==2'b11 && dataBI_reg4[6:5]==3 ? {32{res_mul_reg[31]}} : 32'bz;
+        assign res_mul[31:0]=opcode_reg[4:3]==3 && opcode_reg[2:1]==2'b11 && dataBI_reg2[7:6]==0 ? dataAS_reg2[63:0]>>>dataBIXS_reg2[5:0]: 32'bz;
+        assign res_mul[31:0]=opcode_reg[4:3]==3 && opcode_reg[2:1]==2'b11 && dataBI_reg2[7:6]==1 ? {25'b0,~res_tzcnt_has_reg,res_tzcnt_reg} : 32'bz;
+        assign res_mul[31:0]=opcode_reg[4:3]==3 && opcode_reg[2:1]==2'b11 && dataBI_reg2[7:6]==2 ? dataAS_reg2[63:0]>>dataBIXS_reg2[5:0]: 32'bz;
+        assign res_mul[31:0]=opcode_reg[4:3]==3 && opcode_reg[2:1]==2'b11 && dataBI_reg2[7:6]==3 ? (dataAS_reg2[7:0]*dataBIXS_reg2[7:0])+
+          (dataAS_reg2[15:8]*dataBIXS_reg2[15:8])+(dataAS_reg2[23:16]*dataBIXS_reg2[23:16])+(dataAS_reg2[31:24]*dataBIXS_reg2[31:24]): 32'bz;
+        assign res_mul[63:32]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==0 ? dataA_reg3[63:0]*dataBIX_reg3[63:0]>>32 : 64'bz;
+        assign res_mul[63:32]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==1 ? dataA_reg3[31:0]*dataBIX_reg3[31:0]>>32 : 64'bz;
+        assign res_mul[63:32]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b10 ? dataAS_reg3[63:0]*dataBIXS_reg3[63:0]>>32 : 64'bz;
+        assign res_mul[63:32]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg3[7:6]==0 ? dataAS_reg3[63:0]>>>dataBIXS_reg3[5:0]>>>32 : 64'bz;
+        assign res_mul[63:32]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg3[7:6]==1 ? 32'b0 : 32'bz;
+        assign res_mul[63:32]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg3[7:6]==2 ? dataAS_reg3[63:0]>>dataBIXS_reg3[5:0]>>32 : 64'bz;
+        assign res_mul[63:32]=opcode_reg2[4:3]==3 && opcode_reg2[2:1]==2'b11 && dataBI_reg3[7:6]==3 ? {32{res_mul_reg[31]}} : 32'bz;
+          bit_find_indexR tzcnt_mod({dataA[63:32],dataA_reg[31:0]},res_tzcnt,res_tzcnt_has);
           /* verilator lint_on WIDTHTRUNC */
           assign val_else[31:0]=opcode[12:11]==0 ? dataA[31:0] : 32'bz;
           assign val_else[31:0]=opcode[12:11]==1 ? 1 : 32'bz;
