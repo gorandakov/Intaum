@@ -414,7 +414,7 @@ generate
       reg [63:0][15:0] data_GHT;
       wire [15:0] retGHT=data_GHT[reti_reg];
       reg [63:0][42:0] srcIPOff;
-      reg [63:0][6:0] data_cloop;
+      //reg [63:0][6:0] data_cloop;
       wire [5:0] idxpreda;
       wire idxpreda_has;
       wire [5:0] idxpredb;
@@ -868,7 +868,7 @@ generate
           reg [6:0] indexFLG_reg;
           reg indexFLG_has_reg;
           wire [5:0] missphyfirst;
-          reg [3:0] isplt;
+         // reg [3:0] isplt;
           wire [5:0] indexST;
           reg [5:0] indexST_reg;
           wire xindexST_has;
@@ -1374,7 +1374,7 @@ generate
                    jcond0[LQ]<=res_reg3[fu][41:0];
                    jcondx0[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond_reg3[3:0];
                    /* verilator lint_off WIDTHEXPAND */
-                   if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ][41:0]+{data_cloop[rT_reg4[5:0]],5'b1};
+                   if (opcode_reg4[10]) jcond0[LQ]<=srcIPOff[LQ][41:0]&{42{~opcode_reg4[11]}}+{data_imm2[rT_reg4[5:0]],5'b1};
                    /* verilator lint_on WIDTHEXPAND */
                    if (opcode_reg4[8]) jcond0[LQ]<=srcIPOff[LQ][41:0]+res_reg3[fu][41:0];
                    jcc0[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {1'b0,dataMF_reg3[63],dataMF_reg3[63],~|dataMF_reg3[62:53],1'b0} : {chk_reg3 ? res_reg3[fu][63] : c64_reg3,chk_reg3 ? ~res_reg3[fu][63]:s64_reg3,res_reg3[fu][63],~|res_reg3[fu][63:0],1'b0};
@@ -1383,13 +1383,13 @@ generate
                    jcond1[LQ]<=res_reg3[fu][41:0];
                    jcondx1[LQ]<=!opcode_reg4[8] || opcode_reg4[7:5]!=0 ? 11 : opcode_reg4 [10]  ? 4 : cond_reg3[3:0];
                    /* verilator lint_off WIDTHEXPAND */
-                   if (opcode_reg4[10]) jcond1[LQ]<=srcIPOff[LQ][41:0]+{data_cloop[rT_reg4[5:0]],5'b1};
+                 if (opcode_reg4[10]) jcond1[LQ]<=srcIPOff[LQ][41:0]&{42{~opcode_reg4[11]}}+{data_imm2[rT_reg4[5:0]],5'b1};
                    /* verilator lint_on WIDTHEXPAND */
                    if (opcode_reg4[8]) jcond1[LQ]<=srcIPOff[LQ][41:0]+res_reg3[fu][41:0];
                    jcc1[LQ]<=opcode_reg4[10] ?(opcode_reg4[9]==0 ? {res_loop0_reg2,res_loop2_reg2,res_loop2_reg2,res_loop1_reg2,1'b0} : {res_cloop0_reg2,res_cloop2_reg2,res_cloop2_reg2,res_cloop1_reg2,1'b0}):opcode_reg2[7:5]==0 ? {1'b0,dataMF_reg3[63],dataMF_reg3[63],~|dataMF_reg3[62:53],1'b0} : {chk_reg3 ? res_reg3[fu][63] : c64_reg3,chk_reg3 ? ~res_reg3[fu][63]:s64_reg3,res_reg3[fu][63],~|res_reg3[fu][63:0],1'b0};
                end
                
-            if (!fu) isplt<=0;
+           // if (!fu) isplt<=0;
                if (insert_en && (fu>=insn_clopp[13:10] && IP[4:0]==insn_clopp[19:15])|
                     (fu>=insn_clopp[23:10] && IP[4:0]==insn_clopp[29:25])  ) begin
                   data_op[fu][alloc][7:6]=instr[39:38];
@@ -1402,7 +1402,7 @@ generate
                    data_op[fu][alloc][10:8]=instr[27:25];
                    if (instr[34:33]==2 && !instr[25]) begin
                      data_imm[fu][alloc]={62'b0,instr[1:0]};
-                     isplt=vec_reg4&vec_reg3 ? instr[5:4] : vec_reg3 ? instr[9:8]  : 0; 
+                     //isplt=vec_reg4&vec_reg3 ? instr[5:4] : vec_reg3 ? instr[9:8]  : 0; 
                      data_imm2[fu][alloc]=instr[21:14];
                      data_op[fu][alloc][11]=vec_reg3& !vec_reg4;
                    end
