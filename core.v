@@ -232,21 +232,21 @@ default:
   function addition_check;
       input [20:0] cookie;
       input [42:0] val0;
-      input [42:0] addend;
+      input [63:0] addend;
       input protect_cookie;
       input isand;
-      reg [42:0] boogie;
+      reg [63:0] boogie;
       reg on_low;
       reg byone;
       reg byzero,byminus;
       reg [42:0] val1;
       begin
-        boogie=addend>>cookie[4:0];
-        val1=val0>>cookie[4:0];
-        on_low=boogie[8]==cookie[19];
+          boogie=addend>>cookie[4:0];
+          val1=val0>>cookie[4:0];
+          on_low=boogie[8]==cookie[19];
           byone=(boogie>>7)==1;
           byminus=(boogie>>7)=={43{1'b1}};
-          byzero=(boogie>>7)==43'b0;
+          byzero=(boogie>>7)==43'b0 || cookie[4:0]==5'd31 && cookie[17:12]==7'd0 && cookie[11:5]==7'h7f;
           if (on_low) begin
             addition_check=(boogie[6:0]+val1[6:0])>=cookie[18:12]-{6'b0,!protect_cookie};
             if (cookie[11:5]>cookie[18:12] && (boogie[6:0]+val1[6:0])>cookie[11:5])
@@ -1011,10 +1011,10 @@ generate
             {1'b0,dataBI[31:0]} : 33'bz;
           assign {c32,res[31:0]}=opcode[7:0]==3 && ~opcode[8] && cond_tru ?
             {1'b0,dataB[31:0]} : 33'bz;
-          assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[42:32],dataBIX_reg[31:0]},opcode_reg[11],isand) &&
-          bndnonred(dataA[63:43],res_logic [63:43],dataA [38:0])|opcode_reg[7:3]==5'd6
+          assign chk=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIX[63:32],dataBIX_reg[31:0]},opcode_reg[11],isand) &&
+            bndnonred(dataA[63:43],res_logic [63:43],dataA [38:0])|opcode_reg[7:3]==5'd6
              || ~dataA_reg[65]^dataA_reg[64] || ^dataA_reg[64:63];
-          assign chkA=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIXH[42:32],dataBIXH_reg[31:0]},opcode_reg[11],isand)
+          assign chkA=addition_check(dataA[63:43],{dataA[42:32],dataA_reg[31:0]},{dataBIXH[63:32],dataBIXH_reg[31:0]},opcode_reg[11],isand)
              || ~dataA_reg[65]^dataA_reg[64] || ^dataA_reg[64:63];
           assign {c64,s64,res[63:32]}=opcode_reg[7:0]==3 && opcode_reg[8] && cond_tru_reg ?
           {1'b0,dataBI_reg[63],dataBI_reg[63:32]} : 34'bz;
