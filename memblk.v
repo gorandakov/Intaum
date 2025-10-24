@@ -60,8 +60,8 @@ module memblk(
     genvar k;
     for(k=0;k<36;k=k+1) begin
         /* verilator lint_off WIDTHTRUNC */
-        assign tlbdata[k]=ram_block[1<<25+rdaddr0_reg[k][44][25:6]]>>rdaddr0_reg[k][44][26]*4*66;
-        assign tlbdataw[k]=ram_block[1<<25+waddr0_reg[k][44][25:6]]>>waddr0_reg[k][44][26]*4*66;
+        assign tlbdata[k]=ram_block[1<<25+rdaddr0_reg[44][k][25:6]]>>rdaddr0_reg[44][k][26]*4*66;
+        assign tlbdataw[k]=ram_block[1<<25+waddr0_reg[44][k][25:6]]>>waddr0_reg[44][k][26]*4*66;
         /* verilator lint_on WIDTHTRUNC */
         assign rdaddr[k][0]={rdaddr0_xtra[k][0],tileX[1:0],tileY[1:0]};
         assign rdaddr[k][1]={rdaddr0_xtra[k][1],tileX[1:0],tileY[1:0]};
@@ -107,11 +107,11 @@ module memblk(
           if (wren_in_reg[47][wport] && !rden_in_reg[47][wport]) ram_block[waddr0_reg[47][wport][24:0]]<=wrdata_reg[47][wport][8*66-1:0];
           
           for(tlbptr=0;tlbptr<4;tlbptr=tlbptr+1) begin
-              if (tlbdata[wport][66*tlbptr+:17]=={1'b1,rdaddr0_reg[wport][44][32:17]} && rden_in_reg[44][wport]) begin
+              if (tlbdata[wport][66*tlbptr+:17]=={1'b1,rdaddr0_reg[44][wport][32:17]} && rden_in_reg[44][wport]) begin
                   rdaddr0_reg[45][wport]<={tlbdata[wport][66*tlbptr+16+:16],rdaddr0_reg[44][wport][16:0]};
               end
-              if (tlbdata_reg[wport][66*tlbptr+17+:16]=={rdaddr0_reg[wport][45][32:17]} && rden_in_reg[45][wport] && tlbdata_reg[wport][66*tlbptr+16]) begin
-                rdaddr0_xtra[wport][tlbptr]<={tlbdata_reg[wport][66*tlbptr+63],tlbdata_reg[wport][66*tlbptr+:16],rdaddr0_reg[wport][45][16:0]};
+              if (tlbdata_reg[wport][66*tlbptr+17+:16]=={rdaddr0_reg[45][wport][32:17]} && rden_in_reg[45][wport] && tlbdata_reg[wport][66*tlbptr+16]) begin
+                rdaddr0_xtra[wport][tlbptr]<={tlbdata_reg[wport][66*tlbptr+63],tlbdata_reg[wport][66*tlbptr+:16],rdaddr0_reg[45][wport][16:0]};
               end
               if (rdaddr0_xtra[wport][tlbptr]==rdaddr0_rexx2[wport]) begin
                   rdaddr0_xtra_reg[wport][0]<=rdaddr0_xtra[wport][tlbptr];

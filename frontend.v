@@ -176,10 +176,10 @@ default:
 generate
   wire iscall,isret;
   wire [1:0] ucjmp;
-  reg [7:0] sttop;
-  reg [65535:0][1:0] predA;
-  reg [65535:0][1:0] predB;
-  reg [65535:0][1:0] predC;
+//  wire [7:0] sttop;
+//  wire [65535:0][1:0] predA;
+//  wire [65535:0][1:0] predB;
+//  wire [65535:0][1:0] predC;
   reg [(1<<9)-1:0][41:0] htlb;
 
   wire [35:0] missx_en;
@@ -206,7 +206,10 @@ generate
   wire [1:0][35:0] jretire; 
   wire [1:0][35:0] jtaken; 
   wire [1:0][35:0] jmpmispred;
-  reg [255:0][35:0] missus;
+  wire [1:0] xjretire; 
+  wire [1:0] xjtaken; 
+  wire [1:0] xjmpmispred;
+  wire [255:0][35:0] missus;
   reg [255:0][35:0] missus_reg;
   reg [255:0][35:0] missus_reg2;
   reg [255:0][35:0] missus_reg3;
@@ -214,9 +217,9 @@ generate
   wire [11:0][35:0] ret0;
   wire [11:0][35:0] mret0;
   wire [11:0][35:0] mxret0;
-  reg [35:0][11:0] wstall;
-  reg [35:0][11:0] wstall_reg;
-  reg [35:0][11:0] aligned;
+  wire [35:0][11:0] wstall;
+  wire [35:0][11:0] wstall_reg;
+  wire [35:0][11:0] aligned;
   wire [35:0][11:0][65:0] xdataA;
   wire [35:0][38:0]  rdaddr0;
   wire [35:0][8*66+4:0]  rddata;
@@ -231,7 +234,7 @@ generate
   wire [35:0][39:0] rdphy0;
   wire [41:0] irq_IP={31'b1,irqnum[3:0],7'b0};
   wire [35:0][11:0] resource_stall;
-  wire [11:0] resource_stallx;
+  reg [11:0] resource_stallx;
   wire memstall;
   wire [35:0] ccmiss;
   integer z;
@@ -263,7 +266,7 @@ generate
       genvar way,way2;
       genvar line;
       genvar PHY;
-    for(PHY=0;PHY<36;PHY=PHY+1) begin : phy
+    for(PHY=0;PHY<36;PHY=PHY+1) begin : phy //one less than theory bc aether pumps
     core #(tile_X,tile_Y) one(
   clk,
   PHY[5:0],
@@ -271,12 +274,14 @@ generate
   irqnum,
   iscall,isret,
   ucjmp,
-  sttop,
-  predA,
-  predB,
-  predC,
-  htlb,
+//  sttop,
+//  predA,
+//  predB,
+//  predC,
+//  htlb,
 
+  missx_en[PHY],
+  missx_addr[PHY],
   missx_en,
   missx_addr,
   missx_phy,
@@ -296,6 +301,9 @@ generate
   AXV_intf_in[tile_Y],
   AXH_intf_out[tile_X],
   AXV_intf_out[tile_Y],
+  {jretire[1][PHY],jretire[0][PHY]}, 
+  {jtaken[1][PHY],jtaken[0][PHY]}, 
+  {jmpmispred[1][PHY],jmpmispred[0][PHY]},
   jretire, 
   jtaken, 
   jmpmispred,
@@ -304,30 +312,36 @@ generate
   missus_reg2,
   missus_reg3,
   missus_reg4,
+  {ret0[11][PHY],ret0[10][PHY],ret0[9][PHY],ret0[8][PHY],ret0[7][PHY],ret0[6][PHY],ret0[5][PHY],ret0[4][PHY],ret0[3][PHY],ret0[2][PHY],ret0[1][PHY],ret0[0][PHY]},
+  {mret0[11][PHY],mret0[10][PHY],mret0[9][PHY],mret0[8][PHY],mret0[7][PHY],mret0[6][PHY],mret0[5][PHY],mret0[4][PHY],mret0[3][PHY],mret0[2][PHY],mret0[1][PHY],mret0[0][PHY]},
+  {mxret0[11][PHY],mxret0[10][PHY],mxret0[9][PHY],mxret0[8][PHY],mxret0[7][PHY],mxret0[6][PHY],mxret0[5][PHY],mxret0[4][PHY],mxret0[3][PHY],mxret0[2][PHY],mxret0[1][PHY],mxret0[0][PHY]},
   ret0,
   mret0,
   mxret0,
   wstall,
   wstall_reg,
   aligned,
+  xdataA[PHY],
   xdataA,
-   rdaddr0,
-   rddata,
-   rden_in,
-   rdaddr,
-  rden_out,
-   wrdata,
-   wren_in,
-   wraddr,
-  wren_out,
-  rdphy,
-  rdphy0,
+   rdaddr0[PHY],
+   rddata[PHY],
+   rden_in[PHY],
+   rdaddr[PHY],
+  rden_out[PHY],
+   wrdata[PHY],
+   wren_in[PHY],
+   wraddr[PHY],
+  wren_out[PHY],
+  rdphy[PHY],
+  rdphy0[PHY],
   irq_IP,
   resource_stall[PHY],
   resource_stallx,
+  ccmiss[PHY],
   ccmiss,
   memstall
   );
+  
     //end
   end
   endgenerate
