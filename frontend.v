@@ -225,6 +225,7 @@ generate
   wire [35:0][8*66+4:0]  rddata;
   wire [35:0]  rden_in;
   wire [35:0][3:0][36:0]  rdaddr;
+  wire [35:0] rd_pltpage;
   wire [35:0] rden_out;
   wire [35:0][8*66+4:0]  wrdata;
   wire [35:0]  wren_in;
@@ -254,6 +255,7 @@ generate
     rddata,
     rden_in,
     rdaddr,
+    rd_pltpage,
     rdphy,
     rden_out,
     rdaddr0,
@@ -327,6 +329,7 @@ generate
    rddata[PHY],
    rden_in[PHY],
    rdaddr[PHY],
+   rd_pltpage[PHY],
   rden_out[PHY],
    wrdata[PHY],
    wren_in[PHY],

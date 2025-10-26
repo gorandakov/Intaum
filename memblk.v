@@ -55,6 +55,8 @@ module memblk(
   reg [35:0][4*66-1:0] tlbdata_reg;
   reg [35:0][4*66-1:0] tlbdataw_reg;
   
+  `define rng_X [1:0]
+  `define rng_Y [1:0]
   
   assign rdnshare=(random&16'h1ff)==16'd5;
   generate
@@ -64,14 +66,14 @@ module memblk(
         assign tlbdata[k]=ram_block[1<<25+rdaddr0_reg[44][k][25:6]]>>rdaddr0_reg[44][k][26]*4*66;
         assign tlbdataw[k]=ram_block[1<<25+waddr0_reg[44][k][25:6]]>>waddr0_reg[44][k][26]*4*66;
         /* verilator lint_on WIDTHTRUNC */
-        assign {rd_pltpage[k],rdaddr[k][0]}={rdaddr0_xtra[k][0],tileX[1:0],tileY[1:0]};
-        assign rdaddr[k][1]={rdaddr0_xtra[k][1],tileX[1:0],tileY[1:0]};
-        assign rdaddr[k][2]={rdaddr0_xtra[k][2],tileX[1:0],tileY[1:0]};
-        assign rdaddr[k][3]={rdaddr0_xtra[k][3],tileX[1:0],tileY[1:0]};
-        assign wraddr[k][0]={waddr0_xtra[k][0],tileX[1:0],tileY[1:0]};
-        assign wraddr[k][1]={waddr0_xtra[k][1],tileX[1:0],tileY[1:0]};
-        assign wraddr[k][2]={waddr0_xtra[k][2],tileX[1:0],tileY[1:0]};
-        assign wraddr[k][3]={waddr0_xtra[k][3],tileX[1:0],tileY[1:0]};
+        assign {rd_pltpage[k],rdaddr[k][0]}={rdaddr0_xtra[k][0],tileX`rng_X,tileY`rng_Y};
+        assign rdaddr[k][1]={rdaddr0_xtra[k][1],tileX`rng_X,tileY`rng_Y};
+        assign rdaddr[k][2]={rdaddr0_xtra[k][2],tileX`rng_X,tileY`rng_Y};
+        assign rdaddr[k][3]={rdaddr0_xtra[k][3],tileX`rng_X,tileY`rng_Y};
+        assign wraddr[k][0]={waddr0_xtra[k][0],tileX`rng_X,tileY`rng_Y};
+        assign wraddr[k][1]={waddr0_xtra[k][1],tileX`rng_X,tileY`rng_Y};
+        assign wraddr[k][2]={waddr0_xtra[k][2],tileX`rng_X,tileY`rng_Y};
+        assign wraddr[k][3]={waddr0_xtra[k][3],tileX`rng_X,tileY`rng_Y};
         assign rden_out[k]=rden_in_reg[47][k];
         assign rddata[k]={ram_blockx[rdaddr0_reg[47][k][24:0]],ram_block[rdaddr0_reg[47][k][24:0]]};
         assign rdphydata[k]=rdphydata0_reg[47][k];
