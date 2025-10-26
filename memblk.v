@@ -8,6 +8,7 @@ module memblk(
   output reg [35:0][8*66+4:0] rddata,
   input [35:0] rden_in,
   output reg [35:0][3:0][36:0] rdaddr,
+  output reg [35:0] rd_pltpage,
   output reg [35:0][39:0] rdphydata,
   output reg [35:0] rden_out,
   input [35:0][38:0] wraddr0,
@@ -63,7 +64,7 @@ module memblk(
         assign tlbdata[k]=ram_block[1<<25+rdaddr0_reg[44][k][25:6]]>>rdaddr0_reg[44][k][26]*4*66;
         assign tlbdataw[k]=ram_block[1<<25+waddr0_reg[44][k][25:6]]>>waddr0_reg[44][k][26]*4*66;
         /* verilator lint_on WIDTHTRUNC */
-        assign rdaddr[k][0]={rdaddr0_xtra[k][0],tileX[1:0],tileY[1:0]};
+        assign {rd_pltpage[k],rdaddr[k][0]}={rdaddr0_xtra[k][0],tileX[1:0],tileY[1:0]};
         assign rdaddr[k][1]={rdaddr0_xtra[k][1],tileX[1:0],tileY[1:0]};
         assign rdaddr[k][2]={rdaddr0_xtra[k][2],tileX[1:0],tileY[1:0]};
         assign rdaddr[k][3]={rdaddr0_xtra[k][3],tileX[1:0],tileY[1:0]};
